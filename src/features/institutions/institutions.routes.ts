@@ -1,0 +1,23 @@
+export const INSTITUTIONS_ROUTES = {
+  DASHBOARD: "/dashboard",
+  SCHOOL_YEARS: "/school-years",
+  ACADEMIC_GRADES: "/academic-grades",
+  ACADEMIC_LEVELS: "/academic-levels",
+  SECTIONS: "/sections",
+
+  GRADE_TYPES: "/grade-types",
+  QUALITATIVE_SCALES: "/qualitative-scales",
+  EVALUATION_TYPES: "/evaluation-types",
+  ACTIVITY_TYPES: "/activity-types",
+  PROMOTION_STATUSES: "/promotion-statuses",
+  RECOVERY_PROCESS_TYPES: "/recovery-process-types",
+  EVALUATION_BLOCKS: "/evaluation-blocks",
+  BLOCK_COMPONENTS: "/block-components",
+  COMPONENT_INDICATORS: "/component-indicators",
+  STUDENT_NOTES: "/student-notes",
+  PROJECT_NOTES: "/project-notes",
+  GRADE_HISTORY: "/grade-history",
+  PERIOD_GRADE_SUMMARIES: "/period-grade-summaries",
+  RECOVERY_PROCESSES: "/recovery-processes",
+  ACADEMIC_SUBNIVELS: "/academic-subnivels",
+};

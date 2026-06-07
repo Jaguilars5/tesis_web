@@ -1,0 +1,14 @@
+services:
+  front-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: front-web
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0

@@ -1,0 +1,10 @@
+export * from "./academic-grade";
+export { academicGradeReducer, AcademicGradePage } from "./academic-grade";
+export * from "./academic-level";
+export { academicLevelReducer, AcademicLevelsPage } from "./academic-level";
+export * from "./academic-subnivel";
+export { academicSubnivelReducer, AcademicSubnivelsPage } from "./academic-subnivel";
+export * from "./section";
+export { sectionReducer, SectionsPage } from "./section";
+export * from "./school-year";
+export { schoolYearReducer, SchoolYearsPage } from "./school-year";

@@ -1,0 +1,4963 @@
+openapi: 3.0.3
+info:
+  title: Sistema de Gestión Académica API
+  version: 1.0.0
+  description: |2
+
+    API RESTful para la gestión académica de instituciones educativas.
+
+    ## Autenticación
+    Todos los endpoints (excepto login y refresh) requieren:
+    ```
+    Authorization: Bearer <access_token>
+    ```
+
+    ## Formato de Respuesta
+    Todas las respuestas siguen el formato:
+    ```json
+    {
+      "ok": true,
+      "data": {},
+      "msg": ""
+    }
+    ```
+
+    ## Códigos de Error
+    - 401: No autenticado
+    - 403: Sin permiso
+    - 404: No encontrado
+    - 422: Error de validación
+    - 429: Rate limit excedido
+paths:
+  /api/grading/activity-types/:
+    get:
+      operationId: activity_types_list
+      summary: Listar tipos de actividad
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedActivityTypeList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: activity_types_create
+      summary: Crear tipo de actividad
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ActivityTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ActivityTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ActivityType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/activity-types/{id}/:
+    get:
+      operationId: activity_types_retrieve
+      summary: Obtener tipo de actividad
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Actividad.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ActivityType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: activity_types_update
+      summary: Actualizar tipo de actividad
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Actividad.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ActivityTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ActivityTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ActivityType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: activity_types_partial_update
+      summary: Actualizar tipo de actividad parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Actividad.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedActivityTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedActivityTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedActivityTypeRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ActivityType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: activity_types_destroy
+      summary: Eliminar tipo de actividad
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Actividad.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/block-components/:
+    get:
+      operationId: block_components_list
+      summary: Listar componentes de bloque
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedBlockComponentList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: block_components_create
+      summary: Crear componente de bloque
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockComponentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlockComponentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlockComponentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/BlockComponent'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/block-components/{id}/:
+    get:
+      operationId: block_components_retrieve
+      summary: Obtener componente de bloque
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Componente de Bloque.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/BlockComponent'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: block_components_update
+      summary: Actualizar componente de bloque
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Componente de Bloque.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockComponentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlockComponentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlockComponentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/BlockComponent'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: block_components_partial_update
+      summary: Actualizar componente parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Componente de Bloque.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBlockComponentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBlockComponentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBlockComponentRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/BlockComponent'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: block_components_destroy
+      summary: Eliminar componente de bloque
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Componente de Bloque.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/component-indicators/:
+    get:
+      operationId: component_indicators_list
+      summary: Listar indicadores
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedComponentIndicatorList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: component_indicators_create
+      summary: Crear indicador
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentIndicatorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ComponentIndicatorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ComponentIndicatorRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ComponentIndicator'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/component-indicators/{id}/:
+    get:
+      operationId: component_indicators_retrieve
+      summary: Obtener indicador
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Indicador de Componente.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ComponentIndicator'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: component_indicators_update
+      summary: Actualizar indicador
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Indicador de Componente.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComponentIndicatorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ComponentIndicatorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ComponentIndicatorRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ComponentIndicator'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: component_indicators_partial_update
+      summary: Actualizar indicador parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Indicador de Componente.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedComponentIndicatorRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedComponentIndicatorRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedComponentIndicatorRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ComponentIndicator'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: component_indicators_destroy
+      summary: Eliminar indicador
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Indicador de Componente.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/evaluation-blocks/:
+    get:
+      operationId: evaluation_blocks_list
+      summary: Listar bloques de evaluación
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedEvaluationBlockList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: evaluation_blocks_create
+      summary: Crear bloque de evaluación
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluationBlockRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EvaluationBlockRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvaluationBlockRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluationBlock'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/evaluation-blocks/{id}/:
+    get:
+      operationId: evaluation_blocks_retrieve
+      summary: Obtener bloque de evaluación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Bloque de Evaluación.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluationBlock'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: evaluation_blocks_update
+      summary: Actualizar bloque de evaluación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Bloque de Evaluación.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluationBlockRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EvaluationBlockRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvaluationBlockRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluationBlock'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: evaluation_blocks_partial_update
+      summary: Actualizar bloque parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Bloque de Evaluación.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEvaluationBlockRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEvaluationBlockRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEvaluationBlockRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluationBlock'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: evaluation_blocks_destroy
+      summary: Eliminar bloque de evaluación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Bloque de Evaluación.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/evaluation-types/:
+    get:
+      operationId: evaluation_types_list
+      summary: Listar tipos de evaluación
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedEvaluationTypeList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: evaluation_types_create
+      summary: Crear tipo de evaluación
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluationTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EvaluationTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvaluationTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluationType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/evaluation-types/{id}/:
+    get:
+      operationId: evaluation_types_retrieve
+      summary: Obtener tipo de evaluación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Evaluación.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluationType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: evaluation_types_update
+      summary: Actualizar tipo de evaluación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Evaluación.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluationTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EvaluationTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvaluationTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluationType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: evaluation_types_partial_update
+      summary: Actualizar tipo de evaluación parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Evaluación.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEvaluationTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEvaluationTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEvaluationTypeRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluationType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: evaluation_types_destroy
+      summary: Eliminar tipo de evaluación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Evaluación.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/evaluative-activities/:
+    get:
+      operationId: evaluative_activities_list
+      summary: Listar actividades evaluativas
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedEvaluativeActivityList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: evaluative_activities_create
+      summary: Crear actividad evaluativa
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluativeActivityRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EvaluativeActivityRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvaluativeActivityRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluativeActivity'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/evaluative-activities/{id}/:
+    get:
+      operationId: evaluative_activities_retrieve
+      summary: Obtener actividad evaluativa
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Actividad Evaluativa.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluativeActivity'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: evaluative_activities_update
+      summary: Actualizar actividad evaluativa
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Actividad Evaluativa.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluativeActivityRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EvaluativeActivityRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvaluativeActivityRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluativeActivity'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: evaluative_activities_partial_update
+      summary: Actualizar actividad parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Actividad Evaluativa.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEvaluativeActivityRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEvaluativeActivityRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEvaluativeActivityRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/EvaluativeActivity'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: evaluative_activities_destroy
+      summary: Eliminar actividad evaluativa
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Actividad Evaluativa.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/grade-history/:
+    get:
+      operationId: grade_history_list
+      summary: Listar historial de cambios
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedGradeChangeHistoryList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/grade-history/{id}/:
+    get:
+      operationId: grade_history_retrieve
+      summary: Obtener cambio de nota
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Historial de Cambio
+          de Nota.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/GradeChangeHistory'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/grade-types/:
+    get:
+      operationId: grade_types_list
+      summary: Listar tipos de calificación
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedGradeTypeList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/grade-types/{id}/:
+    get:
+      operationId: grade_types_retrieve
+      summary: Obtener tipo de calificación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Calificación.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/GradeType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/period-grade-summaries/:
+    get:
+      operationId: period_grade_summaries_list
+      summary: Listar resúmenes de notas
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedPeriodGradeSummaryList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: period_grade_summaries_create
+      summary: Crear resumen de notas
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeriodGradeSummaryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PeriodGradeSummaryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PeriodGradeSummaryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PeriodGradeSummary'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/period-grade-summaries/{id}/:
+    get:
+      operationId: period_grade_summaries_retrieve
+      summary: Obtener resumen de notas
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Resumen de Calificaciones
+          del Período.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PeriodGradeSummary'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: period_grade_summaries_update
+      summary: Actualizar resumen de notas
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Resumen de Calificaciones
+          del Período.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PeriodGradeSummaryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PeriodGradeSummaryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PeriodGradeSummaryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PeriodGradeSummary'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: period_grade_summaries_partial_update
+      summary: Actualizar resumen parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Resumen de Calificaciones
+          del Período.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPeriodGradeSummaryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPeriodGradeSummaryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPeriodGradeSummaryRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PeriodGradeSummary'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: period_grade_summaries_destroy
+      summary: Eliminar resumen de notas
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Resumen de Calificaciones
+          del Período.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/project-notes/:
+    get:
+      operationId: project_notes_list
+      summary: Listar notas de proyecto
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedProjectNoteList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: project_notes_create
+      summary: Crear nota de proyecto
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ProjectNote'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/project-notes/{id}/:
+    get:
+      operationId: project_notes_retrieve
+      summary: Obtener nota de proyecto
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Nota de Proyecto.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ProjectNote'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: project_notes_update
+      summary: Actualizar nota de proyecto
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Nota de Proyecto.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectNoteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ProjectNote'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: project_notes_partial_update
+      summary: Actualizar nota parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Nota de Proyecto.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectNoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectNoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectNoteRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/ProjectNote'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: project_notes_destroy
+      summary: Eliminar nota de proyecto
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Nota de Proyecto.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/promotion-statuses/:
+    get:
+      operationId: promotion_statuses_list
+      summary: Listar estados de promoción
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedPromotionStatusList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: promotion_statuses_create
+      summary: Crear estado de promoción
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromotionStatusRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PromotionStatusRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PromotionStatusRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PromotionStatus'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/promotion-statuses/{id}/:
+    get:
+      operationId: promotion_statuses_retrieve
+      summary: Obtener estado de promoción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Estado de Promoción.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PromotionStatus'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: promotion_statuses_update
+      summary: Actualizar estado de promoción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Estado de Promoción.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromotionStatusRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PromotionStatusRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PromotionStatusRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PromotionStatus'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: promotion_statuses_partial_update
+      summary: Actualizar estado de promoción parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Estado de Promoción.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPromotionStatusRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPromotionStatusRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPromotionStatusRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PromotionStatus'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: promotion_statuses_destroy
+      summary: Eliminar estado de promoción
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Estado de Promoción.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/qualitative-scales/:
+    get:
+      operationId: qualitative_scales_list
+      summary: Listar escalas cualitativas
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedQualitativeScaleList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/qualitative-scales/{id}/:
+    get:
+      operationId: qualitative_scales_retrieve
+      summary: Obtener escala cualitativa
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Escala Cualitativa.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/QualitativeScale'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/recovery-process-types/:
+    get:
+      operationId: recovery_process_types_list
+      summary: Listar tipos de proceso de recuperación
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedRecoveryProcessTypeList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: recovery_process_types_create
+      summary: Crear tipo de proceso de recuperación
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/RecoveryProcessType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/recovery-process-types/{id}/:
+    get:
+      operationId: recovery_process_types_retrieve
+      summary: Obtener tipo de proceso de recuperación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Proceso
+          de Recuperación.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/RecoveryProcessType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: recovery_process_types_update
+      summary: Actualizar tipo de proceso de recuperación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Proceso
+          de Recuperación.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/RecoveryProcessType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: recovery_process_types_partial_update
+      summary: Actualizar tipo de proceso de recuperación parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Proceso
+          de Recuperación.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRecoveryProcessTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRecoveryProcessTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRecoveryProcessTypeRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/RecoveryProcessType'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: recovery_process_types_destroy
+      summary: Eliminar tipo de proceso de recuperación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Tipo de Proceso
+          de Recuperación.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/recovery-processes/:
+    get:
+      operationId: recovery_processes_list
+      summary: Listar procesos de recuperación
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedRecoveryProcessList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: recovery_processes_create
+      summary: Crear proceso de recuperación
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/RecoveryProcess'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/recovery-processes/{id}/:
+    get:
+      operationId: recovery_processes_retrieve
+      summary: Obtener proceso de recuperación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Proceso de Recuperación.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/RecoveryProcess'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: recovery_processes_update
+      summary: Actualizar proceso de recuperación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Proceso de Recuperación.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecoveryProcessRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/RecoveryProcess'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: recovery_processes_partial_update
+      summary: Actualizar proceso parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Proceso de Recuperación.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRecoveryProcessRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRecoveryProcessRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRecoveryProcessRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/RecoveryProcess'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: recovery_processes_destroy
+      summary: Eliminar proceso de recuperación
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Proceso de Recuperación.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/grading/student-notes/:
+    get:
+      operationId: student_notes_list
+      summary: Listar registros
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/PaginatedStudentNoteList'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    post:
+      operationId: student_notes_create
+      summary: Crear registro
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentNoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentNoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentNoteRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/StudentNote'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+  /api/grading/student-notes/{id}/:
+    get:
+      operationId: student_notes_retrieve
+      summary: Obtener registro
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Nota de Actividad.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/StudentNote'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    put:
+      operationId: student_notes_update
+      summary: Actualizar registro
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Nota de Actividad.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentNoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StudentNoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StudentNoteRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/StudentNote'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    patch:
+      operationId: student_notes_partial_update
+      summary: Actualizar parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Nota de Actividad.
+        required: true
+      tags:
+      - grading
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentNoteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentNoteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStudentNoteRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    description: Indica si la operación fue exitosa
+                  data:
+                    $ref: '#/components/schemas/StudentNote'
+                  msg:
+                    type: string
+                    description: Mensaje informativo o de error
+                required:
+                - ok
+                - data
+                - msg
+          description: ''
+    delete:
+      operationId: student_notes_destroy
+      summary: Eliminar registro
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Nota de Actividad.
+        required: true
+      tags:
+      - grading
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    ActivityType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          title: Código
+          maxLength: 20
+        name:
+          type: string
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - name
+      - updated_at
+    ActivityTypeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          title: Código
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+      required:
+      - code
+      - name
+    BlockComponent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        evaluation_block_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          title: Nombre
+          maxLength: 100
+        internal_weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Ponderación Interna (%)
+          description: Peso del componente dentro del bloque de evaluación
+        evaluation_block:
+          type: integer
+          title: Bloque de Evaluación
+      required:
+      - evaluation_block
+      - evaluation_block_name
+      - id
+      - internal_weight
+      - name
+    BlockComponentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        internal_weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Ponderación Interna (%)
+          description: Peso del componente dentro del bloque de evaluación
+        evaluation_block:
+          type: integer
+          title: Bloque de Evaluación
+      required:
+      - evaluation_block
+      - internal_weight
+      - name
+    ComponentIndicator:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        block_component_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          title: Nombre
+          maxLength: 200
+        internal_weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Ponderación Interna (%)
+          description: Peso del indicador dentro de su componente
+        block_component:
+          type: integer
+          title: Componente de Bloque
+      required:
+      - block_component
+      - block_component_name
+      - id
+      - internal_weight
+      - name
+    ComponentIndicatorRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 200
+        internal_weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Ponderación Interna (%)
+          description: Peso del indicador dentro de su componente
+        block_component:
+          type: integer
+          title: Componente de Bloque
+      required:
+      - block_component
+      - internal_weight
+      - name
+    EvaluationBlock:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        academic_period_name:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          title: Nombre
+          maxLength: 100
+        weight_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Porcentaje de Ponderación
+          description: Porcentaje que representa este bloque en la nota final del
+            período
+        is_active:
+          type: boolean
+          title: Activo
+        academic_period:
+          type: integer
+          title: Período Académico
+        evaluation_type:
+          type: integer
+          nullable: true
+          title: Tipo de evaluación
+      required:
+      - academic_period
+      - academic_period_name
+      - id
+      - name
+      - weight_percentage
+    EvaluationBlockRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        weight_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Porcentaje de Ponderación
+          description: Porcentaje que representa este bloque en la nota final del
+            período
+        is_active:
+          type: boolean
+          title: Activo
+        academic_period:
+          type: integer
+          title: Período Académico
+        evaluation_type:
+          type: integer
+          nullable: true
+          title: Tipo de evaluación
+      required:
+      - academic_period
+      - name
+      - weight_percentage
+    EvaluationType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          title: Código
+          maxLength: 20
+        name:
+          type: string
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - name
+      - updated_at
+    EvaluationTypeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          title: Código
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+      required:
+      - code
+      - name
+    EvaluativeActivity:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        component_indicator_name:
+          type: string
+          readOnly: true
+        teacher_subject_section_name:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          title: Título
+          maxLength: 200
+        max_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Puntuación Máxima
+        due_date:
+          type: string
+          format: date
+          title: Fecha de Vencimiento
+        is_interdisciplinary_project:
+          type: boolean
+          title: Es Proyecto Interdisciplinar
+          description: Indica si esta actividad forma parte de un proyecto interdisciplinar
+        component_indicator:
+          type: integer
+          title: Indicador de Componente
+        teacher_subject_section:
+          type: integer
+          title: Docente-Materia-Sección
+        activity_type:
+          type: integer
+          nullable: true
+          title: Tipo de Actividad
+      required:
+      - component_indicator
+      - component_indicator_name
+      - due_date
+      - id
+      - max_score
+      - teacher_subject_section
+      - teacher_subject_section_name
+      - title
+    EvaluativeActivityRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          title: Título
+          maxLength: 200
+        max_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Puntuación Máxima
+        due_date:
+          type: string
+          format: date
+          title: Fecha de Vencimiento
+        is_interdisciplinary_project:
+          type: boolean
+          title: Es Proyecto Interdisciplinar
+          description: Indica si esta actividad forma parte de un proyecto interdisciplinar
+        component_indicator:
+          type: integer
+          title: Indicador de Componente
+        teacher_subject_section:
+          type: integer
+          title: Docente-Materia-Sección
+        activity_type:
+          type: integer
+          nullable: true
+          title: Tipo de Actividad
+      required:
+      - component_indicator
+      - due_date
+      - max_score
+      - teacher_subject_section
+      - title
+    GradeChangeHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        student_note_name:
+          type: string
+          readOnly: true
+        modified_by_user_name:
+          type: string
+          readOnly: true
+        previous_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota Anterior
+        new_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota Nueva
+        reason:
+          type: string
+          title: Razón del Cambio
+        modified_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Modificado en
+        student_note:
+          type: integer
+          title: Nota
+        modified_by_user:
+          type: integer
+          nullable: true
+          title: Modificado por
+      required:
+      - id
+      - modified_at
+      - modified_by_user_name
+      - new_score
+      - previous_score
+      - reason
+      - student_note
+      - student_note_name
+    GradeType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          title: Código
+          maxLength: 20
+        name:
+          type: string
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        applicable_subniveles:
+          type: array
+          items:
+            type: integer
+            title: Subniveles Aplicables
+          title: Subniveles Aplicables
+      required:
+      - code
+      - created_at
+      - id
+      - name
+      - updated_at
+    PaginatedActivityTypeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivityType'
+    PaginatedBlockComponentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlockComponent'
+    PaginatedComponentIndicatorList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentIndicator'
+    PaginatedEvaluationBlockList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvaluationBlock'
+    PaginatedEvaluationTypeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvaluationType'
+    PaginatedEvaluativeActivityList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvaluativeActivity'
+    PaginatedGradeChangeHistoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradeChangeHistory'
+    PaginatedGradeTypeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradeType'
+    PaginatedPeriodGradeSummaryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PeriodGradeSummary'
+    PaginatedProjectNoteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectNote'
+    PaginatedPromotionStatusList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PromotionStatus'
+    PaginatedQualitativeScaleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QualitativeScale'
+    PaginatedRecoveryProcessList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecoveryProcess'
+    PaginatedRecoveryProcessTypeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecoveryProcessType'
+    PaginatedStudentNoteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentNote'
+    PatchedActivityTypeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          title: Código
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+    PatchedBlockComponentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        internal_weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Ponderación Interna (%)
+          description: Peso del componente dentro del bloque de evaluación
+        evaluation_block:
+          type: integer
+          title: Bloque de Evaluación
+    PatchedComponentIndicatorRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 200
+        internal_weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Ponderación Interna (%)
+          description: Peso del indicador dentro de su componente
+        block_component:
+          type: integer
+          title: Componente de Bloque
+    PatchedEvaluationBlockRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        weight_percentage:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Porcentaje de Ponderación
+          description: Porcentaje que representa este bloque en la nota final del
+            período
+        is_active:
+          type: boolean
+          title: Activo
+        academic_period:
+          type: integer
+          title: Período Académico
+        evaluation_type:
+          type: integer
+          nullable: true
+          title: Tipo de evaluación
+    PatchedEvaluationTypeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          title: Código
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+    PatchedEvaluativeActivityRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          title: Título
+          maxLength: 200
+        max_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Puntuación Máxima
+        due_date:
+          type: string
+          format: date
+          title: Fecha de Vencimiento
+        is_interdisciplinary_project:
+          type: boolean
+          title: Es Proyecto Interdisciplinar
+          description: Indica si esta actividad forma parte de un proyecto interdisciplinar
+        component_indicator:
+          type: integer
+          title: Indicador de Componente
+        teacher_subject_section:
+          type: integer
+          title: Docente-Materia-Sección
+        activity_type:
+          type: integer
+          nullable: true
+          title: Tipo de Actividad
+    PatchedPeriodGradeSummaryRequest:
+      type: object
+      properties:
+        formative_avg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Promedio Formativo
+        summative_avg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Promedio Sumativo
+        final_avg_truncated:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Promedio Final Truncado
+        requires_recovery:
+          type: boolean
+          title: Requiere Recuperación
+        enrollment:
+          type: integer
+          title: Matrícula
+        subject_offering:
+          type: integer
+          title: Oferta de Asignatura
+        academic_period:
+          type: integer
+          title: Período Académico
+        qualitative_scale:
+          type: integer
+          nullable: true
+          title: Escala Cualitativa
+        promotion_status:
+          type: integer
+          nullable: true
+          title: Estado de Promoción
+    PatchedProjectNoteRequest:
+      type: object
+      properties:
+        product_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota del producto
+        presentation_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota de exposición
+        final_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota final
+        observation:
+          type: string
+          nullable: true
+          title: Observación
+        sync_status:
+          type: string
+          minLength: 1
+          title: Estado de Sincronización
+          maxLength: 20
+        synced_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: Sincronizado el
+        sync_version:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Versión de Sincronización
+        device_origin:
+          type: string
+          nullable: true
+          title: Dispositivo de Origen
+          maxLength: 40
+        enrollment:
+          type: integer
+          title: Matrícula
+        interdisciplinary_project:
+          type: integer
+          title: Proyecto Interdisciplinario
+    PatchedPromotionStatusRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          title: Código
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+    PatchedRecoveryProcessRequest:
+      type: object
+      properties:
+        initial_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota Inicial
+        reinforcement_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Nota de Refuerzo
+        improvement_eval_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Nota de Evaluación de Mejora
+        final_calculated_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Nota Final Calculada
+        family_notified:
+          type: boolean
+          title: Familia Notificada
+        start_date:
+          type: string
+          format: date
+          title: Fecha de inicio
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          title: Fecha de fin
+        observations:
+          type: string
+          nullable: true
+          title: Observaciones
+        period_grade_summary:
+          type: integer
+          title: Resumen de Calificaciones
+        managed_by_user:
+          type: integer
+          title: Gestionado por
+        process_type:
+          type: integer
+          nullable: true
+          title: Tipo de proceso
+    PatchedRecoveryProcessTypeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          title: Código
+          maxLength: 30
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+    PatchedStudentNoteRequest:
+      type: object
+      properties:
+        numeric_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Puntuación Numérica
+          description: Calificación numérica obtenida (escala 1-10)
+        manually_overridden:
+          type: boolean
+          title: Anulada Manualmente
+        teacher_observation:
+          type: string
+          nullable: true
+          title: Observación del Docente
+        sync_status:
+          type: string
+          minLength: 1
+          title: Estado de Sincronización
+          description: PENDIENTE, SINCRONIZADO o ERROR
+          maxLength: 20
+        synced_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: Sincronizado en
+        sync_version:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Versión de Sincronización
+          description: Número de versión para control de conflictos offline
+        device_origin:
+          type: string
+          nullable: true
+          title: Dispositivo de Origen
+          maxLength: 40
+        enrollment:
+          type: integer
+          nullable: true
+          title: Matrícula
+        evaluative_activity:
+          type: integer
+          nullable: true
+          title: Actividad Evaluativa
+        grade_type:
+          type: integer
+          nullable: true
+          title: Tipo de Calificación
+        qualitative_scale:
+          type: integer
+          nullable: true
+          title: Escala Cualitativa
+          description: Escala cualitativa equivalente a la nota (si aplica)
+    PeriodGradeSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        enrollment_name:
+          type: string
+          readOnly: true
+        subject_offering_name:
+          type: string
+          readOnly: true
+        academic_period_name:
+          type: string
+          readOnly: true
+        qualitative_scale_name:
+          type: string
+          readOnly: true
+        formative_avg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Promedio Formativo
+        summative_avg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Promedio Sumativo
+        final_avg_truncated:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Promedio Final Truncado
+        requires_recovery:
+          type: boolean
+          title: Requiere Recuperación
+        calculated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Calculado en
+        enrollment:
+          type: integer
+          title: Matrícula
+        subject_offering:
+          type: integer
+          title: Oferta de Asignatura
+        academic_period:
+          type: integer
+          title: Período Académico
+        qualitative_scale:
+          type: integer
+          nullable: true
+          title: Escala Cualitativa
+        promotion_status:
+          type: integer
+          nullable: true
+          title: Estado de Promoción
+      required:
+      - academic_period
+      - academic_period_name
+      - calculated_at
+      - enrollment
+      - enrollment_name
+      - final_avg_truncated
+      - formative_avg
+      - id
+      - qualitative_scale_name
+      - subject_offering
+      - subject_offering_name
+      - summative_avg
+    PeriodGradeSummaryRequest:
+      type: object
+      properties:
+        formative_avg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Promedio Formativo
+        summative_avg:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Promedio Sumativo
+        final_avg_truncated:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Promedio Final Truncado
+        requires_recovery:
+          type: boolean
+          title: Requiere Recuperación
+        enrollment:
+          type: integer
+          title: Matrícula
+        subject_offering:
+          type: integer
+          title: Oferta de Asignatura
+        academic_period:
+          type: integer
+          title: Período Académico
+        qualitative_scale:
+          type: integer
+          nullable: true
+          title: Escala Cualitativa
+        promotion_status:
+          type: integer
+          nullable: true
+          title: Estado de Promoción
+      required:
+      - academic_period
+      - enrollment
+      - final_avg_truncated
+      - formative_avg
+      - subject_offering
+      - summative_avg
+    ProjectNote:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        enrollment_name:
+          type: string
+          readOnly: true
+        interdisciplinary_project_title:
+          type: string
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+        product_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota del producto
+        presentation_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota de exposición
+        final_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota final
+        observation:
+          type: string
+          nullable: true
+          title: Observación
+        sync_status:
+          type: string
+          title: Estado de Sincronización
+          maxLength: 20
+        synced_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: Sincronizado el
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de Creación
+        sync_version:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Versión de Sincronización
+        device_origin:
+          type: string
+          nullable: true
+          title: Dispositivo de Origen
+          maxLength: 40
+        enrollment:
+          type: integer
+          title: Matrícula
+        interdisciplinary_project:
+          type: integer
+          title: Proyecto Interdisciplinario
+      required:
+      - created_at
+      - enrollment
+      - enrollment_name
+      - final_score
+      - id
+      - interdisciplinary_project
+      - interdisciplinary_project_title
+      - presentation_score
+      - product_score
+      - uuid
+    ProjectNoteRequest:
+      type: object
+      properties:
+        product_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota del producto
+        presentation_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota de exposición
+        final_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota final
+        observation:
+          type: string
+          nullable: true
+          title: Observación
+        sync_status:
+          type: string
+          minLength: 1
+          title: Estado de Sincronización
+          maxLength: 20
+        synced_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: Sincronizado el
+        sync_version:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Versión de Sincronización
+        device_origin:
+          type: string
+          nullable: true
+          title: Dispositivo de Origen
+          maxLength: 40
+        enrollment:
+          type: integer
+          title: Matrícula
+        interdisciplinary_project:
+          type: integer
+          title: Proyecto Interdisciplinario
+      required:
+      - enrollment
+      - final_score
+      - interdisciplinary_project
+      - presentation_score
+      - product_score
+    PromotionStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          title: Código
+          maxLength: 20
+        name:
+          type: string
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - name
+      - updated_at
+    PromotionStatusRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          title: Código
+          maxLength: 20
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+      required:
+      - code
+      - name
+    QualitativeScale:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          title: Código
+          maxLength: 10
+        name:
+          type: string
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        numeric_equivalence:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+          title: Equivalencia Numérica
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        applicable_sublevel:
+          type: string
+          nullable: true
+          title: Subnivel Aplicable
+          maxLength: 50
+      required:
+      - code
+      - created_at
+      - description
+      - id
+      - numeric_equivalence
+      - updated_at
+    RecoveryProcess:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        period_grade_summary_name:
+          type: string
+          readOnly: true
+        managed_by_user_name:
+          type: string
+          readOnly: true
+        initial_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota Inicial
+        reinforcement_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Nota de Refuerzo
+        improvement_eval_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Nota de Evaluación de Mejora
+        final_calculated_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Nota Final Calculada
+        family_notified:
+          type: boolean
+          title: Familia Notificada
+        start_date:
+          type: string
+          format: date
+          title: Fecha de inicio
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          title: Fecha de fin
+        observations:
+          type: string
+          nullable: true
+          title: Observaciones
+        period_grade_summary:
+          type: integer
+          title: Resumen de Calificaciones
+        managed_by_user:
+          type: integer
+          title: Gestionado por
+        process_type:
+          type: integer
+          nullable: true
+          title: Tipo de proceso
+      required:
+      - id
+      - initial_grade
+      - managed_by_user
+      - managed_by_user_name
+      - period_grade_summary
+      - period_grade_summary_name
+      - start_date
+    RecoveryProcessRequest:
+      type: object
+      properties:
+        initial_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          title: Nota Inicial
+        reinforcement_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Nota de Refuerzo
+        improvement_eval_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Nota de Evaluación de Mejora
+        final_calculated_grade:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Nota Final Calculada
+        family_notified:
+          type: boolean
+          title: Familia Notificada
+        start_date:
+          type: string
+          format: date
+          title: Fecha de inicio
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          title: Fecha de fin
+        observations:
+          type: string
+          nullable: true
+          title: Observaciones
+        period_grade_summary:
+          type: integer
+          title: Resumen de Calificaciones
+        managed_by_user:
+          type: integer
+          title: Gestionado por
+        process_type:
+          type: integer
+          nullable: true
+          title: Tipo de proceso
+      required:
+      - initial_grade
+      - managed_by_user
+      - period_grade_summary
+      - start_date
+    RecoveryProcessType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          title: Código
+          maxLength: 30
+        name:
+          type: string
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - name
+      - updated_at
+    RecoveryProcessTypeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          title: Código
+          maxLength: 30
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 100
+        description:
+          type: string
+          title: Descripción
+        is_active:
+          type: boolean
+          title: Activo
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+      required:
+      - code
+      - name
+    StudentNote:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        enrollment_name:
+          type: string
+          readOnly: true
+        evaluative_activity_title:
+          type: string
+          readOnly: true
+        grade_type_name:
+          type: string
+          readOnly: true
+        qualitative_scale_name:
+          type: string
+          readOnly: true
+        uuid:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único global para sincronización offline
+        numeric_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Puntuación Numérica
+          description: Calificación numérica obtenida (escala 1-10)
+        manually_overridden:
+          type: boolean
+          title: Anulada Manualmente
+        teacher_observation:
+          type: string
+          nullable: true
+          title: Observación del Docente
+        sync_status:
+          type: string
+          title: Estado de Sincronización
+          description: PENDIENTE, SINCRONIZADO o ERROR
+          maxLength: 20
+        synced_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: Sincronizado en
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de Creación
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de Actualización
+        sync_version:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Versión de Sincronización
+          description: Número de versión para control de conflictos offline
+        device_origin:
+          type: string
+          nullable: true
+          title: Dispositivo de Origen
+          maxLength: 40
+        enrollment:
+          type: integer
+          nullable: true
+          title: Matrícula
+        evaluative_activity:
+          type: integer
+          nullable: true
+          title: Actividad Evaluativa
+        grade_type:
+          type: integer
+          nullable: true
+          title: Tipo de Calificación
+        qualitative_scale:
+          type: integer
+          nullable: true
+          title: Escala Cualitativa
+          description: Escala cualitativa equivalente a la nota (si aplica)
+      required:
+      - created_at
+      - enrollment_name
+      - evaluative_activity_title
+      - grade_type_name
+      - id
+      - qualitative_scale_name
+      - updated_at
+      - uuid
+    StudentNoteRequest:
+      type: object
+      properties:
+        numeric_score:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          nullable: true
+          title: Puntuación Numérica
+          description: Calificación numérica obtenida (escala 1-10)
+        manually_overridden:
+          type: boolean
+          title: Anulada Manualmente
+        teacher_observation:
+          type: string
+          nullable: true
+          title: Observación del Docente
+        sync_status:
+          type: string
+          minLength: 1
+          title: Estado de Sincronización
+          description: PENDIENTE, SINCRONIZADO o ERROR
+          maxLength: 20
+        synced_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: Sincronizado en
+        sync_version:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Versión de Sincronización
+          description: Número de versión para control de conflictos offline
+        device_origin:
+          type: string
+          nullable: true
+          title: Dispositivo de Origen
+          maxLength: 40
+        enrollment:
+          type: integer
+          nullable: true
+          title: Matrícula
+        evaluative_activity:
+          type: integer
+          nullable: true
+          title: Actividad Evaluativa
+        grade_type:
+          type: integer
+          nullable: true
+          title: Tipo de Calificación
+        qualitative_scale:
+          type: integer
+          nullable: true
+          title: Escala Cualitativa
+          description: Escala cualitativa equivalente a la nota (si aplica)
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: iam
+  description: Usuarios, autenticación, roles y permisos
+- name: institutions
+  description: Instituciones, años escolares, niveles, grados y secciones
+- name: academic
+  description: Materias, períodos académicos, oferta académica y proyectos interdisciplinarios
+- name: students
+  description: Estudiantes, representantes y matrículas
+- name: grading
+  description: Calificaciones, bloques, componentes, indicadores y actividades evaluativas
+- name: analytics
+  description: Análisis de riesgo estudiantil y alertas tempranas
+- name: attendance
+  description: Asistencia, estados de asistencia y tipos de ausencia
+- name: behavior
+  description: Incidentes de conducta, habilidades socioemocionales y evaluaciones
+    de comportamiento
+- name: configuration
+  description: Configuración del sistema
+- name: integration
+  description: Sincronización con sistemas externos
+- name: people
+  description: Personas y tipos de documento
