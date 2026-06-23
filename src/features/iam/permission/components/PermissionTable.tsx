@@ -2,15 +2,16 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect"; import { SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
-import type { TableColumnProps } from "@shared/components/Table";
+import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps"; import type { TableColumnProps } from "@shared/components/Table";
 import type {
   PermissionListParamsT,
   PermissionOrderingT,
@@ -48,8 +49,27 @@ export const PermissionTable = ({
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] = useState<PermissionOrderingT>("code");
   const [hasSearched, setHasSearched] = useState(false);
+  const [moduleFilter, setModuleFilter] = useState<string>("");
+
+  const MODULE_OPTIONS: SelectOptionT[] = [
+    { label: "Academic", value: "academic" },
+    { label: "IAM", value: "iam" },
+    { label: "Grading", value: "grading" },
+    { label: "Behavior", value: "behavior" },
+    { label: "Attendance", value: "attendance" },
+    { label: "Analytics", value: "analytics" },
+    { label: "Institutions", value: "institutions" },
+    { label: "Students", value: "students" },
+    { label: "Integration", value: "integration" },
+  ];
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const buildFilters = useCallback(() => {
+    const f: Record<string, string | number | boolean> = {};
+    if (moduleFilter) f.module = moduleFilter;
+    return Object.keys(f).length > 0 ? f : undefined;
+  }, [moduleFilter]);
 
   const fetchData = useCallback(
     (overrides?: {
@@ -57,6 +77,7 @@ export const PermissionTable = ({
       pageSize?: number;
       search?: string;
       ordering?: PermissionOrderingT;
+      filters?: Record<string, string | number | boolean>;
     }) => {
       loadData({
         page: overrides?.page ?? page,
@@ -66,9 +87,10 @@ export const PermissionTable = ({
             ? overrides.search
             : search || undefined,
         ordering: overrides?.ordering ?? ordering,
+        filters: overrides?.filters ?? buildFilters(),
       });
     },
-    [loadData, page, pageSize, search, ordering],
+    [loadData, page, pageSize, search, ordering, buildFilters],
   );
 
   useEffect(() => {
@@ -99,6 +121,9 @@ export const PermissionTable = ({
     },
     [fetchData],
   );
+
+  const hModule = useCallback((o: SelectOptionT) => { setModuleFilter(o.value as string); setPage(1); }, []);
+  useEffect(() => { fetchData({ page: 1 }); }, [moduleFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasNextPage = data.length >= pageSize;
 
@@ -131,6 +156,8 @@ export const PermissionTable = ({
           className="relative min-w-50 flex-1"
           placeholder="Filtrar permisos..."
         />
+
+        <CustomSelect name="filter-module" label="" placeholder="Todos los módulos" value={moduleFilter} options={MODULE_OPTIONS} onChange={hModule} className={filterSelectClassname} />
 
         <select
           value={ordering}

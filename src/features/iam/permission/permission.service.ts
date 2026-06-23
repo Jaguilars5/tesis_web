@@ -23,8 +23,13 @@ class PermissionService implements PermissionServiceT {
       const orderingQuery = params?.ordering
         ? `&ordering=${encodeURIComponent(params.ordering)}`
         : "";
+      const filters = params?.filters ?? {};
+      const filterQuery = Object.entries(filters)
+        .filter(([, value]) => value !== undefined && value !== null)
+        .map(([key, value]) => `&${key}=${encodeURIComponent(String(value))}`)
+        .join("");
       const { data } = await apiClient.get<ResponseApi<PaginatedData<PermissionT>>>(
-        `${PERMISSION_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+        `${PERMISSION_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filterQuery}`,
       );
       return data.data.results;
     } catch (error) {

@@ -2,15 +2,17 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect"; import { SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
+import { STATUS_OPTIONS } from "@shared/hooks/useStatusOptions";
 
-import type { TableColumnProps } from "@shared/components/Table";
+import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps"; import type { TableColumnProps } from "@shared/components/Table";
 import type {
   RoleListParamsT,
   RoleOrderingT,
@@ -46,8 +48,15 @@ export const RolesTable = ({
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] = useState<RoleOrderingT>("name");
   const [hasSearched, setHasSearched] = useState(false);
+  const [isActiveFilter, setIsActiveFilter] = useState<string>("");
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const buildFilters = useCallback(() => {
+    const f: Record<string, string | number | boolean> = {};
+    if (isActiveFilter) f.is_active = isActiveFilter === "active";
+    return Object.keys(f).length > 0 ? f : undefined;
+  }, [isActiveFilter]);
 
   const fetchData = useCallback(
     (overrides?: {
@@ -55,6 +64,7 @@ export const RolesTable = ({
       pageSize?: number;
       search?: string;
       ordering?: RoleOrderingT;
+      filters?: Record<string, string | number | boolean>;
     }) => {
       loadData({
         page: overrides?.page ?? page,
@@ -64,9 +74,10 @@ export const RolesTable = ({
             ? overrides.search
             : search || undefined,
         ordering: overrides?.ordering ?? ordering,
+        filters: overrides?.filters ?? buildFilters(),
       });
     },
-    [loadData, page, pageSize, search, ordering],
+    [loadData, page, pageSize, search, ordering, buildFilters],
   );
 
   useEffect(() => {
@@ -97,6 +108,9 @@ export const RolesTable = ({
     },
     [fetchData],
   );
+
+  const hIsActive = useCallback((o: SelectOptionT) => { setIsActiveFilter(o.value as string); setPage(1); }, []);
+  useEffect(() => { fetchData({ page: 1 }); }, [isActiveFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasNextPage = data.length >= pageSize;
 
@@ -145,6 +159,8 @@ export const RolesTable = ({
           className="relative min-w-50 flex-1"
           placeholder="Filtrar roles..."
         />
+
+        <CustomSelect name="filter-is_active" label="" placeholder="Todos" value={isActiveFilter} options={STATUS_OPTIONS} onChange={hIsActive} className={filterSelectClassname} />
 
         <select
           value={ordering}

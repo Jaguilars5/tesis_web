@@ -18,6 +18,7 @@ export interface UserListParamsT {
   pageSize?: number;
   search?: string;
   ordering?: UserOrderingT;
+  filters?: Record<string, string | number | boolean>;
 }
 
 export interface UserCreateDataT {

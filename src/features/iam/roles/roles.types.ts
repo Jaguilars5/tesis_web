@@ -23,6 +23,7 @@ export interface RoleListParamsT {
   pageSize?: number;
   search?: string;
   ordering?: RoleOrderingT;
+  filters?: Record<string, string | number | boolean>;
 }
 
 export type RoleCreateDataT = Omit<RoleT, "id" | "is_active" | "created_at" | "role_permissions">;

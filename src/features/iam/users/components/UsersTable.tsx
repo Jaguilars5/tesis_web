@@ -2,15 +2,18 @@ import { Eye, KeyRound, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect"; import { SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
+import { useRoleOptions } from "@shared/hooks/useRoleOptions";
+import { STATUS_OPTIONS } from "@shared/hooks/useStatusOptions";
 
-import type { TableColumnProps } from "@shared/components/Table";
+import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps"; import type { TableColumnProps } from "@shared/components/Table";
 import type {
   UserListParamsT,
   UserOrderingT,
@@ -48,8 +51,18 @@ export const UsersTable = ({
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] = useState<UserOrderingT>("username");
   const [hasSearched, setHasSearched] = useState(false);
+  const [roleFilter, setRoleFilter] = useState<number | 0>(0);
+  const [isActiveFilter, setIsActiveFilter] = useState<string>("");
+  const { roleOptions } = useRoleOptions();
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const buildFilters = useCallback(() => {
+    const f: Record<string, string | number | boolean> = {};
+    if (roleFilter) f.role_id = roleFilter;
+    if (isActiveFilter) f.is_active = isActiveFilter === "active";
+    return Object.keys(f).length > 0 ? f : undefined;
+  }, [roleFilter, isActiveFilter]);
 
   const fetchData = useCallback(
     (overrides?: {
@@ -57,6 +70,7 @@ export const UsersTable = ({
       pageSize?: number;
       search?: string;
       ordering?: UserOrderingT;
+      filters?: Record<string, string | number | boolean>;
     }) => {
       loadData({
         page: overrides?.page ?? page,
@@ -66,9 +80,10 @@ export const UsersTable = ({
             ? overrides.search
             : search || undefined,
         ordering: overrides?.ordering ?? ordering,
+        filters: overrides?.filters ?? buildFilters(),
       });
     },
-    [loadData, page, pageSize, search, ordering],
+    [loadData, page, pageSize, search, ordering, buildFilters],
   );
 
   useEffect(() => {
@@ -99,6 +114,10 @@ export const UsersTable = ({
     },
     [fetchData],
   );
+
+  const hRole = useCallback((o: SelectOptionT) => { setRoleFilter(Number(o.value) || 0); setPage(1); }, []);
+  const hIsActive = useCallback((o: SelectOptionT) => { setIsActiveFilter(o.value as string); setPage(1); }, []);
+  useEffect(() => { fetchData({ page: 1 }); }, [roleFilter, isActiveFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasNextPage = data.length >= pageSize;
 
@@ -163,6 +182,9 @@ export const UsersTable = ({
           className="relative min-w-50 flex-1"
           placeholder="Filtrar usuarios..."
         />
+
+        <CustomSelect name="filter-role" label="" placeholder="Todos los roles" value={roleFilter} options={roleOptions} onChange={hRole} className={filterSelectClassname} />
+        <CustomSelect name="filter-is_active" label="" placeholder="Todos" value={isActiveFilter} options={STATUS_OPTIONS} onChange={hIsActive} className={filterSelectClassname} />
 
         <select
           value={ordering}

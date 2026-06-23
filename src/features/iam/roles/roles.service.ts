@@ -24,8 +24,13 @@ class RoleService implements RoleServiceT {
       const orderingQuery = params?.ordering
         ? `&ordering=${encodeURIComponent(params.ordering)}`
         : "";
+      const filters = params?.filters ?? {};
+      const filterQuery = Object.entries(filters)
+        .filter(([, value]) => value !== undefined && value !== null)
+        .map(([key, value]) => `&${key}=${encodeURIComponent(String(value))}`)
+        .join("");
       const { data } = await apiClient.get<ResponseApi<PaginatedData<RoleT>>>(
-        `${ROLE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+        `${ROLE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filterQuery}`,
       );
       return data.data.results;
     } catch (error) {

@@ -14,6 +14,7 @@ export interface PermissionListParamsT {
   pageSize?: number;
   search?: string;
   ordering?: PermissionOrderingT;
+  filters?: Record<string, string | number | boolean>;
 }
 
 export type PermissionCreateDataT = Omit<PermissionT, "id" | "created_at" | "updated_at">;
