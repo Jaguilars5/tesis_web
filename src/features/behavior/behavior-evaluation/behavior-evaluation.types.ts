@@ -30,7 +30,7 @@ export interface BehaviorEvaluationT {
 }
 
 export type BehaviorEvaluationOrderingT = "id" | "-id";
-export interface BehaviorEvaluationListParamsT { page?: number; pageSize?: number; search?: string; ordering?: BehaviorEvaluationOrderingT; }
+export interface BehaviorEvaluationListParamsT { page?: number; pageSize?: number; search?: string; ordering?: BehaviorEvaluationOrderingT; enrollment?: number; academic_period?: number; }
 export type BehaviorEvaluationUpdateDataT = Partial<Omit<BehaviorEvaluationT, "id">>;
 export interface BehaviorEvaluationUpdateParamsT { id: number; data: BehaviorEvaluationUpdateDataT; }
 export type BehaviorEvaluationGetParamsT = number;

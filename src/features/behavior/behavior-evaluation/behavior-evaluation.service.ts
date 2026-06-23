@@ -12,6 +12,8 @@ class BehaviorEvaluationService implements BehaviorEvaluationServiceT {
       if (params?.pageSize) qs.set("page_size", String(params.pageSize));
       if (params?.search) qs.set("search", params.search);
       if (params?.ordering) qs.set("ordering", params.ordering);
+      if (params?.enrollment) qs.set("enrollment", String(params.enrollment));
+      if (params?.academic_period) qs.set("academic_period", String(params.academic_period));
       const query = qs.toString();
       const url = query ? `${BEHAVIOR_EVALUATION_ENDPOINTS.LIST}?${query}` : BEHAVIOR_EVALUATION_ENDPOINTS.LIST;
       const { data } = await apiClient.get<ResponseApi<PaginatedData<BehaviorEvaluationT>>>(url);

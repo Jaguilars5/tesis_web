@@ -11,6 +11,7 @@ class ConductIncidentService implements ConductIncidentServiceT {
       if (params?.pageSize) qs.set("page_size", String(params.pageSize));
       if (params?.search) qs.set("search", params.search);
       if (params?.ordering) qs.set("ordering", params.ordering);
+      if (params?.enrollment) qs.set("enrollment", String(params.enrollment));
       const query = qs.toString();
       const url = query ? `${CONDUCT_INCIDENT_ENDPOINTS.LIST}?${query}` : CONDUCT_INCIDENT_ENDPOINTS.LIST;
       const { data } = await apiClient.get<ResponseApi<PaginatedData<ConductIncidentT>>>(url);

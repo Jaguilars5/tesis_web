@@ -6,7 +6,7 @@ export interface ConductIncidentT {
 }
 
 export type ConductIncidentOrderingT = "incident_date" | "-incident_date" | "id" | "-id";
-export interface ConductIncidentListParamsT { page?: number; pageSize?: number; search?: string; ordering?: ConductIncidentOrderingT; }
+export interface ConductIncidentListParamsT { page?: number; pageSize?: number; search?: string; ordering?: ConductIncidentOrderingT; enrollment?: number; }
 export type ConductIncidentCreateDataT = Omit<ConductIncidentT, "id" | "incident_type_name" | "severity_name" | "academic_period_name" | "enrollment_name" | "uuid" | "sync_version" | "created_at" | "updated_at">;
 export type ConductIncidentCreateParamsT = ConductIncidentCreateDataT;
 export type ConductIncidentUpdateDataT = Partial<Omit<ConductIncidentT, "id">>;
