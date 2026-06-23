@@ -1,0 +1,2 @@
+export const ACADEMIC_SUBLEVEL_ENDPOINTS = { LIST: "/api/institutions/academic-sublevel/", DETAIL: (id: number) => `/api/institutions/academic-sublevel/${id}/`, SOFT_DELETE: (id: number) => `/api/institutions/academic-sublevel/${id}/soft-delete/` } as const;
+export const ACADEMIC_SUBLEVEL_PERMISSIONS = { GET: "institutions.view_academic_sublevel", CREATE: "institutions.create_academic_sublevel", UPDATE: "institutions.update_academic_sublevel", DELETE: "institutions.delete_academic_sublevel" } as const;

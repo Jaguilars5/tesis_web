@@ -1,4 +1,4 @@
-import { LayoutDashboard } from "lucide-react";
+import { BarChart3, LayoutDashboard, Settings2 } from "lucide-react";
 import { lazy } from "react";
 
 import { PROTECTED_ROUTES } from "./routes";
@@ -6,19 +6,23 @@ import { PROTECTED_ROUTES } from "./routes";
 import type { LucideIcon } from "lucide-react";
 
 import { academicRoutes } from "@features/academic/academic.routes.config";
-import type { UserRoleT } from "@features/auth/domain/entities/auth.types";
+import { attendanceRoutes } from "@features/attendance/attendance.routes.config";
+import { UserRoleEnum } from "@features/auth/auth.constants";
+import type { UserRoleT } from "@features/auth/auth.types";
+import { behaviorRoutes } from "@features/behavior/behavior.routes.config";
 import { gradingRoutes } from "@features/grading/grading.routes.config";
 import { institutionsRoutes } from "@features/institutions/institutions.routes.config";
+import { studentsRoutes } from "@features/students/students.routes.config";
+import { ANALYTICS_RISK_PERMISSIONS } from "@features/analytics/analytics.constants";
+import { SCORING_CONFIG_PERMISSIONS } from "@features/analytics/scoring-config";
 
 const DashboardPage = lazy(
-  () => import("@features/dashboard/pages/DashboardPage"),
+  () => import("@features/dashboard/DashboardPage"),
 );
 
-const LoginPage = lazy(() => import("@features/auth/pages/LoginPage"));
-const DesignSystemPage = lazy(
-  () => import("@features/design-system/pages/DesignSystemPage"),
+const LoginPage = lazy(
+  () => import("@features/auth/LoginPage"),
 );
-
 export interface BaseRoutesConfig {
   key: string;
   icon: LucideIcon | null;
@@ -54,17 +58,6 @@ export const publicRoutes: RouteConfig[] = [
     isVisibleInNavbar: false,
     order: 1,
   },
-  {
-    key: "design-system",
-    path: "/design-system",
-    element: DesignSystemPage,
-    permission: [],
-    roles: [],
-    title: "Design System",
-    icon: null,
-    isVisibleInNavbar: false,
-    order: 2,
-  },
 ];
 
 export const protectedRoutes: RoutesConfigItem[] = [
@@ -82,4 +75,55 @@ export const protectedRoutes: RoutesConfigItem[] = [
   ...institutionsRoutes,
   ...academicRoutes,
   ...gradingRoutes,
+  ...attendanceRoutes,
+  ...behaviorRoutes,
+  ...studentsRoutes,
+  {
+    key: "analytics",
+    isVisibleInNavbar: true,
+    icon: BarChart3,
+    title: "Analítica",
+    order: 6,
+    permission: [ANALYTICS_RISK_PERMISSIONS.VIEW],
+    roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.TEACHER, UserRoleEnum.COUNSELOR],
+    children: [
+      {
+        key: "risk-scores",
+        path: PROTECTED_ROUTES.ANALYTICS_RISK_SCORES,
+        element: lazy(() => import("@features/analytics/RiskScoreListPage")),
+        permission: [ANALYTICS_RISK_PERMISSIONS.VIEW],
+        roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.TEACHER],
+        title: "Riesgo Académico",
+        isVisibleInNavbar: true,
+        icon: null,
+        order: 1,
+      },
+      {
+        key: "risk-scores-detail",
+        path: PROTECTED_ROUTES.ANALYTICS_RISK_SCORE_DETAIL,
+        element: lazy(() => import("@features/analytics/RiskScoreDetailPage")),
+        permission: [ANALYTICS_RISK_PERMISSIONS.VIEW],
+        roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.TEACHER],
+        title: "Detalle de Riesgo",
+        isVisibleInNavbar: false,
+        icon: null,
+        order: 1,
+      },
+      {
+        key: "scoring-config",
+        path: PROTECTED_ROUTES.ANALYTICS_SCORING_CONFIG,
+        element: lazy(() =>
+          import("@features/analytics/scoring-config").then((m) => ({
+            default: m.ScoringConfigPage,
+          })),
+        ),
+        permission: [SCORING_CONFIG_PERMISSIONS.VIEW],
+        roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.RECTOR],
+        title: "Motor de Riesgo",
+        isVisibleInNavbar: true,
+        icon: Settings2,
+        order: 2,
+      },
+    ],
+  },
 ];

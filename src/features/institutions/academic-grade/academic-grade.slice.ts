@@ -1,0 +1,9 @@
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit"; import type { RootState } from "@shared/redux/store"; import type { RequestStatusT } from "@shared/types/request.types"; import type { AcademicGradeT } from "./academic-grade.types";
+export interface AcademicGradeStateT { academicGrades: AcademicGradeT[]; status: RequestStatusT; error: string | null; }
+const initialState: AcademicGradeStateT = { academicGrades: [], status: "idle", error: null };
+const slice = createSlice({ name: "academicGrade", initialState, reducers: { loadPending(s) { s.status = "loading"; s.error = null; }, loadSuccess(s, a: PayloadAction<AcademicGradeT[]>) { s.academicGrades = a.payload; s.status = "succeeded"; }, loadError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, entityCreated(s, a: PayloadAction<AcademicGradeT>) { s.academicGrades.unshift(a.payload); s.status = "succeeded"; }, entityUpdated(s, a: PayloadAction<AcademicGradeT>) { const idx = s.academicGrades.findIndex((p) => p.id === a.payload.id); if (idx !== -1) s.academicGrades[idx] = a.payload; s.status = "succeeded"; }, entityDeleted(s, a: PayloadAction<number>) { s.academicGrades = s.academicGrades.filter((p) => p.id !== a.payload); s.status = "succeeded"; }, mutationError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, clearError(s) { s.error = null; } } });
+export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearError } = slice.actions;
+export const selectAcademicGrades = (s: RootState): AcademicGradeT[] => s.institutions.academicGrade.academicGrades;
+export const selectAcademicGradesStatus = (s: RootState): RequestStatusT => s.institutions.academicGrade.status;
+export const selectAcademicGradeError = (s: RootState): string | null => s.institutions.academicGrade.error;
+export const academicGradeReducer = slice.reducer; export default slice.reducer;

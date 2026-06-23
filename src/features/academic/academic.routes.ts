@@ -4,7 +4,6 @@ export const ACADEMIC_ROUTES = {
   SUBJECT_ACADEMIC_CONFIGS: "/subject-academic-configs",
   TEACHER_SUBJECT_SECTIONS: "/teacher-subject-sections",
   SUBJECT_OFFERINGS: "/subject-offerings",
-  INTERDISCIPLINARY_PROJECTS: "/interdisciplinary-projects",
-  SUBJECT_PROJECTS: "/subject-projects",
+  CLASS_SCHEDULES: "/class-schedules",
   PERIOD_TYPES: "/period-types",
 };

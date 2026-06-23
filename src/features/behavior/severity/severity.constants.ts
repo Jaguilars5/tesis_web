@@ -1,0 +1,2 @@
+export const SEVERITY_ENDPOINTS = { LIST: "/api/behavior/severities/", DETAIL: (id: number) => `/api/behavior/severities/${id}/`, SOFT_DELETE: (id: number) => `/api/behavior/severities/${id}/soft-delete/` } as const;
+export const SEVERITY_PERMISSIONS = { GET: "behavior.view_severity", CREATE: "behavior.create_severity", UPDATE: "behavior.update_severity", DELETE: "behavior.delete_severity" } as const;

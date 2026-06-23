@@ -1,8 +1,1 @@
-export * from "./constants";
-export * from "./domain";
-export * from "./infrastructure";
-export * from "./application";
-export * from "./reducers";
-export * from "./presentation";
-export { default as AcademicLevelsPage } from "./pages/AcademicLevelPage";
-export { default as academicLevelReducer } from "./reducers/academic-level.reducer";
+export * from "./academic-level.types"; export * from "./academic-level.constants"; export * from "./academic-level.service"; export * from "./academic-level.controller"; export * from "./academic-level.slice"; export * from "./academic-level.utils"; export { default as academicLevelReducer } from "./academic-level.slice"; export { default as AcademicLevelsPage } from "./AcademicLevelPage";

@@ -1,6 +1,8 @@
 import { Suspense } from 'react'
 import { AppRoutes } from './app/routes/AppRoutes'
 import { useTokenRefresh } from './shared/hooks/useTokenRefresh'
+import { ToastContainer } from './shared/components/Toast'
+import { SocketProvider } from './shared/contexts/SocketContext'
 
 function App() {
   useTokenRefresh()
@@ -13,7 +15,10 @@ function App() {
         </div>
       }
     >
-      <AppRoutes />
+      <SocketProvider>
+        <AppRoutes />
+        <ToastContainer />
+      </SocketProvider>
     </Suspense>
   )
 }

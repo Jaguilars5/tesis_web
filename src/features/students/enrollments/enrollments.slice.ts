@@ -1,0 +1,9 @@
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit"; import type { RootState } from "@shared/redux/store"; import type { RequestStatusT } from "@shared/types/request.types"; import type { EnrollmentT } from "./enrollments.types";
+export interface EnrollmentsStateT { enrollments: EnrollmentT[]; status: RequestStatusT; error: string | null; }
+const initialState: EnrollmentsStateT = { enrollments: [], status: "idle", error: null };
+const slice = createSlice({ name: "enrollments", initialState, reducers: { loadPending(s) { s.status = "loading"; s.error = null; }, loadSuccess(s, a: PayloadAction<EnrollmentT[]>) { s.enrollments = a.payload; s.status = "succeeded"; }, loadError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, entityCreated(s, a: PayloadAction<EnrollmentT>) { s.enrollments.unshift(a.payload); s.status = "succeeded"; }, entityUpdated(s, a: PayloadAction<EnrollmentT>) { const idx = s.enrollments.findIndex((p) => p.id === a.payload.id); if (idx !== -1) s.enrollments[idx] = a.payload; s.status = "succeeded"; }, entityDeleted(s, a: PayloadAction<number>) { s.enrollments = s.enrollments.filter((p) => p.id !== a.payload); s.status = "succeeded"; }, mutationError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, clearError(s) { s.error = null; } } });
+export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearError } = slice.actions;
+export const selectEnrollments = (s: RootState): EnrollmentT[] => s.students.enrollments.enrollments;
+export const selectEnrollmentsStatus = (s: RootState): RequestStatusT => s.students.enrollments.status;
+export const selectEnrollmentsError = (s: RootState): string | null => s.students.enrollments.error;
+export const enrollmentsReducer = slice.reducer; export default slice.reducer;

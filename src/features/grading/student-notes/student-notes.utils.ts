@@ -1,0 +1,2 @@
+import * as Yup from "yup";
+export const studentNoteSchema = Yup.object({ enrollment: Yup.mixed().required("La matrícula es obligatoria"), evaluative_activity: Yup.mixed().required("La actividad evaluativa es obligatoria"), grading_mode: Yup.string().required("El tipo de calificación es obligatorio"), numeric_score: Yup.number().nullable().min(0).max(10), qualitative_scale: Yup.mixed().nullable(), teacher_observation: Yup.string() });

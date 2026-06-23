@@ -1,18 +1,17 @@
-import {
-  protectedRoutes,
-  type RoutesConfigGroup,
-  type RoutesConfigItem,
-} from "@app/routes.config";
 import { ChevronDown, ChevronRight, GraduationCap, LogOut } from "lucide-react";
 import { useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { selectAuthUser } from "../../../features/auth/reducers/auth.selectors";
-import { logout } from "../../../features/auth/reducers/auth.reducer";
-import type { UserRoleT } from "../../../features/auth/domain/entities/auth.types";
+
+import { protectedRoutes } from "@app/routes.config";
+import { authService } from "@features/auth/auth.service";
+import { logout, selectAuthUser } from "@features/auth/auth.slice";
+
 import { useAllowedRoutes } from "../../hooks/useAllowedRoutes";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { roleLabels } from "../../utils/roles";
 
+import type { RoutesConfigGroup, RoutesConfigItem } from "@app/routes.config";
+import type { UserRoleT } from "@features/auth/auth.types";
 interface NavbarProps {
   onClose?: () => void;
 }
@@ -77,16 +76,16 @@ export const Navbar = ({ onClose }: NavbarProps) => {
 
     return protectedRoutes
       .filter((route) => route.isVisibleInNavbar)
-      .filter(
-        (route) => hasRoleAccess(route.roles) && hasPathAccess(route),
-      )
+      .filter((route) => hasRoleAccess(route.roles) && hasPathAccess(route))
       .map((route) => {
         if (!isNavGroup(route)) return route;
         return {
           ...route,
           children: route.children.filter(
             (child) =>
-              allowedPaths.has(child.path) && hasRoleAccess(child.roles),
+              child.isVisibleInNavbar &&
+              allowedPaths.has(child.path) &&
+              hasRoleAccess(child.roles),
           ),
         };
       })
@@ -100,7 +99,8 @@ export const Navbar = ({ onClose }: NavbarProps) => {
     setOpenGroups((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const handleLogout = async () => {
-    await dispatch(logout());
+    await authService.logout();
+    dispatch(logout());
   };
 
   const initials = (user?.names ?? "U")

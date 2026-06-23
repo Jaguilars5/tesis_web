@@ -1,8 +1,1 @@
-export * from "./application";
-export * from "./domain";
-export * from "./domain/constants";
-export * from "./infrastructure";
-export * from "./presentation";
-export { default as AcademicGradePage } from "./presentation/pages/AcademicGradePage";
-export * from "./reducers";
-export { default as academicGradeReducer } from "./reducers/academic-grade.reducer";
+export * from "./academic-grade.types"; export * from "./academic-grade.constants"; export * from "./academic-grade.service"; export * from "./academic-grade.controller"; export * from "./academic-grade.slice"; export * from "./academic-grade.utils"; export * from "./academic-grade.options"; export { default as academicGradeReducer } from "./academic-grade.slice"; export { default as AcademicGradePage } from "./AcademicGradePage";

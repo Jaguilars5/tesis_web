@@ -1,8 +1,1 @@
-export * from "./constants";
-export * from "./domain";
-export * from "./infrastructure";
-export * from "./application";
-export * from "./reducers";
-export * from "./presentation";
-export { default as EvaluationBlocksPage } from "./pages/EvaluationBlocksPage";
-export { default as evaluationBlocksReducer } from "./reducers/evaluation-blocks.reducer";
+export * from "./evaluation-blocks.types"; export * from "./evaluation-blocks.constants"; export * from "./evaluation-blocks.service"; export * from "./evaluation-blocks.controller"; export * from "./evaluation-blocks.slice"; export * from "./evaluation-blocks.utils"; export * from "./evaluation-blocks.options"; export { default as evaluationBlocksReducer } from "./evaluation-blocks.slice"; export { default as EvaluationBlocksPage } from "./EvaluationBlocksPage";

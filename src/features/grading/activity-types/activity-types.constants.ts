@@ -1,0 +1,2 @@
+export const ACTIVITY_TYPES_ENDPOINTS = { LIST: "/api/grading/activity-types/", DETAIL: (id: number) => `/api/grading/activity-types/${id}/`, SOFT_DELETE: (id: number) => `/api/grading/activity-types/${id}/soft-delete/` } as const;
+export const ACTIVITY_TYPES_PERMISSIONS = { GET: "grading.view_activity_type", CREATE: "grading.create_activity_type", UPDATE: "grading.update_activity_type", DELETE: "grading.delete_activity_type" } as const;

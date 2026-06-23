@@ -17,8 +17,8 @@ export interface CustomInputProps {
   helperText?: string;
   id?: string;
   label?: string;
-  max?: number;
-  min?: number;
+  max?: number | string;
+  min?: number | string;
   name: string;
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;

@@ -1,14 +1,18 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+
+import { tokenManager } from "@features/auth/auth-token.manager";
 import {
   selectIsAuthenticated,
   selectIsInitializing,
-} from "../../features/auth/reducers/auth.selectors";
-import { tokenManager } from "../../features/auth/infrastructure/repositories/auth-token.repository";
+  selectMustChangePassword,
+} from "@features/auth/auth.slice";
+
 import { useAppSelector } from "../../shared/redux/hooks";
 
 export function PrivateRoute() {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isInitializing = useAppSelector(selectIsInitializing);
+  const mustChangePassword = useAppSelector(selectMustChangePassword);
   const location = useLocation();
 
   if (isInitializing) {
@@ -24,6 +28,10 @@ export function PrivateRoute() {
 
   if (!isAuthenticated || !tokenManager.hasAccessToken()) {
     return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (mustChangePassword && location.pathname !== "/change-password") {
+    return <Navigate to="/change-password" replace />;
   }
 
   return <Outlet />;

@@ -1,8 +1,1 @@
-export * from "./constants";
-export * from "./domain";
-export * from "./infrastructure";
-export * from "./application";
-export * from "./reducers";
-export * from "./presentation";
-export { default as BlockComponentsPage } from "./pages/BlockComponentsPage";
-export { default as blockComponentsReducer } from "./reducers/block-components.reducer";
+export * from "./block-components.types"; export * from "./block-components.constants"; export * from "./block-components.service"; export * from "./block-components.controller"; export * from "./block-components.slice"; export * from "./block-components.utils"; export { default as blockComponentsReducer } from "./block-components.slice"; export { default as BlockComponentsPage } from "./BlockComponentsPage";

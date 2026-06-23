@@ -1,0 +1,2 @@
+export const BLOCK_COMPONENTS_ENDPOINTS = { LIST: "/api/grading/block-components/", DETAIL: (id: number) => `/api/grading/block-components/${id}/`, SOFT_DELETE: (id: number) => `/api/grading/block-components/${id}/soft-delete/` } as const;
+export const BLOCK_COMPONENTS_PERMISSIONS = { GET: "grading.view_block_component", CREATE: "grading.create_block_component", UPDATE: "grading.update_block_component", DELETE: "grading.delete_block_component" } as const;

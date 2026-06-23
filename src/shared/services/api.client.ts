@@ -1,13 +1,13 @@
 import axios, { AxiosError } from "axios";
 
-import { tokenManager } from "../../features/auth/infrastructure/repositories/auth-token.repository";
+import { tokenManager } from "@features/auth/auth-token.manager";
 
 import { AUTH_ENDPOINTS } from "@features/auth";
 import type { InternalAxiosRequestConfig } from "axios";
-import type { RefreshResponseT } from "../../features/auth/domain/entities/auth.types";
+import type { RefreshResponseT } from "@features/auth/auth.types";
 
 type ApiErrorResponse = {
-  message?: string;
+  msg?: string;
 };
 
 let unauthorizedHandler: (() => void) | null = null;
@@ -110,9 +110,9 @@ apiClient.interceptors.response.use(
   },
 );
 
-export function getApiErrorMessage(error: unknown) {
+export const getApiErrorMessage = (error: unknown) => {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {
-    return error.response?.data?.message ?? error.message;
+    return error.response?.data?.msg ?? error.message;
   }
 
   if (error instanceof Error) {
@@ -120,4 +120,4 @@ export function getApiErrorMessage(error: unknown) {
   }
 
   return "Ocurrió un error inesperado";
-}
+};

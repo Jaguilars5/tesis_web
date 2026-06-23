@@ -1,0 +1,12 @@
+import { apiClient, getApiErrorMessage } from "@shared/services/api.client"; import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types"; import { BLOCK_COMPONENTS_ENDPOINTS } from "./block-components.constants"; import type { BlockComponentCreateDataT, BlockComponentDeleteParamsT, BlockComponentGetParamsT, BlockComponentListParamsT, BlockComponentServiceT, BlockComponentT, BlockComponentUpdateParamsT } from "./block-components.types";
+class BlockComponentService implements BlockComponentServiceT {
+  async list(p?: BlockComponentListParamsT): Promise<BlockComponentT[]> {
+    try { const page = p?.page ?? 1; const pageSize = p?.pageSize ?? 100; const sq = p?.search ? `&search=${encodeURIComponent(p.search)}` : ""; const oq = p?.ordering ? `&ordering=${encodeURIComponent(p.ordering)}` : ""; const filters = p?.filters ?? {}; const fq = Object.entries(filters).filter(([, v]) => v !== undefined && v !== null).map(([k, v]) => `&${k}=${encodeURIComponent(String(v))}`).join(""); const { data } = await apiClient.get<ResponseApi<PaginatedData<BlockComponentT>>>(`${BLOCK_COMPONENTS_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${sq}${oq}${fq}`); return data.data.results; }
+    catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); }
+  }
+  async get(id: BlockComponentGetParamsT): Promise<BlockComponentT> { try { const { data } = await apiClient.get<ResponseApi<BlockComponentT>>(BLOCK_COMPONENTS_ENDPOINTS.DETAIL(id)); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
+  async create(d: BlockComponentCreateDataT): Promise<BlockComponentT> { try { const { data } = await apiClient.post<ResponseApi<BlockComponentT>>(BLOCK_COMPONENTS_ENDPOINTS.LIST, d); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
+  async update(p: BlockComponentUpdateParamsT): Promise<BlockComponentT> { try { const { data } = await apiClient.patch<ResponseApi<BlockComponentT>>(BLOCK_COMPONENTS_ENDPOINTS.DETAIL(p.id), p.data); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
+  async softDelete(id: BlockComponentDeleteParamsT): Promise<{ id: number }> { try { const { data } = await apiClient.post<ResponseApi<{ id: number }>>(BLOCK_COMPONENTS_ENDPOINTS.SOFT_DELETE(id)); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
+}
+export const blockComponentService = new BlockComponentService();

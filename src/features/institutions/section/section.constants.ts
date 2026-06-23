@@ -1,0 +1,2 @@
+export const SECTION_ENDPOINTS = { LIST: "/api/institutions/section/", DETAIL: (id: number) => `/api/institutions/section/${id}/`, SOFT_DELETE: (id: number) => `/api/institutions/section/${id}/soft-delete/` } as const;
+export const SECTION_PERMISSIONS = { GET: "institutions.view_section", CREATE: "institutions.create_section", UPDATE: "institutions.update_section", DELETE: "institutions.delete_section" } as const;

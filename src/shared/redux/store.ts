@@ -1,39 +1,46 @@
-import authReducer from "@features/auth/reducers/auth.reducer";
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
-
 import {
   academicPeriodsReducer,
-  interdisciplinaryProjectReducer,
+  classScheduleReducer,
   periodTypeReducer,
   subjectAcademicConfigReducer,
   subjectOfferingReducer,
-  subjectProjectReducer,
   subjectsReducer,
   teacherSubjectSectionsReducer,
 } from "@features/academic";
-
-import { academicGradeReducer } from "@features/institutions/academic-grade";
-import { academicLevelReducer } from "@features/institutions/academic-level";
-import { academicSubnivelReducer } from "@features/institutions/academic-subnivel";
-import { schoolYearReducer } from "@features/institutions/school-year";
-import { sectionReducer } from "@features/institutions/section";
+import {
+  analyticsReducer,
+  riskScoreReducer,
+  scoringConfigReducer,
+} from "@features/analytics";
+import authReducer from "@features/auth/auth.slice";
 import {
   activityTypesReducer,
   blockComponentsReducer,
-  componentIndicatorsReducer,
   evaluationBlocksReducer,
-  evaluationTypesReducer,
+  evaluativeActivityReducer,
   gradeHistoryReducer,
-  gradeTypesReducer,
   periodGradeSummariesReducer,
-  projectNotesReducer,
-  promotionStatusesReducer,
   qualitativeScalesReducer,
-  recoveryProcessesReducer,
-  recoveryProcessTypesReducer,
+  qualitativeScaleSublevelReducer,
   studentNotesReducer,
 } from "@features/grading";
-import { representativeReducer, studentReducer } from "@features/students";
+import {
+  attendanceReducer, attendanceStatusReducer, absenceTypeReducer } from "@features/attendance";
+import {
+  behaviorEvaluationReducer, conductIncidentReducer, incidentTypeReducer, severityReducer } from "@features/behavior";
+import { academicGradeReducer } from "@features/institutions/academic-grade";
+import { academicLevelReducer } from "@features/institutions/academic-level";
+import { academicSubLevelReducer } from "@features/institutions/academic-sublevel";
+import { schoolYearReducer } from "@features/institutions/school-year";
+import { sectionReducer } from "@features/institutions/section";
+import {
+  enrollmentsReducer,
+  kinshipReducer,
+  representativeReducer,
+  studentReducer,
+} from "@features/students";
+import { teacherReducer } from "@features/teacher";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
 
 const academicReducer = combineReducers({
   subjectAcademicConfigs: subjectAcademicConfigReducer,
@@ -41,39 +48,48 @@ const academicReducer = combineReducers({
   academicPeriods: academicPeriodsReducer,
   teacherSubjectSections: teacherSubjectSectionsReducer,
   subjectOfferings: subjectOfferingReducer,
-  interdisciplinaryProjects: interdisciplinaryProjectReducer,
-  subjectProjects: subjectProjectReducer,
+  classSchedules: classScheduleReducer,
   periodTypes: periodTypeReducer,
 });
 
 const institutionsReducer = combineReducers({
   schoolYear: schoolYearReducer,
   academicGrade: academicGradeReducer,
-  academicSubnivel: academicSubnivelReducer,
+  academicSubLevel: academicSubLevelReducer,
   section: sectionReducer,
   academicLevel: academicLevelReducer,
 });
 
 const gradingReducer = combineReducers({
-  gradeTypes: gradeTypesReducer,
   qualitativeScales: qualitativeScalesReducer,
   evaluationBlocks: evaluationBlocksReducer,
   blockComponents: blockComponentsReducer,
-  componentIndicators: componentIndicatorsReducer,
   gradeHistory: gradeHistoryReducer,
-  evaluationTypes: evaluationTypesReducer,
   studentNotes: studentNotesReducer,
   periodGradeSummaries: periodGradeSummariesReducer,
-  recoveryProcesses: recoveryProcessesReducer,
   activityTypes: activityTypesReducer,
-  promotionStatuses: promotionStatusesReducer,
-  recoveryProcessTypes: recoveryProcessTypesReducer,
-  projectNotes: projectNotesReducer,
+  evaluativeActivities: evaluativeActivityReducer,
+  qualitativeScaleSublevels: qualitativeScaleSublevelReducer,
 });
 
 const studentsReducer = combineReducers({
   student: studentReducer,
   representative: representativeReducer,
+  kinship: kinshipReducer,
+  enrollments: enrollmentsReducer,
+});
+
+const attendanceCombinedReducer = combineReducers({
+  attendances: attendanceReducer,
+  attendanceStatuses: attendanceStatusReducer,
+  absenceTypes: absenceTypeReducer,
+});
+
+const behaviorReducer = combineReducers({
+  behaviorEvaluations: behaviorEvaluationReducer,
+  incidentTypes: incidentTypeReducer,
+  severities: severityReducer,
+  conductIncidents: conductIncidentReducer,
 });
 
 export const store = configureStore({
@@ -83,6 +99,14 @@ export const store = configureStore({
     academic: academicReducer,
     grading: gradingReducer,
     students: studentsReducer,
+    analytics: combineReducers({
+      dashboard: analyticsReducer,
+      riskScores: riskScoreReducer,
+      scoringConfig: scoringConfigReducer,
+    }),
+    attendance: attendanceCombinedReducer,
+    behavior: behaviorReducer,
+    teacher: teacherReducer,
   },
 });
 

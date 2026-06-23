@@ -1,7 +1,1 @@
-export * from "./constants";
-export * from "./domain";
-export * from "./application";
-export * from "./reducers";
-export * from "./presentation";
-export { default as SectionsPage } from "./pages/SectionPage";
-export { default as sectionReducer } from "./reducers/section.reducer";
+export * from "./section.types"; export * from "./section.constants"; export * from "./section.service"; export * from "./section.controller"; export * from "./section.slice"; export * from "./section.utils"; export * from "./section.options"; export { default as sectionReducer } from "./section.slice"; export { default as SectionsPage } from "./SectionPage";

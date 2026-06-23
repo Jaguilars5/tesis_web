@@ -1,0 +1,2 @@
+export const REPRESENTATIVE_ENDPOINTS = { LIST: "/api/students/student-representative/", DETAIL: (id: number) => `/api/students/student-representative/${id}/`, SOFT_DELETE: (id: number) => `/api/students/student-representative/${id}/soft-delete/` } as const;
+export const REPRESENTATIVE_PERMISSIONS = { GET: "students.view_representative", CREATE: "students.create_representative", UPDATE: "students.update_representative", DELETE: "students.delete_representative" } as const;

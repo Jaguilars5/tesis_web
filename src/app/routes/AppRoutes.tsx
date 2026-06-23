@@ -7,6 +7,9 @@ import { PrivateRoute } from "./PrivateRoute";
 import { PublicRoute } from "./PublicRoute";
 
 const NotFoundPage = lazy(() => import("@shared/pages/NotFoundPage"));
+const ForceChangePasswordPage = lazy(
+  () => import("@features/auth/ForceChangePasswordPage"),
+);
 
 export const AppRoutes = () => {
   const allowedRoutes = useAllowedRoutes();
@@ -37,6 +40,7 @@ export const AppRoutes = () => {
         )}
 
         <Route element={<PrivateRoute />}>
+          <Route path="/change-password" element={<ForceChangePasswordPage />} />
           <Route element={<Layout />}>
             {allowedRoutes.map(
               (route) =>

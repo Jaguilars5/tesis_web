@@ -2,15 +2,16 @@ import { BookOpen } from "lucide-react";
 import { lazy } from "react";
 
 import { ACADEMIC_PERIOD_PERMISSIONS } from "@features/academic/academic-period";
-import { INTERDISCIPLINARY_PROJECT_PERMISSIONS } from "@features/academic/interdisciplinary-project";
 import { SUBJECT_PERMISSIONS } from "@features/academic/subject";
 import { SUBJECT_ACADEMIC_CONFIG_PERMISSIONS } from "@features/academic/subject-academic-config";
 import { SUBJECT_OFFERING_PERMISSIONS } from "@features/academic/subject-offering";
-import { SUBJECT_PROJECT_PERMISSIONS } from "@features/academic/subject-project";
 import { TEACHER_SUBJECT_SECTION_PERMISSIONS } from "@features/academic/teacher-subject-section";
 import { UserRoleEnum } from "@features/auth";
 
+import { TEACHER_ROUTES } from "@features/teacher/teacher.routes";
+
 import { ACADEMIC_ROUTES } from "./academic.routes";
+import { CLASS_SCHEDULE_PERMISSIONS } from "./class-schedule";
 import { PERIOD_TYPE_PERMISSIONS } from "./period-types";
 
 import type { RoutesConfigItem } from "@app/routes.config";
@@ -23,17 +24,18 @@ export const academicRoutes: RoutesConfigItem[] = [
     title: "Académico",
     order: 3,
     permission: [SUBJECT_PERMISSIONS.GET],
-    roles: [UserRoleEnum.DIRECTOR],
+    roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.TEACHER],
     children: [
       {
-        key: "subjects",
-        path: ACADEMIC_ROUTES.SUBJECTS,
+        key: "period-types",
+        path: ACADEMIC_ROUTES.PERIOD_TYPES,
         element: lazy(
-          () => import("@features/academic/subject/pages/SubjectPage"),
+          () =>
+            import("@features/academic/period-types/PeriodTypePage"),
         ),
-        permission: [SUBJECT_PERMISSIONS.GET],
+        permission: [PERIOD_TYPE_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
-        title: "Materias",
+        title: "Tipos de Período",
         isVisibleInNavbar: true,
         icon: null,
         order: 1,
@@ -42,8 +44,7 @@ export const academicRoutes: RoutesConfigItem[] = [
         key: "academic-periods",
         path: ACADEMIC_ROUTES.ACADEMIC_PERIODS,
         element: lazy(
-          () =>
-            import("@features/academic/academic-period/pages/AcademicPeriodPage"),
+          () => import("@features/academic/academic-period/AcademicPeriodPage"),
         ),
         permission: [ACADEMIC_PERIOD_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
@@ -53,39 +54,41 @@ export const academicRoutes: RoutesConfigItem[] = [
         order: 2,
       },
       {
+        key: "subjects",
+        path: ACADEMIC_ROUTES.SUBJECTS,
+        element: lazy(
+          () =>
+            import("@features/academic/subject/SubjectPage"),
+        ),
+        permission: [SUBJECT_PERMISSIONS.GET],
+        roles: [UserRoleEnum.DIRECTOR],
+        title: "Materias",
+        isVisibleInNavbar: true,
+        icon: null,
+        order: 3,
+      },
+
+      {
         key: "subject-academic-configs",
         path: ACADEMIC_ROUTES.SUBJECT_ACADEMIC_CONFIGS,
         element: lazy(
           () =>
-            import("@features/academic/subject-academic-config/pages/SubjectAcademicConfigPage"),
+            import("@features/academic/subject-academic-config/SubjectAcademicConfigPage"),
         ),
         permission: [SUBJECT_ACADEMIC_CONFIG_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
         title: "Materia x Grado",
         isVisibleInNavbar: true,
         icon: null,
-        order: 3,
-      },
-      {
-        key: "teacher-subject-sections",
-        path: ACADEMIC_ROUTES.TEACHER_SUBJECT_SECTIONS,
-        element: lazy(
-          () =>
-            import("@features/academic/teacher-subject-section/pages/TeacherSubjectSectionPage"),
-        ),
-        permission: [TEACHER_SUBJECT_SECTION_PERMISSIONS.GET],
-        roles: [UserRoleEnum.DIRECTOR],
-        title: "Asignacion Docente",
-        isVisibleInNavbar: true,
-        icon: null,
         order: 4,
       },
+
       {
         key: "subject-offerings",
         path: ACADEMIC_ROUTES.SUBJECT_OFFERINGS,
         element: lazy(
           () =>
-            import("@features/academic/subject-offering/pages/SubjectOfferingPage"),
+            import("@features/academic/subject-offering/SubjectOfferingPage"),
         ),
         permission: [SUBJECT_OFFERING_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
@@ -94,46 +97,100 @@ export const academicRoutes: RoutesConfigItem[] = [
         icon: null,
         order: 5,
       },
+
       {
-        key: "interdisciplinary-projects",
-        path: ACADEMIC_ROUTES.INTERDISCIPLINARY_PROJECTS,
+        key: "teacher-subject-sections",
+        path: ACADEMIC_ROUTES.TEACHER_SUBJECT_SECTIONS,
         element: lazy(
           () =>
-            import("@features/academic/interdisciplinary-project/pages/InterdisciplinaryProjectPage"),
+            import("@features/academic/teacher-subject-section/TeacherSubjectSectionPage"),
         ),
-        permission: [INTERDISCIPLINARY_PROJECT_PERMISSIONS.GET],
+        permission: [TEACHER_SUBJECT_SECTION_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
-        title: "Proyectos Interdisc.",
+        title: "Asignacion Docente",
         isVisibleInNavbar: true,
         icon: null,
         order: 6,
       },
+
       {
-        key: "subject-projects",
-        path: ACADEMIC_ROUTES.SUBJECT_PROJECTS,
+        key: "class-schedules",
+        path: ACADEMIC_ROUTES.CLASS_SCHEDULES,
         element: lazy(
           () =>
-            import("@features/academic/subject-project/pages/SubjectProjectPage"),
+            import("@features/academic/class-schedule/ClassSchedulePage"),
         ),
-        permission: [SUBJECT_PROJECT_PERMISSIONS.GET],
+        permission: [CLASS_SCHEDULE_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
-        title: "Materias de Proyectos",
+        title: "Horarios",
         isVisibleInNavbar: true,
         icon: null,
         order: 7,
       },
       {
-        key: "period-types",
-        path: ACADEMIC_ROUTES.PERIOD_TYPES,
+        key: "teacher-schedule",
+        path: TEACHER_ROUTES.SCHEDULE,
         element: lazy(
-          () => import("@features/academic/period-types/pages/PeriodTypePage"),
+          () => import("@features/teacher/TeacherSchedulePage"),
         ),
-        permission: [PERIOD_TYPE_PERMISSIONS.GET],
-        roles: [UserRoleEnum.DIRECTOR],
-        title: "Tipos de Período",
+        permission: [],
+        roles: [UserRoleEnum.TEACHER],
+        title: "Mi Horario",
         isVisibleInNavbar: true,
         icon: null,
         order: 8,
+      },
+      {
+        key: "teacher-activities",
+        path: TEACHER_ROUTES.ACTIVITIES,
+        element: lazy(
+          () => import("@features/teacher/TeacherActivitiesPage"),
+        ),
+        permission: [],
+        roles: [UserRoleEnum.TEACHER],
+        title: "Actividades",
+        isVisibleInNavbar: true,
+        icon: null,
+        order: 9,
+      },
+      {
+        key: "teacher-grading",
+        path: TEACHER_ROUTES.GRADING,
+        element: lazy(
+          () => import("@features/teacher/TeacherGradingPage"),
+        ),
+        permission: [],
+        roles: [UserRoleEnum.TEACHER],
+        title: "Calificaciones",
+        isVisibleInNavbar: true,
+        icon: null,
+        order: 10,
+      },
+      {
+        key: "teacher-attendance",
+        path: TEACHER_ROUTES.ATTENDANCE,
+        element: lazy(
+          () => import("@features/teacher/TeacherAttendancePage"),
+        ),
+        permission: [],
+        roles: [UserRoleEnum.TEACHER],
+        title: "Asistencia",
+        isVisibleInNavbar: true,
+        icon: null,
+        order: 11,
+      },
+      {
+        key: "teacher-incidents",
+        path: TEACHER_ROUTES.INCIDENTS,
+        element: lazy(
+          () => import("@features/teacher/TeacherIncidentsPage"),
+        ),
+        permission: [],
+        roles: [UserRoleEnum.TEACHER],
+        title: "Incidentes",
+        isVisibleInNavbar: true,
+        icon: null,
+        order: 12,
       },
     ],
   },

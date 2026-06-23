@@ -1,4 +1,4 @@
-import type { UserRoleT } from "../../features/auth/domain/entities/auth.types";
+import type { UserRoleT } from "@features/auth/auth.types";
 
 interface RolePermissions {
   modules: string[];
@@ -29,7 +29,7 @@ const rolePermissions: Record<UserRoleT, RolePermissions> = {
     ],
   },
   DOCENTE: {
-    modules: ["dashboard", "academico", "horarios", "calificaciones"],
+    modules: ["dashboard", "academico", "horarios", "calificaciones", "asistencia"],
     excludedItems: ["academic-config", "activities"],
   },
   DIRECTOR: {
@@ -41,6 +41,7 @@ const rolePermissions: Record<UserRoleT, RolePermissions> = {
       "horarios",
       "calificaciones",
       "cuentas",
+      "asistencia",
     ],
     excludedItems: [],
   },
@@ -49,8 +50,8 @@ const rolePermissions: Record<UserRoleT, RolePermissions> = {
     excludedItems: [],
   },
   DECE: {
-    modules: ["dashboard", "infraestructura", "calificaciones"],
-    excludedItems: ["attendance", "notes"],
+    modules: ["dashboard", "infraestructura", "calificaciones", "asistencia"],
+    excludedItems: ["notes"],
   },
 };
 

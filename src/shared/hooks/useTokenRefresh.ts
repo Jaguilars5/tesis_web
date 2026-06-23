@@ -1,13 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
-import {
-  initializationComplete,
-  sessionExpired,
-} from "../../features/auth/reducers/auth.reducer";
-import { refreshSession } from "../../features/auth/reducers/auth.reducer";
-import { tokenManager } from "../../features/auth/infrastructure/repositories/auth-token.repository";
-import type { AppDispatch } from "../redux/store";
+
+import { tokenManager } from "@features/auth/auth-token.manager";
+import { refreshSession } from "@features/auth/auth.controller";
+import { initializationComplete, sessionExpired } from "@features/auth/auth.slice";
+
 import { setUnauthorizedHandler } from "../services/api.client";
+
+import type { AppDispatch } from "../redux/store";
 
 const CHECK_INTERVAL_MS = 30 * 1000;
 
@@ -33,8 +33,9 @@ export const useTokenRefresh = () => {
       }
 
       if (!tokenManager.hasAccessToken()) {
-        const result = await dispatch(refreshSession());
-        if (refreshSession.rejected.match(result)) {
+        try {
+          await refreshSession(dispatch);
+        } catch {
           dispatch(initializationComplete());
         }
       } else {
@@ -46,9 +47,7 @@ export const useTokenRefresh = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (!tokenManager.hasRefreshToken()) {
-      return;
-    }
+    if (!tokenManager.hasRefreshToken()) return;
 
     async function tryRefresh() {
       if (!tokenManager.hasAccessToken()) {
@@ -57,8 +56,9 @@ export const useTokenRefresh = () => {
       }
 
       if (tokenManager.isAccessTokenNearExpiry()) {
-        const result = await dispatch(refreshSession());
-        if (refreshSession.rejected.match(result)) {
+        try {
+          await refreshSession(dispatch);
+        } catch {
           dispatch(sessionExpired());
         }
       }
@@ -67,9 +67,7 @@ export const useTokenRefresh = () => {
     intervalRef.current = setInterval(tryRefresh, CHECK_INTERVAL_MS);
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [dispatch]);
 };

@@ -1,14 +1,14 @@
-import {
-  protectedRoutes,
-  type RouteConfig,
-} from "@app/routes.config";
+import { useMemo } from "react";
+
+import { protectedRoutes } from "@app/routes.config";
 import {
   selectAuthUser,
   selectUserPermissions,
-} from "@features/auth/reducers/auth.selectors";
+} from "@features/auth/auth.slice";
 import { useAppSelector } from "@shared/redux/hooks";
 import { hasPermission } from "@shared/utils/permissions";
-import { useMemo } from "react";
+
+import type { RouteConfig } from "@app/routes.config";
 
 export const useAllowedRoutes = () => {
   const permissions = useAppSelector(selectUserPermissions);

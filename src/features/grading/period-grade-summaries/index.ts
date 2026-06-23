@@ -1,8 +1,1 @@
-export * from "./constants";
-export * from "./domain";
-export * from "./infrastructure";
-export * from "./application";
-export * from "./reducers";
-export * from "./presentation";
-export { default as PeriodGradeSummariesPage } from "./pages/PeriodGradeSummariesPage";
-export { default as periodGradeSummariesReducer } from "./reducers/period-grade-summaries.reducer";
+export * from "./period-grade-summaries.types"; export * from "./period-grade-summaries.constants"; export * from "./period-grade-summaries.service"; export * from "./period-grade-summaries.controller"; export * from "./period-grade-summaries.slice"; export * from "./period-grade-summaries.utils"; export * from "./period-grade-summaries.options"; export { default as periodGradeSummariesReducer } from "./period-grade-summaries.slice"; export { default as PeriodGradeSummariesPage } from "./PeriodGradeSummariesPage";

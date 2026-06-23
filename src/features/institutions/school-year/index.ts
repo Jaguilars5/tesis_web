@@ -1,8 +1,1 @@
-export * from "./constants";
-export * from "./domain";
-export * from "./infrastructure";
-export * from "./application";
-export * from "./reducers";
-export * from "./presentation";
-export { default as SchoolYearsPage } from "./pages/SchoolYearsPage";
-export { default as schoolYearReducer } from "./reducers/school-year.reducer";
+export * from "./school-year.types"; export * from "./school-year.constants"; export * from "./school-year.service"; export * from "./school-year.controller"; export * from "./school-year.slice"; export * from "./school-year.utils"; export { default as schoolYearReducer } from "./school-year.slice"; export { default as SchoolYearsPage } from "./SchoolYearsPage";

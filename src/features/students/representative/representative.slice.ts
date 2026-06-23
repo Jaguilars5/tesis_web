@@ -1,0 +1,9 @@
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit"; import type { RootState } from "@shared/redux/store"; import type { RequestStatusT } from "@shared/types/request.types"; import type { RepresentativeT } from "./representative.types";
+export interface RepresentativeStateT { representatives: RepresentativeT[]; status: RequestStatusT; error: string | null; }
+const initialState: RepresentativeStateT = { representatives: [], status: "idle", error: null };
+const slice = createSlice({ name: "representative", initialState, reducers: { loadPending(s) { s.status = "loading"; s.error = null; }, loadSuccess(s, a: PayloadAction<RepresentativeT[]>) { s.representatives = a.payload; s.status = "succeeded"; }, loadError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, entityCreated(s, a: PayloadAction<RepresentativeT>) { s.representatives.unshift(a.payload); s.status = "succeeded"; }, entityUpdated(s, a: PayloadAction<RepresentativeT>) { const idx = s.representatives.findIndex((p) => p.id === a.payload.id); if (idx !== -1) s.representatives[idx] = a.payload; s.status = "succeeded"; }, entityDeleted(s, a: PayloadAction<number>) { s.representatives = s.representatives.filter((p) => p.id !== a.payload); s.status = "succeeded"; }, mutationError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, clearError(s) { s.error = null; } } });
+export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearError } = slice.actions;
+export const selectRepresentatives = (s: RootState): RepresentativeT[] => s.students.representative.representatives;
+export const selectRepresentativesStatus = (s: RootState): RequestStatusT => s.students.representative.status;
+export const selectRepresentativesError = (s: RootState): string | null => s.students.representative.error;
+export const representativeReducer = slice.reducer; export default slice.reducer;

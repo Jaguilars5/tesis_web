@@ -1,0 +1,9 @@
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit"; import type { RootState } from "@shared/redux/store"; import type { RequestStatusT } from "@shared/types/request.types"; import type { AcademicLevelT } from "./academic-level.types";
+export interface AcademicLevelStateT { academicLevels: AcademicLevelT[]; status: RequestStatusT; error: string | null; }
+const initialState: AcademicLevelStateT = { academicLevels: [], status: "idle", error: null };
+const slice = createSlice({ name: "academicLevel", initialState, reducers: { loadPending(s) { s.status = "loading"; s.error = null; }, loadSuccess(s, a: PayloadAction<AcademicLevelT[]>) { s.academicLevels = a.payload; s.status = "succeeded"; }, loadError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, entityCreated(s, a: PayloadAction<AcademicLevelT>) { s.academicLevels.unshift(a.payload); s.status = "succeeded"; }, entityUpdated(s, a: PayloadAction<AcademicLevelT>) { const idx = s.academicLevels.findIndex((p) => p.id === a.payload.id); if (idx !== -1) s.academicLevels[idx] = a.payload; s.status = "succeeded"; }, entityDeleted(s, a: PayloadAction<number>) { s.academicLevels = s.academicLevels.filter((p) => p.id !== a.payload); s.status = "succeeded"; }, mutationError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, clearError(s) { s.error = null; } } });
+export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearError } = slice.actions;
+export const selectAcademicLevels = (s: RootState): AcademicLevelT[] => s.institutions.academicLevel.academicLevels;
+export const selectAcademicLevelsStatus = (s: RootState): RequestStatusT => s.institutions.academicLevel.status;
+export const selectAcademicLevelError = (s: RootState): string | null => s.institutions.academicLevel.error;
+export const academicLevelReducer = slice.reducer; export default slice.reducer;

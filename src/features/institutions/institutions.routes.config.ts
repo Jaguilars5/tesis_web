@@ -1,8 +1,9 @@
 import { lazy } from "react";
 
 import { UserRoleEnum } from "@features/auth";
+import { ACADEMIC_GRADE_PERMISSIONS } from "@features/institutions/academic-grade";
 import { ACADEMIC_LEVEL_PERMISSIONS } from "@features/institutions/academic-level";
-import { ACADEMIC_SUBNIVEL_PERMISSIONS } from "@features/institutions/academic-subnivel";
+import { ACADEMIC_SUBLEVEL_PERMISSIONS } from "@features/institutions/academic-sublevel";
 import { SCHOOL_YEAR_PERMISSIONS } from "@features/institutions/school-year";
 import { SECTION_PERMISSIONS } from "@features/institutions/section";
 
@@ -24,7 +25,7 @@ export const institutionsRoutes: RoutesConfigItem[] = [
         path: INSTITUTIONS_ROUTES.SCHOOL_YEARS,
         element: lazy(
           () =>
-            import("@features/institutions/school-year/pages/SchoolYearsPage"),
+            import("@features/institutions/school-year/SchoolYearsPage"),
         ),
         permission: [SCHOOL_YEAR_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
@@ -34,56 +35,57 @@ export const institutionsRoutes: RoutesConfigItem[] = [
         order: 2,
       },
       {
-        key: "academic-grades",
-        path: INSTITUTIONS_ROUTES.ACADEMIC_GRADES,
+        key: "academic-levels",
+        path: INSTITUTIONS_ROUTES.ACADEMIC_LEVELS,
         element: lazy(
           () =>
-            import("@features/institutions/academic-grade/presentation/pages/AcademicGradePage"),
+            import("@features/institutions/academic-level/AcademicLevelPage"),
         ),
-        permission: [SCHOOL_YEAR_PERMISSIONS.GET],
-        roles: [UserRoleEnum.DIRECTOR],
-        title: "Grados Académicos",
+        permission: [ACADEMIC_LEVEL_PERMISSIONS.GET],
+        roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.TEACHER],
+        title: "Niveles Académicos",
         isVisibleInNavbar: true,
         icon: null,
         order: 3,
       },
       {
-        key: "academic-levels",
-        path: INSTITUTIONS_ROUTES.ACADEMIC_LEVELS,
+        key: "academic-subnivels",
+        path: INSTITUTIONS_ROUTES.ACADEMIC_SUBLEVELS,
         element: lazy(
           () =>
-            import("@features/institutions/academic-level/pages/AcademicLevelPage"),
+            import("@features/institutions/academic-sublevel/AcademicSubLevelPage"),
         ),
-        permission: [ACADEMIC_LEVEL_PERMISSIONS.GET],
+        permission: [ACADEMIC_SUBLEVEL_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
-        title: "Niveles Académicos",
+        title: "Sub Niveles Académicos",
         isVisibleInNavbar: true,
         icon: null,
         order: 4,
       },
       {
-        key: "sections",
-        path: INSTITUTIONS_ROUTES.SECTIONS,
+        key: "academic-grades",
+        path: INSTITUTIONS_ROUTES.ACADEMIC_GRADES,
         element: lazy(
-          () => import("@features/institutions/section/pages/SectionPage"),
+          () =>
+            import("@features/institutions/academic-grade/AcademicGradePage"),
         ),
-        permission: [SECTION_PERMISSIONS.GET],
-        roles: [UserRoleEnum.DIRECTOR],
-        title: "Paralelos",
+        permission: [ACADEMIC_GRADE_PERMISSIONS.GET],
+        roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.TEACHER],
+        title: "Grados Académicos",
         isVisibleInNavbar: true,
         icon: null,
         order: 5,
       },
+
       {
-        key: "academic-subnivels",
-        path: INSTITUTIONS_ROUTES.ACADEMIC_SUBNIVELS,
+        key: "sections",
+        path: INSTITUTIONS_ROUTES.SECTIONS,
         element: lazy(
-          () =>
-            import("@features/institutions/academic-subnivel/pages/AcademicSubnivelPage"),
+          () => import("@features/institutions/section/SectionPage"),
         ),
-        permission: [ACADEMIC_SUBNIVEL_PERMISSIONS.GET],
-        roles: [UserRoleEnum.DIRECTOR],
-        title: "Subniveles Académicos",
+        permission: [SECTION_PERMISSIONS.GET],
+        roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.TEACHER],
+        title: "Paralelos",
         isVisibleInNavbar: true,
         icon: null,
         order: 6,

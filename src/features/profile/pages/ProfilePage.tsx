@@ -1,5 +1,6 @@
+import { selectAuthUser } from "@features/auth/auth.slice";
 import { useAppSelector } from "@shared/redux/hooks";
-import { selectAuthUser } from "../../auth/reducers/auth.selectors";
+
 import { ProfileForm } from "../components/ProfileForm";
 
 export default function ProfilePage() {

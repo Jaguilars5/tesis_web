@@ -1,9 +1,12 @@
-import { PROTECTED_ROUTES } from "@app/routes";
-import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { selectIsAuthenticated } from "../../features/auth/reducers/auth.selectors";
-import { tokenManager } from "../../features/auth/infrastructure/repositories/auth-token.repository";
+
+import { PROTECTED_ROUTES } from "@app/routes";
+import { tokenManager } from "@features/auth/auth-token.manager";
+import { selectIsAuthenticated } from "@features/auth/auth.slice";
+
 import { useAppSelector } from "../../shared/redux/hooks";
+
+import type { ReactNode } from "react";
 
 type PublicRouteProps = {
   children: ReactNode;

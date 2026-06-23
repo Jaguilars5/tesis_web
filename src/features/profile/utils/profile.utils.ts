@@ -1,4 +1,4 @@
-import type { AuthUserT } from '@features/auth/domain/entities/auth.types'
+import type { AuthUserT } from '@features/auth/auth.types'
 
 export function formatProfileName(user: AuthUserT): string {
   return `${user.names} ${user.last_names}`.trim()

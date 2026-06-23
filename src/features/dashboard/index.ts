@@ -1,4 +1,3 @@
-import { default as DashboardPage } from './pages/DashboardPage'
-export { DashboardPage }
-export * from './utils'
-export * from './constants'
+export { default as DashboardPage } from "./DashboardPage";
+export * from "./dashboard.utils";
+export * from "./dashboard.constants";

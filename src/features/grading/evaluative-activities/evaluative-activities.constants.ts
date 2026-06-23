@@ -1,0 +1,2 @@
+export const EVALUATIVE_ACTIVITY_ENDPOINTS = { LIST: "/api/grading/evaluative-activities/", DETAIL: (id: number) => `/api/grading/evaluative-activities/${id}/`, SOFT_DELETE: (id: number) => `/api/grading/evaluative-activities/${id}/soft-delete/` } as const;
+export const EVALUATIVE_ACTIVITY_PERMISSIONS = { GET: "grading.view_evaluative_activity", CREATE: "grading.create_evaluative_activity", UPDATE: "grading.update_evaluative_activity", DELETE: "grading.delete_evaluative_activity" } as const;

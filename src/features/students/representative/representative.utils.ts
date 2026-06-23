@@ -1,0 +1,2 @@
+import * as Yup from "yup";
+export const representativeSchema = Yup.object({ dni: Yup.string().required("El DNI es obligatorio"), names: Yup.string().required("Los nombres son obligatorios"), last_names: Yup.string().required("Los apellidos son obligatorios"), email: Yup.string().email("Email inválido"), phone: Yup.string(), address: Yup.string(), city: Yup.number().nullable(), document_type: Yup.string(), is_active: Yup.boolean() });

@@ -1,0 +1,2 @@
+export const PERIOD_GRADE_SUMMARIES_ENDPOINTS = { LIST: "/api/grading/period-grade-summaries/", DETAIL: (id: number) => `/api/grading/period-grade-summaries/${id}/`, SOFT_DELETE: (id: number) => `/api/grading/period-grade-summaries/${id}/soft-delete/` } as const;
+export const PERIOD_GRADE_SUMMARIES_PERMISSIONS = { GET: "grading.view_grade_summary", CREATE: "grading.create_grade_summary", UPDATE: "grading.update_grade_summary", DELETE: "grading.delete_grade_summary" } as const;

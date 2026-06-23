@@ -1,8 +1,1 @@
-export * from "./constants";
-export * from "./domain";
-export * from "./infrastructure";
-export * from "./application";
-export * from "./reducers";
-export * from "./presentation";
-export { default as StudentNotesPage } from "./pages/StudentNotesPage";
-export { default as studentNotesReducer } from "./reducers/student-notes.reducer";
+export * from "./student-notes.types"; export * from "./student-notes.constants"; export * from "./student-notes.service"; export * from "./student-notes.controller"; export * from "./student-notes.slice"; export * from "./student-notes.utils"; export * from "./student-notes.options"; export { default as studentNotesReducer } from "./student-notes.slice"; export { default as StudentNotesPage } from "./StudentNotesPage";

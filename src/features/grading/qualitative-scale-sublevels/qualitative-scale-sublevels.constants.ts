@@ -1,0 +1,2 @@
+export const QUALITATIVE_SCALE_SUBLEVEL_ENDPOINTS = { LIST: "/api/grading/qualitative-scale-sublevels/", DETAIL: (id: number) => `/api/grading/qualitative-scale-sublevels/${id}/`, SOFT_DELETE: (id: number) => `/api/grading/qualitative-scale-sublevels/${id}/` } as const;
+export const QUALITATIVE_SCALE_SUBLEVEL_PERMISSIONS = { GET: "grading.view_qualitative_scale_sublevel", CREATE: "grading.create_qualitative_scale_sublevel", UPDATE: "grading.update_qualitative_scale_sublevel", DELETE: "grading.delete_qualitative_scale_sublevel" } as const;

@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { normalizeText } from "./normalizeText";
 import { Spinner } from "./Spinner";
@@ -36,16 +36,15 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   autoReset,
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [selectedOption, setSelectedOption] = useState<SelectOptionT | null>(
-    null
-  );
-  const [searchTerm, setSearchTerm] = useState<string>(defaultSearch || "");
-  const [filteredOptions, setFilteredOptions] =
-    useState<SelectOptionT[]>(options);
+  const [searchTerm, setSearchTerm] = useState<string>(() => {
+    const initial = options.find((opt) => opt.value === value);
+    return initial?.label ?? defaultSearch ?? "";
+  });
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const [dropdownDir, setDropdownDir] = useState<DropdownDirectionT>(
-    dropdownDirection || "down"
+    dropdownDirection || "down",
   );
+  const [dropdownMaxHeight, setDropdownMaxHeight] = useState<number>(240);
   const [autoResetTimeout, setAutoResetTimeout] = useState<ReturnType<
     typeof setTimeout
   > | null>(null);
@@ -53,6 +52,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const isUserInteracted = useRef(false);
 
   const selectId = id || `select-${name}`;
   const listboxId = `${selectId}-listbox`;
@@ -60,64 +60,74 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   const iconColor = className.select
     ?.split(" ")
     .find(
-      (classItem) => classItem.startsWith("border-") && classItem !== "border"
+      (classItem) => classItem.startsWith("border-") && classItem !== "border",
     )
     ?.replace("border-", "text-");
 
+  // --- Estados derivados (sin efectos secundarios) ---
+
+  const selectedOption = useMemo(
+    () => options.find((opt) => opt.value === value) ?? null,
+    [options, value],
+  );
+
+  const filteredOptions = useMemo(() => {
+    if (!searchTerm) return options;
+    return options.filter((option) =>
+      normalizeText(option.label).includes(normalizeText(searchTerm)),
+    );
+  }, [options, searchTerm]);
+
+  // Sincroniza searchTerm cuando value cambia externamente y el usuario no ha interactuado
   useEffect(() => {
-    // Al abrir el dropdown, siempre mostrar todas las opciones
-    if (isOpen) {
-      setFilteredOptions(options);
+    if (!isUserInteracted.current) {
+      if (selectedOption) {
+        setSearchTerm(selectedOption.label);
+        if (setSearchQuery) setSearchQuery(selectedOption.label);
+      } else if (!value) {
+        setSearchTerm("");
+        if (setSearchQuery) setSearchQuery("");
+      }
     }
-  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    // Si el input está vacío y el dropdown está cerrado, sincronizar opciones
-    if (!searchTerm && !isOpen) {
-      setFilteredOptions(options);
-    }
-  }, [options, searchTerm, isOpen]);
-
-  useEffect(() => {
-    const option = options.find((opt) => opt.value === value);
-
-    if (searchTerm === defaultSearch) return;
-
-    if (option) {
-      setSelectedOption(option);
-      setSearchTerm(option.label);
-      if (setSearchQuery) setSearchQuery(option.label);
-    }
-  }, [value, options, defaultSearch, searchTerm]);
+  }, [selectedOption, value, setSearchQuery]);
 
   useClickOutside({
     ref: containerRef,
     onClickOutside: () => setIsOpen(false),
   });
 
-  // Detecta si hay espacio suficiente abajo, si no abre hacia arriba
+  // Detecta la dirección con más espacio y ajusta el max-height dinámicamente
   useEffect(() => {
     if (!isOpen) return;
     if (dropdownDirection) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDropdownDir(dropdownDirection);
+
+      setDropdownMaxHeight(240);
       return;
     }
     if (containerRef.current) {
-      // Usar requestAnimationFrame para evitar forced reflows
       requestAnimationFrame(() => {
         if (containerRef.current) {
           const rect = containerRef.current.getBoundingClientRect();
-
           const windowHeight = window.innerHeight;
 
-          const spaceBelow = windowHeight - rect.bottom;
+          const spaceBelow = windowHeight - rect.bottom - 8;
+          const spaceAbove = rect.top - 8;
+          const estimatedHeight = Math.min(filteredOptions.length * 50, 320);
 
-          const dropdownHeight = Math.min(filteredOptions.length * 50, 240);
+          if (spaceBelow >= spaceAbove && spaceBelow >= 80) {
+            setDropdownDir("down");
 
-          if (spaceBelow < dropdownHeight + 20) {
+            setDropdownMaxHeight(Math.min(estimatedHeight, spaceBelow));
+          } else if (spaceAbove >= 80) {
             setDropdownDir("up");
+
+            setDropdownMaxHeight(Math.min(estimatedHeight, spaceAbove));
           } else {
             setDropdownDir("down");
+
+            setDropdownMaxHeight(Math.max(spaceBelow, spaceAbove, 80));
           }
         }
       });
@@ -125,48 +135,36 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   }, [isOpen, filteredOptions.length, dropdownDirection]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    isUserInteracted.current = true;
     const inputValue = e.target.value;
     setSearchTerm(inputValue);
     if (setSearchQuery) setSearchQuery(inputValue);
-    const filtered: SelectOptionT[] = options.filter(
-      (option: SelectOptionT) => {
-        return normalizeText(option.label).includes(normalizeText(inputValue));
-      }
-    );
-
-    setFilteredOptions(filtered);
     setIsOpen(true);
     setHighlightedIndex(-1);
   };
 
   const handleSelectOption = (option: SelectOptionT): void => {
-    setSelectedOption(option);
+    isUserInteracted.current = false;
     setSearchTerm(option.label);
     setIsOpen(false);
     onChange(option);
     inputRef.current?.blur();
 
-    // Configurar auto-reset si está habilitado
     if (autoReset?.enabled) {
-      // Limpiar timeout anterior si existe
       if (autoResetTimeout) {
         clearTimeout(autoResetTimeout);
       }
 
-      // Configurar nuevo timeout
       const timeout = setTimeout(() => {
         const resetValue = autoReset.resetValue ?? "";
         const resetOption = options.find((opt) => opt.value === resetValue);
 
         if (resetOption) {
-          setSelectedOption(resetOption);
           setSearchTerm(resetOption.label);
         } else {
-          setSelectedOption(null);
           setSearchTerm("");
         }
 
-        // Llamar callback de reset si existe
         if (autoReset.onReset) {
           autoReset.onReset();
         }
@@ -188,7 +186,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           setIsOpen(true);
         } else {
           setHighlightedIndex((prev) =>
-            prev < filteredOptions.length - 1 ? prev + 1 : prev
+            prev < filteredOptions.length - 1 ? prev + 1 : prev,
           );
         }
         break;
@@ -286,8 +284,8 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                 error
                   ? `${selectId}-error`
                   : helperText
-                  ? `${selectId}-description`
-                  : undefined
+                    ? `${selectId}-description`
+                    : undefined
               }
               aria-expanded={isOpen}
               aria-invalid={error ? "true" : "false"}
@@ -318,9 +316,10 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
           <ul
             ref={listRef}
             aria-label={label || "Opciones"}
-            className={`aolute left-0 right-0 z-10 max-h-60 overflow-y-auto rounded border bg-white shadow-lg ${
+            className={`absolute left-0 right-0 z-50 overflow-y-auto rounded border bg-white shadow-lg ${
               dropdownDir === "up" ? "bottom-full mb-1" : "mt-1"
             }`}
+            style={{ maxHeight: dropdownMaxHeight }}
             id={listboxId}
             role="listbox"
           >

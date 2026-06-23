@@ -1,8 +1,8 @@
 import { CustomInput, CustomSelect } from "@shared/components/Form";
 import { useCustomFormik } from "@shared/hooks/useCustomFormik";
 import { Save } from "lucide-react";
-import { profileSchema } from "../../auth/presentation/utils/auth.validation";
-import type { AuthUserT } from "../../auth/domain/entities/auth.types";
+import { profileSchema } from "@features/auth/auth.utils";
+import type { AuthUserT } from "@features/auth/auth.types";
 
 type ProfileFormProps = {
   user: AuthUserT;
