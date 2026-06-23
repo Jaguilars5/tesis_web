@@ -10,7 +10,7 @@ import { useEffect, useReducer, useState } from "react";
 import { TEACHER_ENDPOINTS } from "./teacher-subject-section.constants";
 
 import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps";
-import type { UserT } from "@features/accounts/users/domain/entities/user.types";
+import type { UserT } from "@features/iam/users/users.types";
 
 interface Option {
   label: string;
@@ -85,7 +85,7 @@ export const useUserOptions = () => {
         if (!cancelled) {
           setUserOptions(
             data.data.results.map((i) => {
-              const fullName = `${i.first_name} ${i.last_name}`.trim();
+              const fullName = `${i.names} ${i.last_names}`.trim();
               return {
                 label: fullName || i.email || `Usuario ${i.id}`,
                 value: String(i.id),
@@ -183,7 +183,7 @@ export const useTeacherAssignmentFilters = () => {
     },
     [],
     (u: UserT) => {
-      const fullName = `${u.first_name} ${u.last_name}`.trim();
+      const fullName = `${u.names} ${u.last_names}`.trim();
       return {
         label: fullName || u.email || `Usuario ${u.id}`,
         value: String(u.id),

@@ -10,6 +10,11 @@ export { default as riskScoreReducer } from "./risk-score.slice";
 export { default as RiskScoreListPage } from "./RiskScoreListPage";
 export { default as RiskScoreDetailPage } from "./RiskScoreDetailPage";
 
+// Early alerts module (explicit re-exports to avoid slice action name conflicts)
+export type { EarlyAlertT, EarlyAlertFormValues, EarlyAlertOrderingT, EarlyAlertFiltersT, EarlyAlertListParamsT, EarlyAlertCreateDataT, EarlyAlertCreateParamsT, EarlyAlertUpdateDataT, EarlyAlertUpdateParamsT, EarlyAlertGetParamsT, EarlyAlertDeleteParamsT, EarlyAlertServiceT, EarlyAlertMarkAttendedParamsT, AlertTypeT, UrgencyLevelT } from "./early-alerts/early-alerts.types";
+export { EARLY_ALERT_ENDPOINTS, EARLY_ALERT_PERMISSIONS } from "./early-alerts/early-alerts.constants";
+export { earlyAlertService, earlyAlertReducer, EarlyAlertPage, useEarlyAlertController, useEarlyAlertForm } from "./early-alerts";
+
 // Scoring config module (explicit re-exports to avoid slice action name conflicts)
 export {
   ScoringConfigPage,

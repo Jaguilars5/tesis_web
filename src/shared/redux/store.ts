@@ -9,10 +9,16 @@ import {
 } from "@features/academic";
 import {
   analyticsReducer,
+  earlyAlertReducer,
   riskScoreReducer,
   scoringConfigReducer,
 } from "@features/analytics";
 import authReducer from "@features/auth/auth.slice";
+import {
+  permissionReducer,
+  roleReducer,
+  userReducer,
+} from "@features/iam";
 import {
   activityTypesReducer,
   blockComponentsReducer,
@@ -37,6 +43,7 @@ import {
   enrollmentsReducer,
   kinshipReducer,
   representativeReducer,
+  specialNeedsTypeReducer,
   studentReducer,
 } from "@features/students";
 import { teacherReducer } from "@features/teacher";
@@ -77,6 +84,7 @@ const studentsReducer = combineReducers({
   representative: representativeReducer,
   kinship: kinshipReducer,
   enrollments: enrollmentsReducer,
+  specialNeedsTypes: specialNeedsTypeReducer,
 });
 
 const attendanceCombinedReducer = combineReducers({
@@ -103,10 +111,16 @@ export const store = configureStore({
       dashboard: analyticsReducer,
       riskScores: riskScoreReducer,
       scoringConfig: scoringConfigReducer,
+      earlyAlerts: earlyAlertReducer,
     }),
     attendance: attendanceCombinedReducer,
     behavior: behaviorReducer,
     teacher: teacherReducer,
+    iam: combineReducers({
+      permissions: permissionReducer,
+      roles: roleReducer,
+      users: userReducer,
+    }),
   },
 });
 

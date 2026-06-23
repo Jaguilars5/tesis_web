@@ -10,3 +10,6 @@ export { enrollmentService, enrollmentsReducer, EnrollmentsPage, EnrollmentWizar
 export type { KinshipT, KinshipOrderingT, KinshipListParamsT, KinshipGetParamsT, KinshipServiceT } from "./kinship/kinship.types";
 export { KINSHIP_ENDPOINTS, KINSHIP_PERMISSIONS } from "./kinship/kinship.constants";
 export { kinshipService, kinshipReducer, useKinshipOptions } from "./kinship";
+export type { SpecialNeedsTypeT, SpecialNeedsTypeOrderingT, SpecialNeedsTypeListParamsT, SpecialNeedsTypeGetParamsT, SpecialNeedsTypeServiceT } from "./special-needs-type/special-needs-type.types";
+export { SPECIAL_NEEDS_TYPE_ENDPOINTS, SPECIAL_NEEDS_TYPE_PERMISSIONS } from "./special-needs-type/special-needs-type.constants";
+export { specialNeedsTypeService, specialNeedsTypeReducer, useSpecialNeedsTypeOptions } from "./special-needs-type";

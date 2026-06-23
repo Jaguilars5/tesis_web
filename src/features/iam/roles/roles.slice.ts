@@ -1,0 +1,84 @@
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+
+import type { RootState } from "@shared/redux/store";
+import type { RequestStatusT } from "@shared/types/request.types";
+import type { RoleT } from "./roles.types";
+
+export interface RoleStateT {
+  roles: RoleT[];
+  status: RequestStatusT;
+  error: string | null;
+}
+
+const initialState: RoleStateT = {
+  roles: [],
+  status: "idle",
+  error: null,
+};
+
+const roleSlice = createSlice({
+  name: "roles",
+  initialState,
+  reducers: {
+    loadPending(state) {
+      state.status = "loading";
+      state.error = null;
+    },
+    loadSuccess(state, action: PayloadAction<RoleT[]>) {
+      state.roles = action.payload;
+      state.status = "succeeded";
+    },
+    loadError(state, action: PayloadAction<string>) {
+      state.status = "failed";
+      state.error = action.payload;
+    },
+    entityCreated(state, action: PayloadAction<RoleT>) {
+      state.roles.unshift(action.payload);
+      state.status = "succeeded";
+    },
+    entityUpdated(state, action: PayloadAction<RoleT>) {
+      const idx = state.roles.findIndex(
+        (p) => p.id === action.payload.id,
+      );
+      if (idx !== -1) state.roles[idx] = action.payload;
+      state.status = "succeeded";
+    },
+    entityDeleted(state, action: PayloadAction<number>) {
+      state.roles = state.roles.filter(
+        (p) => p.id !== action.payload,
+      );
+      state.status = "succeeded";
+    },
+    mutationError(state, action: PayloadAction<string>) {
+      state.status = "failed";
+      state.error = action.payload;
+    },
+    clearError(state) {
+      state.error = null;
+    },
+  },
+});
+
+export const {
+  loadPending,
+  loadSuccess,
+  loadError,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
+  mutationError,
+  clearError,
+} = roleSlice.actions;
+
+export const selectRoles = (state: RootState): RoleT[] =>
+  state.iam.roles.roles;
+
+export const selectRolesStatus = (state: RootState): RequestStatusT =>
+  state.iam.roles.status;
+
+export const selectRolesError = (state: RootState): string | null =>
+  state.iam.roles.error;
+
+export const roleReducer = roleSlice.reducer;
+
+export default roleSlice.reducer;

@@ -15,7 +15,6 @@ import {
 } from "@features/grading";
 
 import { STUDENT_ROUTES } from "@features/student/student.routes";
-import { TEACHER_ROUTES } from "@features/teacher/teacher.routes";
 
 import { GRADING_ROUTES } from "./grading.routes";
 
@@ -112,11 +111,24 @@ export const gradingRoutes: RoutesConfigItem[] = [
             import("@features/grading/evaluative-activities/EvaluativeActivitiesPage"),
         ),
         permission: [EVALUATIVE_ACTIVITY_PERMISSIONS.GET],
-        roles: [UserRoleEnum.DIRECTOR],
+        roles: [UserRoleEnum.TEACHER],
         title: "Actividades Evaluativas",
         isVisibleInNavbar: true,
         icon: null,
         order: 6,
+      },
+      {
+        key: "gradebook",
+        path: GRADING_ROUTES.GRADEBOOK,
+        element: lazy(
+          () => import("@features/grading/gradebook/GradebookPage"),
+        ),
+        permission: [STUDENT_NOTES_PERMISSIONS.GET],
+        roles: [UserRoleEnum.TEACHER],
+        title: "Calificar",
+        isVisibleInNavbar: true,
+        icon: null,
+        order: 7,
       },
       {
         key: "student-notes",
@@ -126,11 +138,11 @@ export const gradingRoutes: RoutesConfigItem[] = [
             import("@features/grading/student-notes/StudentNotesPage"),
         ),
         permission: [STUDENT_NOTES_PERMISSIONS.GET],
-        roles: [UserRoleEnum.DIRECTOR],
+        roles: [UserRoleEnum.TEACHER],
         title: "Notas de Estudiantes",
         isVisibleInNavbar: true,
         icon: null,
-        order: 7,
+        order: 8,
       },
       {
         key: "period-grade-summaries",
@@ -144,7 +156,7 @@ export const gradingRoutes: RoutesConfigItem[] = [
         title: "Resúmenes de Notas",
         isVisibleInNavbar: true,
         icon: null,
-        order: 8,
+        order: 9,
       },
       {
         key: "grade-history",
@@ -158,33 +170,7 @@ export const gradingRoutes: RoutesConfigItem[] = [
         title: "Historial de Notas",
         isVisibleInNavbar: true,
         icon: null,
-        order: 9,
-      },
-      {
-        key: "teacher-activities",
-        path: TEACHER_ROUTES.ACTIVITIES,
-        element: lazy(
-          () => import("@features/teacher/TeacherActivitiesPage"),
-        ),
-        permission: [],
-        roles: [UserRoleEnum.TEACHER],
-        title: "Crear Actividades",
-        isVisibleInNavbar: true,
-        icon: null,
         order: 10,
-      },
-      {
-        key: "teacher-grading",
-        path: TEACHER_ROUTES.GRADING,
-        element: lazy(
-          () => import("@features/teacher/TeacherGradingPage"),
-        ),
-        permission: [],
-        roles: [UserRoleEnum.TEACHER],
-        title: "Calificar",
-        isVisibleInNavbar: true,
-        icon: null,
-        order: 11,
       },
       {
         key: "student-grades",

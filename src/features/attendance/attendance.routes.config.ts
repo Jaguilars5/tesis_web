@@ -6,7 +6,6 @@ import { ATTENDANCE_PERMISSIONS } from "@features/attendance/attendance";
 import { ATTENDANCE_STATUS_PERMISSIONS } from "@features/attendance/attendance-status";
 import { ABSENCE_TYPE_PERMISSIONS } from "@features/attendance/absence-type";
 import { STUDENT_ROUTES } from "@features/student/student.routes";
-import { TEACHER_ROUTES } from "@features/teacher/teacher.routes";
 
 import { ATTENDANCE_ROUTES } from "./attendance.routes";
 
@@ -30,7 +29,7 @@ export const attendanceRoutes: RoutesConfigItem[] = [
             import("@features/attendance/take-attendance/TakeAttendancePage"),
         ),
         permission: [ATTENDANCE_PERMISSIONS.CREATE],
-        roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.COUNSELOR],
+        roles: [UserRoleEnum.TEACHER, UserRoleEnum.COUNSELOR],
         title: "Tomar Asistencia",
         isVisibleInNavbar: true,
         icon: null,
@@ -63,19 +62,6 @@ export const attendanceRoutes: RoutesConfigItem[] = [
         isVisibleInNavbar: true,
         icon: null,
         order: 0,
-      },
-      {
-        key: "teacher-attendance",
-        path: TEACHER_ROUTES.ATTENDANCE,
-        element: lazy(
-          () => import("@features/teacher/TeacherAttendancePage"),
-        ),
-        permission: [],
-        roles: [UserRoleEnum.TEACHER],
-        title: "Tomar Asistencia",
-        isVisibleInNavbar: true,
-        icon: null,
-        order: 5,
       },
       {
         key: "attendance-statuses",

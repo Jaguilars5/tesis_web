@@ -1,0 +1,91 @@
+import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
+import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+
+import { ROLE_ENDPOINTS } from "./roles.constants";
+import type {
+  RoleAssignPermissionsDataT,
+  RoleCreateDataT,
+  RoleDeleteParamsT,
+  RoleGetParamsT,
+  RoleListParamsT,
+  RoleServiceT,
+  RoleT,
+  RoleUpdateParamsT,
+} from "./roles.types";
+
+class RoleService implements RoleServiceT {
+  async list(params?: RoleListParamsT): Promise<RoleT[]> {
+    try {
+      const page = params?.page ?? 1;
+      const pageSize = params?.pageSize ?? 100;
+      const searchQuery = params?.search
+        ? `&search=${encodeURIComponent(params.search)}`
+        : "";
+      const orderingQuery = params?.ordering
+        ? `&ordering=${encodeURIComponent(params.ordering)}`
+        : "";
+      const { data } = await apiClient.get<ResponseApi<PaginatedData<RoleT>>>(
+        `${ROLE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+      );
+      return data.data.results;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async get(id: RoleGetParamsT): Promise<RoleT> {
+    try {
+      const { data } = await apiClient.get<ResponseApi<RoleT>>(
+        ROLE_ENDPOINTS.DETAIL(id),
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async create(payload: RoleCreateDataT): Promise<RoleT> {
+    try {
+      const { data } = await apiClient.post<ResponseApi<RoleT>>(
+        ROLE_ENDPOINTS.LIST,
+        payload,
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async update(params: RoleUpdateParamsT): Promise<RoleT> {
+    try {
+      const { data } = await apiClient.patch<ResponseApi<RoleT>>(
+        ROLE_ENDPOINTS.DETAIL(params.id),
+        params.data,
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async softDelete(id: RoleDeleteParamsT): Promise<{ id: number }> {
+    try {
+      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
+        ROLE_ENDPOINTS.SOFT_DELETE(id),
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async assignPermissions(id: number, payload: RoleAssignPermissionsDataT): Promise<void> {
+    try {
+      await apiClient.post(ROLE_ENDPOINTS.ASSIGN_PERMISSIONS(id), payload);
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+}
+
+export const roleService = new RoleService();

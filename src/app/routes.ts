@@ -1,3 +1,11 @@
+export const PROFILE_ROUTE = "/profile";
+
+export const IAM_ROUTES_CONST = {
+  USERS: "/users",
+  ROLES: "/roles",
+  PERMISSIONS: "/permissions",
+} as const;
+
 export const PROTECTED_ROUTES = {
   DASHBOARD: "/dashboard",
   SCHOOL_YEARS: "/school-years",
@@ -34,6 +42,7 @@ export const PROTECTED_ROUTES = {
   STUDENT_GRADES: "/student/grades",
   STUDENT_ATTENDANCE: "/student/attendance",
   STUDENT_CONDUCT: "/student/conduct",
+  ANALYTICS_EARLY_ALERTS: "/analytics/early-alerts",
   ANALYTICS_RISK_SCORES: "/analytics/risk-scores",
   ANALYTICS_RISK_SCORE_DETAIL: "/analytics/risk-scores/:id",
   ANALYTICS_SCORING_CONFIG: "/analytics/scoring-config",

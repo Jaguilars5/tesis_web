@@ -7,7 +7,6 @@ import { CONDUCT_INCIDENT_PERMISSIONS } from "@features/behavior/conduct-inciden
 import { INCIDENT_TYPE_PERMISSIONS } from "@features/behavior/incident-type";
 import { SEVERITY_PERMISSIONS } from "@features/behavior/severity";
 import { STUDENT_ROUTES } from "@features/student/student.routes";
-import { TEACHER_ROUTES } from "@features/teacher/teacher.routes";
 
 import { BEHAVIOR_ROUTES } from "./behavior.routes";
 
@@ -20,7 +19,10 @@ export const behaviorRoutes: RoutesConfigItem[] = [
     icon: ClipboardCheck,
     title: "Conducta",
     order: 6,
-    permission: [BEHAVIOR_EVALUATION_PERMISSIONS.GET],
+    permission: [
+      BEHAVIOR_EVALUATION_PERMISSIONS.GET,
+      CONDUCT_INCIDENT_PERMISSIONS.GET,
+    ],
     roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.TEACHER, UserRoleEnum.STUDENT],
     children: [
       {
@@ -31,7 +33,7 @@ export const behaviorRoutes: RoutesConfigItem[] = [
             import("@features/behavior/conduct-incident/ConductIncidentPage"),
         ),
         permission: [CONDUCT_INCIDENT_PERMISSIONS.GET],
-        roles: [UserRoleEnum.DIRECTOR],
+        roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.TEACHER],
         title: "Incidentes de Conducta",
         isVisibleInNavbar: true,
         icon: null,
@@ -78,19 +80,6 @@ export const behaviorRoutes: RoutesConfigItem[] = [
         isVisibleInNavbar: true,
         icon: null,
         order: 2,
-      },
-      {
-        key: "teacher-incidents",
-        path: TEACHER_ROUTES.INCIDENTS,
-        element: lazy(
-          () => import("@features/teacher/TeacherIncidentsPage"),
-        ),
-        permission: [],
-        roles: [UserRoleEnum.TEACHER],
-        title: "Incidentes",
-        isVisibleInNavbar: true,
-        icon: null,
-        order: 3,
       },
       {
         key: "student-conduct",

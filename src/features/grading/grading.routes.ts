@@ -20,6 +20,7 @@ export const GRADING_ROUTES = {
   GRADE_HISTORY: "/grade-history",
   PERIOD_GRADE_SUMMARIES: "/period-grade-summaries",
   EVALUATIVE_ACTIVITIES: "/evaluative-activities",
+  GRADEBOOK: "/gradebook",
   QUALITATIVE_SCALE_SUBLEVELS: "/qualitative-scale-sublevels",
   ACADEMIC_SUBLEVELS: "/academic-subnivels",
 };
