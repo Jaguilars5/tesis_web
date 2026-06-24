@@ -7,18 +7,17 @@ import {
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
-import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect"; import { SearchInput } from "@shared/components/Form";
+import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect";
+import { SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 import { useRoleOptions } from "@shared/hooks/useRoleOptions";
 import { STATUS_OPTIONS } from "@shared/hooks/useStatusOptions";
 
-import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps"; import type { TableColumnProps } from "@shared/components/Table";
-import type {
-  UserListParamsT,
-  UserOrderingT,
-  UserT,
-} from "../users.types";
+import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps";
+import type { TableColumnProps } from "@shared/components/Table";
+import type { UserListParamsT, UserOrderingT, UserT } from "../users.types";
+import { Badge } from "@shared/components/Badge";
 
 const ORDERING_OPTIONS: { label: string; value: UserOrderingT }[] = [
   { label: "Usuario (A-Z)", value: "username" },
@@ -115,9 +114,17 @@ export const UsersTable = ({
     [fetchData],
   );
 
-  const hRole = useCallback((o: SelectOptionT) => { setRoleFilter(Number(o.value) || 0); setPage(1); }, []);
-  const hIsActive = useCallback((o: SelectOptionT) => { setIsActiveFilter(o.value as string); setPage(1); }, []);
-  useEffect(() => { fetchData({ page: 1 }); }, [roleFilter, isActiveFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  const hRole = useCallback((o: SelectOptionT) => {
+    setRoleFilter(Number(o.value) || 0);
+    setPage(1);
+  }, []);
+  const hIsActive = useCallback((o: SelectOptionT) => {
+    setIsActiveFilter(o.value as string);
+    setPage(1);
+  }, []);
+  useEffect(() => {
+    fetchData({ page: 1 });
+  }, [roleFilter, isActiveFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasNextPage = data.length >= pageSize;
 
@@ -131,16 +138,15 @@ export const UsersTable = ({
       key: "names",
       label: "Nombres",
       className: tableColumnsClassname,
-      render: (p) => <span>{p.names} {p.last_names}</span>,
+      render: (p) => (
+        <span>
+          {p.names} {p.last_names}
+        </span>
+      ),
     },
     {
       key: "email",
       label: "Email",
-      className: tableColumnsClassname,
-    },
-    {
-      key: "dni",
-      label: "Documento",
       className: tableColumnsClassname,
     },
     {
@@ -152,22 +158,12 @@ export const UsersTable = ({
       key: "is_active",
       label: "Estado",
       className: tableColumnsClassname,
-      render: (p) => (
-        <span
-          className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium ${
-            p.is_active
-              ? "bg-emerald-50 text-emerald-700"
-              : "bg-slate-100 text-slate-600"
-          }`}
-        >
-          <span
-            className={`size-1.5 rounded-full ${
-              p.is_active ? "bg-emerald-500" : "bg-slate-400"
-            }`}
-          />
-          {p.is_active ? "Activo" : "Inactivo"}
-        </span>
-      ),
+      render: (s) =>
+        s.is_active ? (
+          <Badge variant="default">Activo</Badge>
+        ) : (
+          <Badge variant="outline">Inactivo</Badge>
+        ),
     },
   ];
 
@@ -183,8 +179,24 @@ export const UsersTable = ({
           placeholder="Filtrar usuarios..."
         />
 
-        <CustomSelect name="filter-role" label="" placeholder="Todos los roles" value={roleFilter} options={roleOptions} onChange={hRole} className={filterSelectClassname} />
-        <CustomSelect name="filter-is_active" label="" placeholder="Todos" value={isActiveFilter} options={STATUS_OPTIONS} onChange={hIsActive} className={filterSelectClassname} />
+        <CustomSelect
+          name="filter-role"
+          label=""
+          placeholder="Todos los roles"
+          value={roleFilter}
+          options={roleOptions}
+          onChange={hRole}
+          className={filterSelectClassname}
+        />
+        <CustomSelect
+          name="filter-is_active"
+          label=""
+          placeholder="Todos"
+          value={isActiveFilter}
+          options={STATUS_OPTIONS}
+          onChange={hIsActive}
+          className={filterSelectClassname}
+        />
 
         <select
           value={ordering}

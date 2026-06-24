@@ -7,17 +7,16 @@ import {
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
-import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect"; import { SearchInput } from "@shared/components/Form";
+import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect";
+import { SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 import { STATUS_OPTIONS } from "@shared/hooks/useStatusOptions";
 
-import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps"; import type { TableColumnProps } from "@shared/components/Table";
-import type {
-  RoleListParamsT,
-  RoleOrderingT,
-  RoleT,
-} from "../roles.types";
+import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps";
+import type { TableColumnProps } from "@shared/components/Table";
+import type { RoleListParamsT, RoleOrderingT, RoleT } from "../roles.types";
+import { Badge } from "@shared/components/Badge";
 
 const ORDERING_OPTIONS: { label: string; value: RoleOrderingT }[] = [
   { label: "Nombre (A-Z)", value: "name" },
@@ -109,8 +108,13 @@ export const RolesTable = ({
     [fetchData],
   );
 
-  const hIsActive = useCallback((o: SelectOptionT) => { setIsActiveFilter(o.value as string); setPage(1); }, []);
-  useEffect(() => { fetchData({ page: 1 }); }, [isActiveFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  const hIsActive = useCallback((o: SelectOptionT) => {
+    setIsActiveFilter(o.value as string);
+    setPage(1);
+  }, []);
+  useEffect(() => {
+    fetchData({ page: 1 });
+  }, [isActiveFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasNextPage = data.length >= pageSize;
 
@@ -129,22 +133,12 @@ export const RolesTable = ({
       key: "is_active",
       label: "Estado",
       className: tableColumnsClassname,
-      render: (p) => (
-        <span
-          className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium ${
-            p.is_active
-              ? "bg-emerald-50 text-emerald-700"
-              : "bg-slate-100 text-slate-600"
-          }`}
-        >
-          <span
-            className={`size-1.5 rounded-full ${
-              p.is_active ? "bg-emerald-500" : "bg-slate-400"
-            }`}
-          />
-          {p.is_active ? "Activo" : "Inactivo"}
-        </span>
-      ),
+      render: (s) =>
+        s.is_active ? (
+          <Badge variant="default">Activo</Badge>
+        ) : (
+          <Badge variant="outline">Inactivo</Badge>
+        ),
     },
   ];
 
@@ -160,7 +154,15 @@ export const RolesTable = ({
           placeholder="Filtrar roles..."
         />
 
-        <CustomSelect name="filter-is_active" label="" placeholder="Todos" value={isActiveFilter} options={STATUS_OPTIONS} onChange={hIsActive} className={filterSelectClassname} />
+        <CustomSelect
+          name="filter-is_active"
+          label=""
+          placeholder="Todos"
+          value={isActiveFilter}
+          options={STATUS_OPTIONS}
+          onChange={hIsActive}
+          className={filterSelectClassname}
+        />
 
         <select
           value={ordering}

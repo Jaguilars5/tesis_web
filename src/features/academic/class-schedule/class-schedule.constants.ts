@@ -9,10 +9,10 @@ export const DAY_OF_WEEK_OPTIONS = [
 ] as const;
 
 export const CLASS_SCHEDULE_ENDPOINTS = {
-  LIST: "/api/academic/class-schedule/",
-  DETAIL: (id: number) => `/api/academic/class-schedule/${id}/`,
+  LIST: "/api/academic/class-schedules/",
+  DETAIL: (id: number) => `/api/academic/class-schedules/${id}/`,
   SOFT_DELETE: (id: number) =>
-    `/api/academic/class-schedule/${id}/soft-delete/`,
+    `/api/academic/class-schedules/${id}/soft-delete/`,
 } as const;
 
 export const CLASS_SCHEDULE_PERMISSIONS = {

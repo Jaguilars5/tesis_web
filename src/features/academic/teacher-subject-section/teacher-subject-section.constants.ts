@@ -1,8 +1,8 @@
 export const TEACHER_SUBJECT_SECTION_ENDPOINTS = {
-  LIST: "/api/academic/teacher-subject-section/",
-  DETAIL: (id: number) => `/api/academic/teacher-subject-section/${id}/`,
+  LIST: "/api/academic/teacher-subject-sections/",
+  DETAIL: (id: number) => `/api/academic/teacher-subject-sections/${id}/`,
   SOFT_DELETE: (id: number) =>
-    `/api/academic/teacher-subject-section/${id}/soft-delete/`,
+    `/api/academic/teacher-subject-sections/${id}/soft-delete/`,
 } as const;
 
 export const TEACHER_ENDPOINTS = {

@@ -109,11 +109,6 @@ export const SubjectTable = ({
       render: (s) => <span>{s.name}</span>,
     },
     {
-      key: "code",
-      label: "Código",
-      className: tableColumnsClassname,
-    },
-    {
       key: "is_active",
       label: "Estado",
       className: tableColumnsClassname,

@@ -40,7 +40,7 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
   async get(id: AcademicPeriodGetParamsT): Promise<AcademicPeriodT> {
     try {
       const { data } = await apiClient.get<ResponseApi<AcademicPeriodT>>(
-        ACADEMIC_PERIOD_ENDPOINTS.DETAIL(id),
+        ACADEMIC_PERIOD_ENDPOINTS.GET(id),
       );
       return data.data;
     } catch (error) {
@@ -54,7 +54,7 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
       if (cleaned.period_type === 0)
         cleaned.period_type = null as unknown as number;
       const { data } = await apiClient.post<ResponseApi<AcademicPeriodT>>(
-        ACADEMIC_PERIOD_ENDPOINTS.LIST,
+        ACADEMIC_PERIOD_ENDPOINTS.POST,
         cleaned,
       );
       return data.data;
@@ -69,7 +69,7 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
       if (cleaned.period_type === 0)
         cleaned.period_type = null as unknown as number;
       const { data } = await apiClient.patch<ResponseApi<AcademicPeriodT>>(
-        ACADEMIC_PERIOD_ENDPOINTS.DETAIL(params.id),
+        ACADEMIC_PERIOD_ENDPOINTS.PATCH(params.id),
         cleaned,
       );
       return data.data;

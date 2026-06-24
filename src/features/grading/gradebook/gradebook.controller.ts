@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { UserRoleEnum } from "@features/auth";
 import { selectAuthUser } from "@features/auth/auth.slice";
@@ -30,6 +31,7 @@ const initialState: GradebookStateT = {
 
 export const useGradebook = () => {
   const user = useAppSelector(selectAuthUser);
+  const [searchParams] = useSearchParams();
   const [state, setState] = useState<GradebookStateT>(initialState);
 
   const [sectionOptions, setSectionOptions] = useState<OptionT[]>([]);
@@ -38,6 +40,9 @@ export const useGradebook = () => {
   const [activityOptions, setActivityOptions] = useState<OptionT[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [maxScore, setMaxScore] = useState<number | null>(null);
+
+  const didInitFromParams = useRef(false);
+  const autoLoadPending = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -67,6 +72,21 @@ export const useGradebook = () => {
       cancelled = true;
     };
   }, [user]);
+
+  useEffect(() => {
+    if (didInitFromParams.current) return;
+    const tss = Number(searchParams.get("tss"));
+    const activity = Number(searchParams.get("activity"));
+    if (!tss || !activity) return;
+    didInitFromParams.current = true;
+    autoLoadPending.current = true;
+    setState((prev) => ({
+      ...prev,
+      teacherSubjectSectionId: tss,
+      evaluativeActivityId: activity,
+    }));
+    setLoadingActivities(true);
+  }, [searchParams]);
 
   const setTeacherSubjectSectionId = useCallback((id: number | null) => {
     setState((prev) => ({
@@ -190,6 +210,17 @@ export const useGradebook = () => {
       }));
     }
   }, [state.teacherSubjectSectionId, state.evaluativeActivityId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (
+      autoLoadPending.current &&
+      state.teacherSubjectSectionId &&
+      state.evaluativeActivityId
+    ) {
+      autoLoadPending.current = false;
+      loadRoster();
+    }
+  }, [state.teacherSubjectSectionId, state.evaluativeActivityId, loadRoster]);
 
   const saveGrades = useCallback(async () => {
     const { evaluativeActivityId, roster } = state;

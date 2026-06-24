@@ -1,4 +1,4 @@
-import { Calendar, Clock, Loader2, MapPin } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
 import { teacherService } from "./teacher.service";
@@ -28,7 +28,18 @@ function reducer(_state: State, action: Action): State {
 }
 
 const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-const HOURS = Array.from({ length: 10 }, (_, i) => `${7 + i}:00`);
+const START_HOUR = 7;
+const HOURS = Array.from({ length: 10 }, (_, i) => START_HOUR + i);
+
+const toMinutes = (time: string): number => {
+  const [h, m] = time.split(":");
+  return Number(h) * 60 + Number(m ?? 0);
+};
+
+const formatTime = (time: string): string => {
+  const [h, m] = time.split(":");
+  return `${Number(h)}:${(m ?? "00").padStart(2, "0")}`;
+};
 
 export default function TeacherSchedulePage() {
   const [state, dispatch] = useReducer(reducer, {
@@ -56,10 +67,15 @@ export default function TeacherSchedulePage() {
     };
   }, []);
 
-  const getEntry = (day: number, hour: string) =>
-    state.entries.filter(
-      (e) => e.dayOfWeek === day && e.startTime <= hour && e.endTime > hour,
-    );
+  const getEntries = (day: number, hour: number) => {
+    const slotStart = hour * 60;
+    const slotEnd = slotStart + 60;
+    return state.entries.filter((e) => {
+      if (e.dayOfWeek !== day) return false;
+      const start = toMinutes(e.startTime);
+      return start >= slotStart && start < slotEnd;
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -106,13 +122,13 @@ export default function TeacherSchedulePage() {
               <tbody className="divide-y divide-slate-100">
                 {HOURS.map((hour) => (
                   <tr key={hour} className="hover:bg-slate-50/50">
-                    <td className="whitespace-nowrap px-3 py-2 text-xs font-medium text-slate-400">
-                      {hour}
+                    <td className="whitespace-nowrap px-3 py-2 align-top text-xs font-medium text-slate-400">
+                      {hour}:00
                     </td>
                     {DAYS.map((_, i) => {
-                      const entries = getEntry(i + 1, hour);
+                      const entries = getEntries(i + 1, hour);
                       return (
-                        <td key={i} className="px-3 py-2">
+                        <td key={i} className="space-y-1 px-3 py-2 align-top">
                           {entries.map((e) => (
                             <div
                               key={e.id}
@@ -125,7 +141,8 @@ export default function TeacherSchedulePage() {
                                 {e.sectionName}
                               </p>
                               <p className="mt-0.5 text-slate-400">
-                                {e.startTime} - {e.endTime}
+                                {formatTime(e.startTime)} -{" "}
+                                {formatTime(e.endTime)}
                               </p>
                             </div>
                           ))}
@@ -137,40 +154,6 @@ export default function TeacherSchedulePage() {
               </tbody>
             </table>
           </div>
-
-          {state.entries.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
-                Detalle de Clases
-              </h2>
-              {state.entries.map((e) => (
-                <div
-                  key={e.id}
-                  className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-                >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Calendar className="size-5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-slate-900">
-                      {e.subjectOfferingName}
-                    </p>
-                    <p className="text-xs text-slate-500">{e.sectionName}</p>
-                    <div className="mt-2 flex items-center gap-4 text-xs text-slate-400">
-                      <span className="flex items-center gap-1">
-                        <Clock className="size-3.5" />
-                        {e.startTime} - {e.endTime}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="size-3.5" />
-                        {e.dayName}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </>
       )}
     </div>

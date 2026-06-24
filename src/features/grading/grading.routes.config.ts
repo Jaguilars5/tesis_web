@@ -35,8 +35,7 @@ export const gradingRoutes: RoutesConfigItem[] = [
         key: "activity-types",
         path: GRADING_ROUTES.ACTIVITY_TYPES,
         element: lazy(
-          () =>
-            import("@features/grading/activity-types/ActivityTypesPage"),
+          () => import("@features/grading/activity-types/ActivityTypesPage"),
         ),
         permission: [ACTIVITY_TYPES_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
@@ -134,8 +133,7 @@ export const gradingRoutes: RoutesConfigItem[] = [
         key: "student-notes",
         path: GRADING_ROUTES.STUDENT_NOTES,
         element: lazy(
-          () =>
-            import("@features/grading/student-notes/StudentNotesPage"),
+          () => import("@features/grading/student-notes/StudentNotesPage"),
         ),
         permission: [STUDENT_NOTES_PERMISSIONS.GET],
         roles: [UserRoleEnum.TEACHER],
@@ -154,7 +152,7 @@ export const gradingRoutes: RoutesConfigItem[] = [
         permission: [PERIOD_GRADE_SUMMARIES_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
         title: "Resúmenes de Notas",
-        isVisibleInNavbar: true,
+        isVisibleInNavbar: false,
         icon: null,
         order: 9,
       },
@@ -162,22 +160,19 @@ export const gradingRoutes: RoutesConfigItem[] = [
         key: "grade-history",
         path: GRADING_ROUTES.GRADE_HISTORY,
         element: lazy(
-          () =>
-            import("@features/grading/grade-history/GradeHistoryPage"),
+          () => import("@features/grading/grade-history/GradeHistoryPage"),
         ),
         permission: [GRADE_HISTORY_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
         title: "Historial de Notas",
-        isVisibleInNavbar: true,
+        isVisibleInNavbar: false,
         icon: null,
         order: 10,
       },
       {
         key: "student-grades",
         path: STUDENT_ROUTES.GRADES,
-        element: lazy(
-          () => import("@features/student/StudentGradesPage"),
-        ),
+        element: lazy(() => import("@features/student/StudentGradesPage")),
         permission: [],
         roles: [UserRoleEnum.STUDENT],
         title: "Mis Calificaciones",

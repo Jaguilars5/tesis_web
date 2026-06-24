@@ -1,8 +1,10 @@
 export const ACADEMIC_PERIOD_ENDPOINTS = {
-  LIST: "/api/academic/academic-period/",
-  DETAIL: (id: number) => `/api/academic/academic-period/${id}/`,
+  GET: (id: number) => `/api/academic/academic-periods/${id}/`,
+  LIST: "/api/academic/academic-periods/",
+  POST: "/api/academic/academic-periods/",
+  PATCH: (id: number) => `/api/academic/academic-periods/${id}/`,
   SOFT_DELETE: (id: number) =>
-    `/api/academic/academic-period/${id}/soft-delete/`,
+    `/api/academic/academic-periods/${id}/soft-delete/`,
 } as const;
 
 export const ACADEMIC_PERIOD_PERMISSIONS = {

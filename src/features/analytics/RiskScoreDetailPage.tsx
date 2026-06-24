@@ -136,7 +136,9 @@ export default function RiskScoreDetailPage() {
               <div className="h-3 flex-1 overflow-hidden rounded-full bg-slate-200">
                 <div
                   className={`h-full rounded-full ${RISK_BAR_COLORS[selectedScore.risk_label]}`}
-                  style={{ width: `${Math.min(selectedScore.risk_score, 100)}%` }}
+                  style={{
+                    width: `${Math.min(selectedScore.risk_score, 100)}%`,
+                  }}
                 />
               </div>
               <span className="text-lg font-bold text-slate-800">
@@ -183,7 +185,7 @@ export default function RiskScoreDetailPage() {
             <div className="mt-4 space-y-3">
               <DetailRow
                 label="Tasa de asistencia"
-                value={`${selectedSnapshot.attendance_rate?.toFixed(1)}%`}
+                value={`${selectedSnapshot.attendance_rate}%`}
               />
               <DetailRow
                 label="Ausencias consecutivas máximas"
@@ -211,15 +213,15 @@ export default function RiskScoreDetailPage() {
             <div className="mt-4 space-y-3">
               <DetailRow
                 label="Promedio formativo (normalizado)"
-                value={selectedSnapshot.formative_avg_normalized?.toFixed(2)}
+                value={selectedSnapshot.formative_avg_normalized}
               />
               <DetailRow
                 label="Promedio sumativo (normalizado)"
-                value={selectedSnapshot.summative_avg_normalized?.toFixed(2)}
+                value={selectedSnapshot.summative_avg_normalized}
               />
               <DetailRow
                 label="Tendencia de notas"
-                value={selectedSnapshot.grade_trend_slope?.toFixed(3)}
+                value={selectedSnapshot.grade_trend_slope}
               />
               <DetailRow
                 label="Materias reprobadas"
@@ -229,7 +231,7 @@ export default function RiskScoreDetailPage() {
                 label="Promedio período anterior"
                 value={
                   selectedSnapshot.prev_period_avg_grade != null
-                    ? selectedSnapshot.prev_period_avg_grade.toFixed(2)
+                    ? selectedSnapshot.prev_period_avg_grade
                     : "Sin datos"
                 }
               />
@@ -243,7 +245,7 @@ export default function RiskScoreDetailPage() {
             <div className="mt-4 space-y-3">
               <DetailRow
                 label="Score de conducta"
-                value={selectedSnapshot.conduct_score?.toFixed(2)}
+                value={selectedSnapshot.conduct_score}
               />
               <DetailRow
                 label="Incidentes graves"
@@ -267,7 +269,11 @@ export default function RiskScoreDetailPage() {
             <div className="mt-4 space-y-3">
               <DetailRow
                 label="Brecha edad-grado"
-                value={selectedSnapshot.age_grade_gap != null ? `${selectedSnapshot.age_grade_gap} años` : "—"}
+                value={
+                  selectedSnapshot.age_grade_gap != null
+                    ? `${selectedSnapshot.age_grade_gap} años`
+                    : "—"
+                }
               />
               <DetailRow
                 label="Repitente"
@@ -286,8 +292,9 @@ export default function RiskScoreDetailPage() {
         <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 px-6 py-8 text-center">
           <Info className="mx-auto mb-2 size-8 text-slate-300" />
           <p className="text-sm text-slate-500">
-            No hay datos del snapshot de características disponible para este período.
-            Los datos pueden no haberse generado aún. Recalcula el riesgo para generar el snapshot.
+            No hay datos del snapshot de características disponible para este
+            período. Los datos pueden no haberse generado aún. Recalcula el
+            riesgo para generar el snapshot.
           </p>
         </div>
       )}
@@ -311,7 +318,10 @@ export default function RiskScoreDetailPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {selectedScore.risk_factors.map((rf) => (
-                  <tr key={rf.id} className="transition-colors hover:bg-slate-50/80">
+                  <tr
+                    key={rf.id}
+                    className="transition-colors hover:bg-slate-50/80"
+                  >
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-700">
                       {rf.risk_factor_name}
                     </td>
@@ -320,7 +330,9 @@ export default function RiskScoreDetailPage() {
                         <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-100">
                           <div
                             className="h-full rounded-full bg-orange-400"
-                            style={{ width: `${rf.contribution_weight * 100}%` }}
+                            style={{
+                              width: `${rf.contribution_weight * 100}%`,
+                            }}
                           />
                         </div>
                         <span className="text-xs font-medium">
@@ -342,7 +354,7 @@ export default function RiskScoreDetailPage() {
           <div className="text-sm text-blue-800">
             <p className="font-medium">Acerca de este análisis</p>
             <p className="mt-1">
-              Este puntaje se calculó usando{' '}
+              Este puntaje se calculó usando{" "}
               {selectedScore.model_version.includes("sklearn")
                 ? "el modelo de Machine Learning (Gradient Boosting) entrenado con datos históricos. Las 16 variables mostradas arriba son las características de entrada del modelo."
                 : "una fórmula ponderada basada en reglas de negocio (asistencia 35%, calificaciones 35%, conducta 30%)."}
@@ -354,13 +366,17 @@ export default function RiskScoreDetailPage() {
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string | number | null | undefined }) {
+function DetailRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number | null | undefined;
+}) {
   return (
     <div className="flex items-center justify-between border-b border-slate-100 pb-2 last:border-0">
       <span className="text-sm text-slate-600">{label}</span>
-      <span className="text-sm font-medium text-slate-800">
-        {value ?? "—"}
-      </span>
+      <span className="text-sm font-medium text-slate-800">{value ?? "—"}</span>
     </div>
   );
 }

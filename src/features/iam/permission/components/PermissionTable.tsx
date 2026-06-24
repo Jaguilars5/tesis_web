@@ -7,11 +7,13 @@ import {
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
-import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect"; import { SearchInput } from "@shared/components/Form";
+import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect";
+import { SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
-import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps"; import type { TableColumnProps } from "@shared/components/Table";
+import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps";
+import type { TableColumnProps } from "@shared/components/Table";
 import type {
   PermissionListParamsT,
   PermissionOrderingT,
@@ -122,17 +124,17 @@ export const PermissionTable = ({
     [fetchData],
   );
 
-  const hModule = useCallback((o: SelectOptionT) => { setModuleFilter(o.value as string); setPage(1); }, []);
-  useEffect(() => { fetchData({ page: 1 }); }, [moduleFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  const hModule = useCallback((o: SelectOptionT) => {
+    setModuleFilter(o.value as string);
+    setPage(1);
+  }, []);
+  useEffect(() => {
+    fetchData({ page: 1 });
+  }, [moduleFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasNextPage = data.length >= pageSize;
 
   const columns: TableColumnProps<PermissionT>[] = [
-    {
-      key: "code",
-      label: "Código",
-      className: tableFirstColumnClassname,
-    },
     {
       key: "description",
       label: "Descripción",
@@ -157,7 +159,15 @@ export const PermissionTable = ({
           placeholder="Filtrar permisos..."
         />
 
-        <CustomSelect name="filter-module" label="" placeholder="Todos los módulos" value={moduleFilter} options={MODULE_OPTIONS} onChange={hModule} className={filterSelectClassname} />
+        <CustomSelect
+          name="filter-module"
+          label=""
+          placeholder="Todos los módulos"
+          value={moduleFilter}
+          options={MODULE_OPTIONS}
+          onChange={hModule}
+          className={filterSelectClassname}
+        />
 
         <select
           value={ordering}

@@ -1,3 +1,3 @@
 export const TEACHER_ENDPOINTS = {
-  SCHEDULE: "/api/academic/class-schedule/my_schedule/",
+  SCHEDULE: "/api/academic/class-schedules/my-schedule/",
 } as const;

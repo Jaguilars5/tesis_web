@@ -95,18 +95,20 @@ export const protectedRoutes: RoutesConfigItem[] = [
     title: "Analítica",
     order: 6,
     permission: [ANALYTICS_RISK_PERMISSIONS.VIEW],
-    roles: [
-      UserRoleEnum.DIRECTOR,
-      UserRoleEnum.TEACHER,
-      UserRoleEnum.COUNSELOR,
-    ],
+    roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.COUNSELOR],
     children: [
       {
         key: "early-alerts",
         path: PROTECTED_ROUTES.ANALYTICS_EARLY_ALERTS,
-        element: lazy(() => import("@features/analytics/early-alerts/EarlyAlertPage")),
+        element: lazy(
+          () => import("@features/analytics/early-alerts/EarlyAlertPage"),
+        ),
         permission: [EARLY_ALERT_PERMISSIONS.GET],
-        roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.TEACHER, UserRoleEnum.COUNSELOR],
+        roles: [
+          UserRoleEnum.DIRECTOR,
+          UserRoleEnum.TEACHER,
+          UserRoleEnum.COUNSELOR,
+        ],
         title: "Alertas Tempranas",
         isVisibleInNavbar: true,
         icon: null,

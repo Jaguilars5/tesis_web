@@ -103,15 +103,9 @@ export const PeriodTypeTable = ({
 
   const columns: TableColumnProps<PeriodTypeT>[] = [
     {
-      key: "code",
-      label: "Código",
-      className: tableFirstColumnClassname,
-      render: (s) => <span className="font-medium">{s.code}</span>,
-    },
-    {
       key: "name",
       label: "Nombre",
-      className: tableColumnsClassname,
+      className: tableFirstColumnClassname,
     },
     {
       key: "divisions_per_year",

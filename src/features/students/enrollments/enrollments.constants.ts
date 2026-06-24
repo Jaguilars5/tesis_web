@@ -1,8 +1,7 @@
 export const ENROLLMENT_ENDPOINTS = {
   LIST: "/api/students/enrollments/",
   DETAIL: (id: number) => `/api/students/enrollments/${id}/`,
-  SOFT_DELETE: (id: number) =>
-    `/api/students/enrollments/${id}/soft-delete/`,
+  SOFT_DELETE: (id: number) => `/api/students/enrollments/${id}/soft-delete/`,
   BY_SECTION: "/api/students/enrollments/by-section/",
 } as const;
 export const ENROLLMENT_PERMISSIONS = {

@@ -42,10 +42,7 @@ export const behaviorRoutes: RoutesConfigItem[] = [
       {
         key: "severities",
         path: BEHAVIOR_ROUTES.SEVERITIES,
-        element: lazy(
-          () =>
-            import("@features/behavior/severity/SeverityPage"),
-        ),
+        element: lazy(() => import("@features/behavior/severity/SeverityPage")),
         permission: [SEVERITY_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
         title: "Severidades",
@@ -57,8 +54,7 @@ export const behaviorRoutes: RoutesConfigItem[] = [
         key: "incident-types",
         path: BEHAVIOR_ROUTES.INCIDENT_TYPES,
         element: lazy(
-          () =>
-            import("@features/behavior/incident-type/IncidentTypePage"),
+          () => import("@features/behavior/incident-type/IncidentTypePage"),
         ),
         permission: [INCIDENT_TYPE_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
@@ -77,16 +73,14 @@ export const behaviorRoutes: RoutesConfigItem[] = [
         permission: [BEHAVIOR_EVALUATION_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
         title: "Evaluaciones de Conducta",
-        isVisibleInNavbar: true,
+        isVisibleInNavbar: false,
         icon: null,
         order: 2,
       },
       {
         key: "student-conduct",
         path: STUDENT_ROUTES.CONDUCT,
-        element: lazy(
-          () => import("@features/student/StudentConductPage"),
-        ),
+        element: lazy(() => import("@features/student/StudentConductPage")),
         permission: [],
         roles: [UserRoleEnum.STUDENT],
         title: "Mi Conducta",

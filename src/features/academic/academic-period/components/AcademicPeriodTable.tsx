@@ -110,11 +110,6 @@ export const AcademicPeriodTable = ({
       render: (p) => <span>{p.name}</span>,
     },
     {
-      key: "code",
-      label: "Codigo",
-      className: tableColumnsClassname,
-    },
-    {
       key: "period_type_name",
       label: "Tipo",
       className: tableColumnsClassname,

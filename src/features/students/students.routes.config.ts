@@ -34,6 +34,20 @@ export const studentsRoutes: RoutesConfigItem[] = [
         order: 1,
       },
       {
+        key: "students-create",
+        path: STUDENTS_ROUTES.STUDENT_CREATE,
+        element: lazy(
+          () =>
+            import("@features/students/student/StudentCreateWizard"),
+        ),
+        permission: [STUDENT_PERMISSIONS.CREATE],
+        roles: [UserRoleEnum.DIRECTOR],
+        title: "Nuevo Estudiante",
+        isVisibleInNavbar: false,
+        icon: null,
+        order: 1,
+      },
+      {
         key: "student-representatives",
         path: STUDENTS_ROUTES.STUDENT_REPRESENTATIVES,
         element: lazy(
