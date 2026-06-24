@@ -27,3 +27,7 @@ export type {
   ScoringEngineT,
   ScoringPresetT,
 } from "./scoring-config";
+
+// Model evaluator module
+export { ModelEvaluatorPage, useModelEvaluatorController } from "./model-evaluator";
+export type { SimulateParamsT, SimulateResponseT } from "./model-evaluator";

@@ -1,4 +1,4 @@
-import { BarChart3, LayoutDashboard, Settings2 } from "lucide-react";
+import { BarChart3, Beaker, LayoutDashboard, Settings2 } from "lucide-react";
 import { lazy } from "react";
 
 import { PROTECTED_ROUTES, PROFILE_ROUTE } from "./routes";
@@ -150,6 +150,17 @@ export const protectedRoutes: RoutesConfigItem[] = [
         isVisibleInNavbar: true,
         icon: Settings2,
         order: 2,
+      },
+      {
+        key: "model-evaluator",
+        path: PROTECTED_ROUTES.ANALYTICS_MODEL_EVALUATOR,
+        element: lazy(() => import("@features/analytics/model-evaluator/ModelEvaluatorPage")),
+        permission: [ANALYTICS_RISK_PERMISSIONS.VIEW],
+        roles: [UserRoleEnum.DIRECTOR, UserRoleEnum.RECTOR, UserRoleEnum.TEACHER],
+        title: "Simulador de Riesgo",
+        isVisibleInNavbar: true,
+        icon: Beaker,
+        order: 3,
       },
     ],
   },

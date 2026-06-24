@@ -113,6 +113,22 @@ export const StudentTable = ({
       className: tableFirstColumnClassname,
     },
     {
+      key: "primary_representative",
+      label: "Representante",
+      className: tableColumnsClassname,
+      render: (s) =>
+        s.primary_representative ? (
+          <span className="text-sm text-slate-700">
+            {s.primary_representative.user_names}
+            <span className="ml-1 text-xs text-slate-400">
+              ({s.primary_representative.kinship_name})
+            </span>
+          </span>
+        ) : (
+          <span className="text-sm text-slate-400">—</span>
+        ),
+    },
+    {
       key: "is_active",
       label: "Estado",
       className: tableColumnsClassname,

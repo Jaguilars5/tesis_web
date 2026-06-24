@@ -1,3 +1,10 @@
+export interface PrimaryRepresentativeT {
+  id: number;
+  user_names: string;
+  kinship: number;
+  kinship_name: string;
+}
+
 export interface StudentT {
   id: number;
   user: number;
@@ -8,6 +15,7 @@ export interface StudentT {
   age: number | null;
   is_active: boolean;
   created_at: string;
+  primary_representative: PrimaryRepresentativeT | null;
 }
 export type StudentOrderingT =
   | "user__person__last_names"
@@ -51,12 +59,26 @@ export interface StudentUpdateParamsT {
 }
 export type StudentGetParamsT = number;
 export type StudentDeleteParamsT = number;
+export interface AssignRepresentativeParamsT {
+  user_id?: number;
+  document_number?: string;
+  names?: string;
+  last_names?: string;
+  email?: string;
+  phone?: string;
+  birth_date?: string;
+  document_type?: number | string;
+  city?: number | null;
+  kinship?: string;
+}
+
 export interface StudentServiceT {
   list(p?: StudentListParamsT): Promise<StudentT[]>;
   get(id: StudentGetParamsT): Promise<StudentT>;
   create(d: StudentCreateDataT): Promise<StudentT>;
   update(p: StudentUpdateParamsT): Promise<StudentT>;
   softDelete(id: StudentDeleteParamsT): Promise<{ id: number }>;
+  assignRepresentative(studentId: number, data: AssignRepresentativeParamsT): Promise<unknown>;
 }
 export interface StudentFormValues {
   document_number: string;

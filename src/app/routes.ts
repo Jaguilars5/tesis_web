@@ -46,4 +46,5 @@ export const PROTECTED_ROUTES = {
   ANALYTICS_RISK_SCORES: "/analytics/risk-scores",
   ANALYTICS_RISK_SCORE_DETAIL: "/analytics/risk-scores/:id",
   ANALYTICS_SCORING_CONFIG: "/analytics/scoring-config",
+  ANALYTICS_MODEL_EVALUATOR: "/analytics/model-evaluator",
 };
