@@ -32,18 +32,18 @@ const periodTypeSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    periodTypeCreated(state, action: PayloadAction<PeriodTypeT>) {
+    entityCreated(state, action: PayloadAction<PeriodTypeT>) {
       state.periodTypes.unshift(action.payload);
       state.status = "succeeded";
     },
-    periodTypeUpdated(state, action: PayloadAction<PeriodTypeT>) {
+    entityUpdated(state, action: PayloadAction<PeriodTypeT>) {
       const idx = state.periodTypes.findIndex(
         (p) => p.id === action.payload.id,
       );
       if (idx !== -1) state.periodTypes[idx] = action.payload;
       state.status = "succeeded";
     },
-    periodTypeDeleted(state, action: PayloadAction<number>) {
+    entityDeleted(state, action: PayloadAction<number>) {
       state.periodTypes = state.periodTypes.filter(
         (p) => p.id !== action.payload,
       );
@@ -63,9 +63,9 @@ export const {
   loadPending,
   loadSuccess,
   loadError,
-  periodTypeCreated,
-  periodTypeUpdated,
-  periodTypeDeleted,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
   mutationError,
   clearPeriodTypeError,
 } = periodTypeSlice.actions;

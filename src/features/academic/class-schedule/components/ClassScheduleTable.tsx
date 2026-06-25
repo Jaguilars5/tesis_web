@@ -2,12 +2,13 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
 import { Badge } from "@shared/components/Badge";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
@@ -24,86 +25,133 @@ const dayOfWeekMap = Object.fromEntries(
   DAY_OF_WEEK_OPTIONS.map((opt) => [opt.value, opt.label]),
 );
 
-const ORDERING_OPTIONS: { label: string; value: ClassScheduleOrderingT }[] = [
+const OrderingOptions: { label: string; value: ClassScheduleOrderingT }[] = [
   { label: "Día (asc)", value: "day_of_week" },
   { label: "Día (desc)", value: "-day_of_week" },
   { label: "Hora inicio (asc)", value: "start_time" },
   { label: "Hora inicio (desc)", value: "-start_time" },
 ];
 
-type ClassScheduleTableProps = {
+const dayFilterOptions = DAY_OF_WEEK_OPTIONS.map((opt) => ({
+  label: opt.label,
+  value: opt.value,
+}));
+
+interface ClassScheduleTableProps {
   classSchedules: ClassScheduleT[];
   isLoading: boolean;
   loadClassSchedules: (params?: ClassScheduleListParamsT) => void;
+  teacherSubjectSectionOptions: { label: string; value: string }[];
   onEdit: (schedule: ClassScheduleT) => void;
   onView: (schedule: ClassScheduleT) => void;
   onDelete: (schedule: ClassScheduleT) => void;
-};
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
 
-export const ClassScheduleTable = ({
+export const ClassScheduleTable: React.FC<ClassScheduleTableProps> = ({
   classSchedules,
   isLoading,
   loadClassSchedules,
+  teacherSubjectSectionOptions,
   onEdit,
   onView,
   onDelete,
-}: ClassScheduleTableProps) => {
+  canEdit = true,
+  canDelete = true,
+}) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] =
     useState<ClassScheduleOrderingT>("day_of_week");
+  const [teacherSubjectSection, setTeacherSubjectSection] = useState<
+    number | undefined
+  >(undefined);
+  const [dayOfWeek, setDayOfWeek] = useState<number | undefined>(undefined);
   const [hasSearched, setHasSearched] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
+  const buildFilters = useCallback(
+    (overrides?: { teacher_subject_section?: number; day_of_week?: number }) => ({
+      teacher_subject_section:
+        overrides?.teacher_subject_section ?? teacherSubjectSection,
+      day_of_week: overrides?.day_of_week ?? dayOfWeek,
+    }),
+    [teacherSubjectSection, dayOfWeek],
+  );
+
   const fetchData = useCallback(
-    (overrides?: {
-      page?: number;
-      pageSize?: number;
-      search?: string;
-      ordering?: ClassScheduleOrderingT;
-    }) => {
-      loadClassSchedules({
-        page: overrides?.page ?? page,
-        pageSize: overrides?.pageSize ?? pageSize,
-        search:
-          overrides?.search !== undefined
-            ? overrides.search
-            : search || undefined,
-        ordering: overrides?.ordering ?? ordering,
-      });
+    (params?: ClassScheduleListParamsT) => {
+      loadClassSchedules(params);
     },
-    [loadClassSchedules, page, pageSize, search, ordering],
+    [loadClassSchedules],
   );
 
   useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSearchChange = useCallback(
+  const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearch(value);
       setPage(1);
       setHasSearched(true);
-
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: value || undefined });
+        fetchData({
+          page: 1,
+          search: value || undefined,
+          ordering,
+          filters: buildFilters(),
+        });
       }, 400);
     },
-    [fetchData],
+    [fetchData, ordering, buildFilters],
   );
 
-  const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as ClassScheduleOrderingT;
-      setOrdering(newOrdering);
+  const handleOrdering = useCallback(
+    (value: ClassScheduleOrderingT) => {
+      setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: newOrdering });
+      fetchData({
+        page: 1,
+        search: search || undefined,
+        ordering: value,
+        filters: buildFilters(),
+      });
     },
-    [fetchData],
+    [fetchData, search, buildFilters],
+  );
+
+  const handleTeacherSubjectSectionChange = useCallback(
+    (value: number | undefined) => {
+      setTeacherSubjectSection(value);
+      setPage(1);
+      fetchData({
+        page: 1,
+        search: search || undefined,
+        ordering,
+        filters: buildFilters({ teacher_subject_section: value }),
+      });
+    },
+    [fetchData, search, ordering, buildFilters],
+  );
+
+  const handleDayOfWeekChange = useCallback(
+    (value: number | undefined) => {
+      setDayOfWeek(value);
+      setPage(1);
+      fetchData({
+        page: 1,
+        search: search || undefined,
+        ordering,
+        filters: buildFilters({ day_of_week: value }),
+      });
+    },
+    [fetchData, search, ordering, buildFilters],
   );
 
   const hasNextPage = classSchedules.length >= pageSize;
@@ -151,24 +199,51 @@ export const ClassScheduleTable = ({
         <SearchInput
           name="search"
           type="text"
-          onChange={handleSearchChange}
+          onChange={handleSearch}
           value={search}
           className="relative min-w-50 flex-1"
           placeholder="Filtrar horarios..."
         />
 
-        <select
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por"
           value={ordering}
-          onChange={handleOrderingChange}
-          className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Ordenar por"
-        >
-          {ORDERING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          options={OrderingOptions}
+          onChange={(option) =>
+            handleOrdering(option.value as ClassScheduleOrderingT)
+          }
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="teacher_subject_section"
+          label=""
+          placeholder="Asignación"
+          value={teacherSubjectSection ? String(teacherSubjectSection) : ""}
+          options={teacherSubjectSectionOptions}
+          onChange={(option) =>
+            handleTeacherSubjectSectionChange(
+              option.value ? Number(option.value) : undefined,
+            )
+          }
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="day_of_week"
+          label=""
+          placeholder="Día"
+          value={dayOfWeek ? String(dayOfWeek) : ""}
+          options={dayFilterOptions}
+          onChange={(option) =>
+            handleDayOfWeekChange(
+              option.value ? Number(option.value) : undefined,
+            )
+          }
+          className={filterSelectClassname}
+        />
       </div>
 
       <CustomTable<ClassScheduleT>
@@ -193,22 +268,26 @@ export const ClassScheduleTable = ({
             >
               <Eye className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(s)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Editar"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(s)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-              title="Desactivar"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(s)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                title="Editar"
+              >
+                <Pencil className="size-4" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(s)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                title="Desactivar"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       />
@@ -221,12 +300,23 @@ export const ClassScheduleTable = ({
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {
           setPage(newPage);
-          fetchData({ page: newPage });
+          fetchData({
+            page: newPage,
+            search: search || undefined,
+            ordering,
+            filters: buildFilters(),
+          });
         }}
         onPageSizeChange={(newSize) => {
           setPageSize(newSize);
           setPage(1);
-          fetchData({ page: 1, pageSize: newSize });
+          fetchData({
+            page: 1,
+            pageSize: newSize,
+            search: search || undefined,
+            ordering,
+            filters: buildFilters(),
+          });
         }}
       />
     </div>

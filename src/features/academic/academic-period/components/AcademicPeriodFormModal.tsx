@@ -12,8 +12,10 @@ import {
   CustomInput,
   CustomSelect,
 } from "@shared/components/Form";
+import { ErrrosInForm } from "@shared/components/ErrrosInForm";
+import type { SubmitErrorState } from "@shared/utils/validationErrors";
 
-import { usePeriodTypeList } from "../academic-period.options";
+import { usePeriodTypeList } from "../hooks/usePeriodTypeOptions";
 import {
   academicPeriodSchema,
   buildAbbreviation,
@@ -21,9 +23,8 @@ import {
 import { AcademicPeriodCard } from "./AcademicPeriodCard";
 
 import type { PeriodTypeT } from "@features/academic/period-types/period-types.types";
-import type { SubmitErrorState } from "../academic-period.controller";
 import type {
-  AcademicPeriodCreateDataT,
+  AcademicPeriodCreateParamsT,
   AcademicPeriodFormValues,
   AcademicPeriodT,
 } from "../academic-period.types";
@@ -50,7 +51,7 @@ interface AcademicPeriodFormModalProps {
   periodTypeOptions: { label: string; value: string }[];
   schoolYearOptions: { label: string; value: string }[];
   submitErrors: SubmitErrorState;
-  onCreateMany: (items: AcademicPeriodCreateDataT[]) => Promise<void>;
+  onCreateMany: (items: AcademicPeriodCreateParamsT[]) => Promise<void>;
   onUpdate: (values: AcademicPeriodFormValues) => Promise<void>;
 }
 
@@ -103,7 +104,9 @@ const buildEditInitialValues = (
   };
 };
 
-export const AcademicPeriodFormModal = ({
+export const AcademicPeriodFormModal: React.FC<
+  AcademicPeriodFormModalProps
+> = ({
   isOpen,
   onClose,
   isEdit,
@@ -113,7 +116,7 @@ export const AcademicPeriodFormModal = ({
   submitErrors,
   onCreateMany,
   onUpdate,
-}: AcademicPeriodFormModalProps) => {
+}) => {
   const { periodTypes } = usePeriodTypeList();
 
   const [step, setStep] = useState<1 | 2>(1);
@@ -345,49 +348,10 @@ export const AcademicPeriodFormModal = ({
 
         {(submitErrors.general.length > 0 ||
           Object.keys(submitErrors.validation).length > 0) && (
-          <div className="mx-5 mt-3 rounded-lg border border-red-300 bg-red-50 p-4 shadow-sm">
-            <div className="flex items-start gap-2">
-              <svg
-                className="mt-0.5 size-5 flex-shrink-0 text-red-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <div className="flex-1">
-                <p className="mb-2 text-sm font-semibold text-red-800">
-                  Error al guardar el período
-                </p>
-                {submitErrors.general.length > 0 && (
-                  <ul className="mb-2 space-y-1">
-                    {submitErrors.general.map((err, i) => (
-                      <li key={i} className="text-sm text-red-700">
-                        • {err}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {Object.keys(submitErrors.validation).length > 0 && (
-                  <ul className="space-y-1">
-                    {Object.entries(submitErrors.validation).map(
-                      ([field, message]) => (
-                        <li key={field} className="text-sm text-red-700">
-                          <span className="font-semibold">
-                            {getFieldLabel(field)}:
-                          </span>{" "}
-                          {message}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
+          <ErrrosInForm
+            submitErrors={submitErrors}
+            getFieldLabel={getFieldLabel}
+          />
         )}
 
         {isEdit ? (

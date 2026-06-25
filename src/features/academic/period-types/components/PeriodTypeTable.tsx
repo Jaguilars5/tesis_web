@@ -2,12 +2,13 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
 import { Badge } from "@shared/components/Badge";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
@@ -18,30 +19,34 @@ import type {
   PeriodTypeT,
 } from "../period-types.types";
 
-const ORDERING_OPTIONS: { label: string; value: PeriodTypeOrderingT }[] = [
+const OrderingOptions: { label: string; value: PeriodTypeOrderingT }[] = [
   { label: "Nombre (A-Z)", value: "name" },
   { label: "Nombre (Z-A)", value: "-name" },
   { label: "Código (A-Z)", value: "code" },
   { label: "Código (Z-A)", value: "-code" },
 ];
 
-type PeriodTypeTableProps = {
+interface PeriodTypeTableProps {
   periodTypes: PeriodTypeT[];
   isLoading: boolean;
   loadPeriodTypes: (params?: PeriodTypeListParamsT) => void;
   onEdit: (periodType: PeriodTypeT) => void;
   onView: (periodType: PeriodTypeT) => void;
   onDelete: (periodType: PeriodTypeT) => void;
-};
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
 
-export const PeriodTypeTable = ({
+export const PeriodTypeTable: React.FC<PeriodTypeTableProps> = ({
   periodTypes,
   isLoading,
   loadPeriodTypes,
   onEdit,
   onView,
   onDelete,
-}: PeriodTypeTableProps) => {
+  canEdit = true,
+  canDelete = true,
+}) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -51,52 +56,47 @@ export const PeriodTypeTable = ({
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const fetchData = useCallback(
-    (overrides?: {
-      page?: number;
-      pageSize?: number;
-      search?: string;
-      ordering?: PeriodTypeOrderingT;
-    }) => {
-      loadPeriodTypes({
-        page: overrides?.page ?? page,
-        pageSize: overrides?.pageSize ?? pageSize,
-        search:
-          overrides?.search !== undefined
-            ? overrides.search
-            : search || undefined,
-        ordering: overrides?.ordering ?? ordering,
-      });
+    (params?: PeriodTypeListParamsT) => {
+      loadPeriodTypes(params);
     },
-    [loadPeriodTypes, page, pageSize, search, ordering],
+    [loadPeriodTypes],
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ page: 1, pageSize: 10, ordering: "name" });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSearchChange = useCallback(
+  const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearch(value);
       setPage(1);
       setHasSearched(true);
-
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: value || undefined });
+        fetchData({
+          page: 1,
+          pageSize,
+          search: value || undefined,
+          ordering,
+        });
       }, 400);
     },
-    [fetchData],
+    [fetchData, pageSize, ordering],
   );
 
-  const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as PeriodTypeOrderingT;
-      setOrdering(newOrdering);
+  const handleOrdering = useCallback(
+    (value: PeriodTypeOrderingT) => {
+      setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: newOrdering });
+      fetchData({
+        page: 1,
+        pageSize,
+        search: search || undefined,
+        ordering: value,
+      });
     },
-    [fetchData],
+    [fetchData, pageSize, search],
   );
 
   const hasNextPage = periodTypes.length >= pageSize;
@@ -132,24 +132,23 @@ export const PeriodTypeTable = ({
         <SearchInput
           name="search"
           type="text"
-          onChange={handleSearchChange}
+          onChange={handleSearch}
           value={search}
           className="relative min-w-50 flex-1"
           placeholder="Filtrar tipos de periodo..."
         />
 
-        <select
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por"
           value={ordering}
-          onChange={handleOrderingChange}
-          className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Ordenar por"
-        >
-          {ORDERING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          options={OrderingOptions}
+          onChange={(option) =>
+            handleOrdering(option.value as PeriodTypeOrderingT)
+          }
+          className={filterSelectClassname}
+        />
       </div>
 
       <CustomTable<PeriodTypeT>
@@ -174,22 +173,26 @@ export const PeriodTypeTable = ({
             >
               <Eye className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(s)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Editar"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(s)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-              title="Desactivar"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(s)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                title="Editar"
+              >
+                <Pencil className="size-4" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(s)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                title="Desactivar"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       />
@@ -202,12 +205,22 @@ export const PeriodTypeTable = ({
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {
           setPage(newPage);
-          fetchData({ page: newPage });
+          fetchData({
+            page: newPage,
+            pageSize,
+            search: search || undefined,
+            ordering,
+          });
         }}
         onPageSizeChange={(newSize) => {
           setPageSize(newSize);
           setPage(1);
-          fetchData({ page: 1, pageSize: newSize });
+          fetchData({
+            page: 1,
+            pageSize: newSize,
+            search: search || undefined,
+            ordering,
+          });
         }}
       />
     </div>

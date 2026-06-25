@@ -8,11 +8,14 @@ export const DAY_OF_WEEK_OPTIONS = [
   { label: "Domingo", value: "7" },
 ] as const;
 
+export const CLASS_SCHEDULE_BASE_URL = "/api/academic/class-schedules/";
+
 export const CLASS_SCHEDULE_ENDPOINTS = {
-  LIST: "/api/academic/class-schedules/",
-  DETAIL: (id: number) => `/api/academic/class-schedules/${id}/`,
-  SOFT_DELETE: (id: number) =>
-    `/api/academic/class-schedules/${id}/soft-delete/`,
+  GET: (id: number) => `${CLASS_SCHEDULE_BASE_URL}${id}/`,
+  LIST: CLASS_SCHEDULE_BASE_URL,
+  CREATE: CLASS_SCHEDULE_BASE_URL,
+  UPDATE: (id: number) => `${CLASS_SCHEDULE_BASE_URL}${id}/`,
+  SOFT_DELETE: (id: number) => `${CLASS_SCHEDULE_BASE_URL}${id}/soft-delete/`,
 } as const;
 
 export const CLASS_SCHEDULE_PERMISSIONS = {

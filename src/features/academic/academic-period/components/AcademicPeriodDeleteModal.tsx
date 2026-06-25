@@ -1,35 +1,34 @@
 import { AlertTriangle, Loader2, X } from "lucide-react";
 import { useState } from "react";
 
-import type { AcademicPeriodT } from "../academic-period.types";
+import type {
+  AcademicPeriodDeleteParamsT,
+  AcademicPeriodT,
+} from "../academic-period.types";
 
 interface AcademicPeriodDeleteModalProps {
   isOpen: boolean;
   period: AcademicPeriodT | null;
   onClose: () => void;
-  onConfirm: (id: number) => Promise<void>;
+  onConfirm: (params: AcademicPeriodDeleteParamsT) => Promise<void>;
 }
 
-export const AcademicPeriodDeleteModal = ({
-  isOpen,
-  period,
-  onClose,
-  onConfirm,
-}: AcademicPeriodDeleteModalProps) => {
+export const AcademicPeriodDeleteModal: React.FC<
+  AcademicPeriodDeleteModalProps
+> = ({ isOpen, period, onClose, onConfirm }) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
+  if (!isOpen || !period) return null;
+
   const handleConfirm = async () => {
-    if (!period) return;
     setIsDeleting(true);
     try {
-      await onConfirm(period.id);
+      await onConfirm({ id: period.id });
       onClose();
     } finally {
       setIsDeleting(false);
     }
   };
-
-  if (!isOpen || !period) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

@@ -15,6 +15,17 @@ export interface AcademicPeriodT {
   updated_at: string;
 }
 
+export interface AcademicPeriodFormValues {
+  code: string;
+  name: string;
+  period_type: number;
+  start_date: string;
+  end_date: string;
+  year_weight: number | null;
+  is_regular_period: boolean;
+  school_year: number;
+}
+
 export type AcademicPeriodOrderingT =
   | "name"
   | "-name"
@@ -27,47 +38,34 @@ export interface AcademicPeriodListParamsT {
   page?: number;
   pageSize?: number;
   search?: string;
+  filters?: {
+    school_year?: number;
+    period_type?: number;
+  };
   ordering?: AcademicPeriodOrderingT;
 }
 
-export type AcademicPeriodCreateDataT = Omit<
-  AcademicPeriodT,
-  | "id"
-  | "is_active"
-  | "school_year_name"
-  | "period_type_name"
-  | "created_at"
-  | "updated_at"
->;
+export type AcademicPeriodCreateParamsT = AcademicPeriodFormValues;
 
-export type AcademicPeriodCreateParamsT = AcademicPeriodCreateDataT;
-
-export type AcademicPeriodUpdateDataT = Partial<Omit<AcademicPeriodT, "id">>;
+export type AcademicPeriodUpdateDataT = Partial<AcademicPeriodFormValues>;
 
 export interface AcademicPeriodUpdateParamsT {
   id: number;
   data: AcademicPeriodUpdateDataT;
 }
 
-export type AcademicPeriodGetParamsT = number;
+export interface AcademicPeriodGetParamsT {
+  id: number;
+}
 
-export type AcademicPeriodDeleteParamsT = number;
+export interface AcademicPeriodDeleteParamsT {
+  id: number;
+}
 
 export interface AcademicPeriodServiceT {
   list(params?: AcademicPeriodListParamsT): Promise<AcademicPeriodT[]>;
-  get(id: AcademicPeriodGetParamsT): Promise<AcademicPeriodT>;
-  create(data: AcademicPeriodCreateDataT): Promise<AcademicPeriodT>;
+  get(params: AcademicPeriodGetParamsT): Promise<AcademicPeriodT>;
+  create(params: AcademicPeriodCreateParamsT): Promise<AcademicPeriodT>;
   update(params: AcademicPeriodUpdateParamsT): Promise<AcademicPeriodT>;
-  softDelete(id: AcademicPeriodDeleteParamsT): Promise<{ id: number }>;
-}
-
-export interface AcademicPeriodFormValues {
-  code: string;
-  name: string;
-  period_type: number;
-  start_date: string;
-  end_date: string;
-  year_weight: number | null;
-  is_regular_period: boolean;
-  school_year: number;
+  softDelete(params: AcademicPeriodDeleteParamsT): Promise<{ id: number }>;
 }

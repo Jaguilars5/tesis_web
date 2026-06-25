@@ -2,11 +2,12 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
@@ -17,7 +18,7 @@ import type {
   AcademicPeriodT,
 } from "../academic-period.types";
 
-const ORDERING_OPTIONS: { label: string; value: AcademicPeriodOrderingT }[] = [
+const OrderingOptions: { label: string; value: AcademicPeriodOrderingT }[] = [
   { label: "Nombre (A-Z)", value: "name" },
   { label: "Nombre (Z-A)", value: "-name" },
   { label: "Inicio (asc)", value: "start_date" },
@@ -26,78 +27,122 @@ const ORDERING_OPTIONS: { label: string; value: AcademicPeriodOrderingT }[] = [
   { label: "Fin (desc)", value: "-end_date" },
 ];
 
-type AcademicPeriodTableProps = {
+interface AcademicPeriodTableProps {
   academicPeriods: AcademicPeriodT[];
   isLoading: boolean;
   loadAcademicPeriods: (params?: AcademicPeriodListParamsT) => void;
+  schoolYearOptions: { label: string; value: string }[];
+  periodTypeOptions: { label: string; value: string }[];
   onEdit: (academicPeriod: AcademicPeriodT) => void;
   onView: (academicPeriod: AcademicPeriodT) => void;
   onDelete: (academicPeriod: AcademicPeriodT) => void;
-};
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
 
-export const AcademicPeriodTable = ({
+export const AcademicPeriodTable: React.FC<AcademicPeriodTableProps> = ({
   academicPeriods,
   isLoading,
   loadAcademicPeriods,
+  schoolYearOptions,
+  periodTypeOptions,
   onEdit,
   onView,
   onDelete,
-}: AcademicPeriodTableProps) => {
+  canEdit = true,
+  canDelete = true,
+}) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] = useState<AcademicPeriodOrderingT>("name");
+  const [schoolYear, setSchoolYear] = useState<number | undefined>(undefined);
+  const [periodType, setPeriodType] = useState<number | undefined>(undefined);
   const [hasSearched, setHasSearched] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const fetchData = useCallback(
-    (overrides?: {
-      page?: number;
-      pageSize?: number;
-      search?: string;
-      ordering?: AcademicPeriodOrderingT;
-    }) => {
-      loadAcademicPeriods({
-        page: overrides?.page ?? page,
-        pageSize: overrides?.pageSize ?? pageSize,
-        search:
-          overrides?.search !== undefined
-            ? overrides.search
-            : search || undefined,
-        ordering: overrides?.ordering ?? ordering,
-      });
+  const buildFilters = useCallback(
+    (overrides?: { school_year?: number; period_type?: number }) => {
+      const next = {
+        school_year: overrides?.school_year ?? schoolYear,
+        period_type: overrides?.period_type ?? periodType,
+      };
+      return next;
     },
-    [loadAcademicPeriods, page, pageSize, search, ordering],
+    [schoolYear, periodType],
+  );
+
+  const fetchData = useCallback(
+    (params?: AcademicPeriodListParamsT) => {
+      loadAcademicPeriods(params);
+    },
+    [loadAcademicPeriods],
   );
 
   useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSearchChange = useCallback(
+  const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearch(value);
       setPage(1);
       setHasSearched(true);
-
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: value || undefined });
+        fetchData({
+          page: 1,
+          search: value || undefined,
+          ordering,
+          filters: buildFilters(),
+        });
       }, 400);
     },
-    [fetchData],
+    [fetchData, ordering, buildFilters],
   );
 
-  const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as AcademicPeriodOrderingT;
-      setOrdering(newOrdering);
+  const handleOrdering = useCallback(
+    (value: AcademicPeriodOrderingT) => {
+      setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: newOrdering });
+      fetchData({
+        page: 1,
+        search: search || undefined,
+        ordering: value,
+        filters: buildFilters(),
+      });
     },
-    [fetchData],
+    [fetchData, search, buildFilters],
+  );
+
+  const handleSchoolYearChange = useCallback(
+    (value: number | undefined) => {
+      setSchoolYear(value);
+      setPage(1);
+      fetchData({
+        page: 1,
+        search: search || undefined,
+        ordering,
+        filters: buildFilters({ school_year: value }),
+      });
+    },
+    [fetchData, search, ordering, buildFilters],
+  );
+
+  const handlePeriodTypeChange = useCallback(
+    (value: number | undefined) => {
+      setPeriodType(value);
+      setPage(1);
+      fetchData({
+        page: 1,
+        search: search || undefined,
+        ordering,
+        filters: buildFilters({ period_type: value }),
+      });
+    },
+    [fetchData, search, ordering, buildFilters],
   );
 
   const hasNextPage = academicPeriods.length >= pageSize;
@@ -138,24 +183,47 @@ export const AcademicPeriodTable = ({
         <SearchInput
           name="search"
           type="text"
-          onChange={handleSearchChange}
+          onChange={handleSearch}
           value={search}
           className="relative min-w-50 flex-1"
           placeholder="Filtrar periodos..."
         />
 
-        <select
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por"
           value={ordering}
-          onChange={handleOrderingChange}
-          className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Ordenar por"
-        >
-          {ORDERING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          options={OrderingOptions}
+          onChange={(option) =>
+            handleOrdering(option.value as AcademicPeriodOrderingT)
+          }
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="school_year"
+          label=""
+          placeholder="Año escolar"
+          value={schoolYear ? String(schoolYear) : ""}
+          options={schoolYearOptions}
+          onChange={(option) =>
+            handleSchoolYearChange(option.value ? Number(option.value) : undefined)
+          }
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="period_type"
+          label=""
+          placeholder="Tipo de periodo"
+          value={periodType ? String(periodType) : ""}
+          options={periodTypeOptions}
+          onChange={(option) =>
+            handlePeriodTypeChange(option.value ? Number(option.value) : undefined)
+          }
+          className={filterSelectClassname}
+        />
       </div>
 
       <CustomTable<AcademicPeriodT>
@@ -180,22 +248,26 @@ export const AcademicPeriodTable = ({
             >
               <Eye className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(p)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Editar"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(p)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-              title="Desactivar"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(p)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                title="Editar"
+              >
+                <Pencil className="size-4" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(p)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                title="Desactivar"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       />
@@ -208,12 +280,23 @@ export const AcademicPeriodTable = ({
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {
           setPage(newPage);
-          fetchData({ page: newPage });
+          fetchData({
+            page: newPage,
+            search: search || undefined,
+            ordering,
+            filters: buildFilters(),
+          });
         }}
         onPageSizeChange={(newSize) => {
           setPageSize(newSize);
           setPage(1);
-          fetchData({ page: 1, pageSize: newSize });
+          fetchData({
+            page: 1,
+            pageSize: newSize,
+            search: search || undefined,
+            ordering,
+            filters: buildFilters(),
+          });
         }}
       />
     </div>

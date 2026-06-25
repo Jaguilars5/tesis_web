@@ -4,13 +4,21 @@ import { useCustomFormik } from "@shared/hooks/useCustomFormik";
 import { useAppDispatch, useAppSelector } from "@shared/redux/hooks";
 import { authService } from "./auth.service";
 import {
-  loginPending, loginSuccess, loginError, refreshSuccess, refreshError,
-  selectAuthError, selectAuthStatus,
+  loginPending,
+  loginSuccess,
+  loginError,
+  refreshSuccess,
+  refreshError,
+  selectAuthError,
+  selectAuthStatus,
 } from "./auth.slice";
 import { loginSchema } from "./auth.utils";
 import { tokenManager } from "./auth-token.manager";
 
-interface AuthFormValues { username: string; password: string; }
+interface AuthFormValues {
+  username: string;
+  password: string;
+}
 const initialValues: AuthFormValues = { username: "", password: "" };
 
 export const useAuthForm = () => {
@@ -33,14 +41,22 @@ export const useAuthForm = () => {
           navigate(PROTECTED_ROUTES.DASHBOARD, { replace: true });
         }
       } catch (err) {
-        dispatch(loginError(err instanceof Error ? err.message : "Error al iniciar sesión"));
+        dispatch(
+          loginError(
+            err instanceof Error ? err.message : "Error al iniciar sesión",
+          ),
+        );
       } finally {
         helpers.setSubmitting(false);
       }
     },
   });
 
-  return { formik, isLoading: formik.isSubmitting || status === "loading", authError };
+  return {
+    formik,
+    isLoading: formik.isSubmitting || status === "loading",
+    authError,
+  };
 };
 
 import type { AppDispatch } from "@shared/redux/store";

@@ -16,13 +16,13 @@ interface AcademicPeriodCardProps {
   onChange: (values: AcademicPeriodFormValues) => void;
 }
 
-export const AcademicPeriodCard = ({
+export const AcademicPeriodCard: React.FC<AcademicPeriodCardProps> = ({
   index,
   total,
   initialValues,
   disabled = false,
   onChange,
-}: AcademicPeriodCardProps) => {
+}) => {
   const formik = useFormik<AcademicPeriodFormValues>({
     initialValues,
     enableReinitialize: true,

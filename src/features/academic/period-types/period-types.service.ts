@@ -6,7 +6,7 @@ import type {
 
 import { PERIOD_TYPE_ENDPOINTS } from "./period-types.constants";
 import type {
-  PeriodTypeCreateDataT,
+  PeriodTypeCreateParamsT,
   PeriodTypeDeleteParamsT,
   PeriodTypeGetParamsT,
   PeriodTypeListParamsT,
@@ -37,10 +37,10 @@ class PeriodTypeService implements PeriodTypeServiceT {
     }
   }
 
-  async get(id: PeriodTypeGetParamsT): Promise<PeriodTypeT> {
+  async get(params: PeriodTypeGetParamsT): Promise<PeriodTypeT> {
     try {
       const { data } = await apiClient.get<ResponseApi<PeriodTypeT>>(
-        PERIOD_TYPE_ENDPOINTS.DETAIL(id),
+        PERIOD_TYPE_ENDPOINTS.GET(params.id),
       );
       return data.data;
     } catch (error) {
@@ -48,11 +48,11 @@ class PeriodTypeService implements PeriodTypeServiceT {
     }
   }
 
-  async create(payload: PeriodTypeCreateDataT): Promise<PeriodTypeT> {
+  async create(params: PeriodTypeCreateParamsT): Promise<PeriodTypeT> {
     try {
       const { data } = await apiClient.post<ResponseApi<PeriodTypeT>>(
-        PERIOD_TYPE_ENDPOINTS.LIST,
-        payload,
+        PERIOD_TYPE_ENDPOINTS.CREATE,
+        params,
       );
       return data.data;
     } catch (error) {
@@ -63,7 +63,7 @@ class PeriodTypeService implements PeriodTypeServiceT {
   async update(params: PeriodTypeUpdateParamsT): Promise<PeriodTypeT> {
     try {
       const { data } = await apiClient.patch<ResponseApi<PeriodTypeT>>(
-        PERIOD_TYPE_ENDPOINTS.DETAIL(params.id),
+        PERIOD_TYPE_ENDPOINTS.UPDATE(params.id),
         params.data,
       );
       return data.data;
@@ -72,10 +72,10 @@ class PeriodTypeService implements PeriodTypeServiceT {
     }
   }
 
-  async softDelete(id: PeriodTypeDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(params: PeriodTypeDeleteParamsT): Promise<{ id: number }> {
     try {
       const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
-        PERIOD_TYPE_ENDPOINTS.SOFT_DELETE(id),
+        PERIOD_TYPE_ENDPOINTS.SOFT_DELETE(params.id),
       );
       return data.data;
     } catch (error) {

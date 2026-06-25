@@ -6,7 +6,7 @@ import type {
 
 import { ACADEMIC_PERIOD_ENDPOINTS } from "./academic-period.constants";
 import type {
-  AcademicPeriodCreateDataT,
+  AcademicPeriodCreateParamsT,
   AcademicPeriodDeleteParamsT,
   AcademicPeriodGetParamsT,
   AcademicPeriodListParamsT,
@@ -26,10 +26,18 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
       const orderingQuery = params?.ordering
         ? `&ordering=${encodeURIComponent(params.ordering)}`
         : "";
+      const filtersQuery = params?.filters
+        ? `&${Object.entries(params.filters)
+            .filter(([, value]) => value !== undefined && value !== null)
+            .map(
+              ([key, value]) => `${key}=${encodeURIComponent(String(value))}`,
+            )
+            .join("&")}`
+        : "";
       const { data } = await apiClient.get<
         ResponseApi<PaginatedData<AcademicPeriodT>>
       >(
-        `${ACADEMIC_PERIOD_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+        `${ACADEMIC_PERIOD_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
       return data.data.results;
     } catch (error) {
@@ -37,10 +45,10 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
     }
   }
 
-  async get(id: AcademicPeriodGetParamsT): Promise<AcademicPeriodT> {
+  async get(params: AcademicPeriodGetParamsT): Promise<AcademicPeriodT> {
     try {
       const { data } = await apiClient.get<ResponseApi<AcademicPeriodT>>(
-        ACADEMIC_PERIOD_ENDPOINTS.GET(id),
+        ACADEMIC_PERIOD_ENDPOINTS.GET(params.id),
       );
       return data.data;
     } catch (error) {
@@ -48,13 +56,13 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
     }
   }
 
-  async create(payload: AcademicPeriodCreateDataT): Promise<AcademicPeriodT> {
+  async create(params: AcademicPeriodCreateParamsT): Promise<AcademicPeriodT> {
     try {
-      const cleaned = { ...payload };
+      const cleaned = { ...params };
       if (cleaned.period_type === 0)
         cleaned.period_type = null as unknown as number;
       const { data } = await apiClient.post<ResponseApi<AcademicPeriodT>>(
-        ACADEMIC_PERIOD_ENDPOINTS.POST,
+        ACADEMIC_PERIOD_ENDPOINTS.CREATE,
         cleaned,
       );
       return data.data;
@@ -69,7 +77,7 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
       if (cleaned.period_type === 0)
         cleaned.period_type = null as unknown as number;
       const { data } = await apiClient.patch<ResponseApi<AcademicPeriodT>>(
-        ACADEMIC_PERIOD_ENDPOINTS.PATCH(params.id),
+        ACADEMIC_PERIOD_ENDPOINTS.UPDATE(params.id),
         cleaned,
       );
       return data.data;
@@ -78,10 +86,12 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
     }
   }
 
-  async softDelete(id: AcademicPeriodDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(
+    params: AcademicPeriodDeleteParamsT,
+  ): Promise<{ id: number }> {
     try {
       const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
-        ACADEMIC_PERIOD_ENDPOINTS.SOFT_DELETE(id),
+        ACADEMIC_PERIOD_ENDPOINTS.SOFT_DELETE(params.id),
       );
       return data.data;
     } catch (error) {

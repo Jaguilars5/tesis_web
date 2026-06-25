@@ -1,16 +1,22 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import {
-  usePeriodTypeController,
-  usePeriodTypeForm,
-} from "./period-types.controller";
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+
+import { PERIOD_TYPE_PERMISSIONS } from "./period-types.constants";
+import { usePeriodTypeController } from "./hooks/usePeriodTypeController";
+import { usePeriodTypeForm } from "./hooks/usePeriodTypeForm";
 import { PeriodTypeDeleteModal } from "./components/PeriodTypeDeleteModal";
 import { PeriodTypeFormModal } from "./components/PeriodTypeFormModal";
 import { PeriodTypeTable } from "./components/PeriodTypeTable";
 import { PeriodTypeViewModal } from "./components/PeriodTypeViewModal";
 
-import type { PeriodTypeT } from "./period-types.types";
+import type {
+  PeriodTypeDeleteParamsT,
+  PeriodTypeT,
+} from "./period-types.types";
 
 export default function PeriodTypesPage() {
   const {
@@ -34,6 +40,11 @@ export default function PeriodTypesPage() {
     create: createPeriodType,
     update: updatePeriodType,
   });
+
+  const permissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(permissions, PERIOD_TYPE_PERMISSIONS.CREATE);
+  const canEdit = hasPermission(permissions, PERIOD_TYPE_PERMISSIONS.UPDATE);
+  const canDelete = hasPermission(permissions, PERIOD_TYPE_PERMISSIONS.DELETE);
 
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
@@ -63,8 +74,12 @@ export default function PeriodTypesPage() {
   }, []);
 
   const handleDeleteConfirm = useCallback(
-    async (id: number) => {
-      await deletePeriodType(id);
+    async (params: PeriodTypeDeleteParamsT) => {
+      try {
+        await deletePeriodType(params);
+      } catch (error) {
+        console.error(error);
+      }
     },
     [deletePeriodType],
   );
@@ -80,14 +95,16 @@ export default function PeriodTypesPage() {
             Gestiona los tipos de periodo académico
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus className="size-4" />
-          Nuevo Tipo de Periodo
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => openModal()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Plus className="size-4" />
+            Nuevo Tipo de Periodo
+          </button>
+        )}
       </div>
 
       <PeriodTypeTable
@@ -97,6 +114,8 @@ export default function PeriodTypesPage() {
         onEdit={openModal}
         onView={openViewModal}
         onDelete={openDeleteModal}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       <PeriodTypeFormModal

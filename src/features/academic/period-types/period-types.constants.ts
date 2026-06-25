@@ -1,8 +1,11 @@
+export const PERIOD_TYPE_BASE_URL = "/api/academic/period-types/";
+
 export const PERIOD_TYPE_ENDPOINTS = {
-  LIST: "/api/academic/period-types/",
-  DETAIL: (id: number) => `/api/academic/period-types/${id}/`,
-  SOFT_DELETE: (id: number) =>
-    `/api/academic/period-types/${id}/soft-delete/`,
+  GET: (id: number) => `${PERIOD_TYPE_BASE_URL}${id}/`,
+  LIST: PERIOD_TYPE_BASE_URL,
+  CREATE: PERIOD_TYPE_BASE_URL,
+  UPDATE: (id: number) => `${PERIOD_TYPE_BASE_URL}${id}/`,
+  SOFT_DELETE: (id: number) => `${PERIOD_TYPE_BASE_URL}${id}/soft-delete/`,
 } as const;
 
 export const PERIOD_TYPE_PERMISSIONS = {

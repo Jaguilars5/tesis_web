@@ -1,21 +1,26 @@
 import { BookOpen, FileText, Hash, Layers, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
+import { DetailRow } from "@shared/components/DetailRow";
+
 import { periodTypeService } from "../period-types.service";
 import type { PeriodTypeT } from "../period-types.types";
 
-interface State {
+interface PeriodTypeViewModalState {
   data: PeriodTypeT | null;
   loading: boolean;
   error: string | null;
 }
 
-type Action =
+type PeriodTypeViewModalAction =
   | { type: "loading" }
   | { type: "success"; data: PeriodTypeT }
   | { type: "error"; error: string };
 
-function reducer(_state: State, action: Action): State {
+const reducer = (
+  state: PeriodTypeViewModalState,
+  action: PeriodTypeViewModalAction,
+): PeriodTypeViewModalState => {
   switch (action.type) {
     case "loading":
       return { data: null, loading: true, error: null };
@@ -23,8 +28,10 @@ function reducer(_state: State, action: Action): State {
       return { data: action.data, loading: false, error: null };
     case "error":
       return { data: null, loading: false, error: action.error };
+    default:
+      return state;
   }
-}
+};
 
 interface PeriodTypeViewModalProps {
   isOpen: boolean;
@@ -32,11 +39,11 @@ interface PeriodTypeViewModalProps {
   onClose: () => void;
 }
 
-export const PeriodTypeViewModal = ({
+export const PeriodTypeViewModal: React.FC<PeriodTypeViewModalProps> = ({
   isOpen,
   periodTypeId,
   onClose,
-}: PeriodTypeViewModalProps) => {
+}) => {
   const [state, dispatch] = useReducer(reducer, {
     data: null,
     loading: false,
@@ -47,11 +54,9 @@ export const PeriodTypeViewModal = ({
     if (isOpen && periodTypeId !== null) {
       dispatch({ type: "loading" });
       periodTypeService
-        .get(periodTypeId)
+        .get({ id: periodTypeId })
         .then((data) => dispatch({ type: "success", data }))
-        .catch((err: Error) =>
-          dispatch({ type: "error", error: err.message }),
-        );
+        .catch((err: Error) => dispatch({ type: "error", error: err.message }));
     }
   }, [isOpen, periodTypeId]);
 
@@ -166,29 +171,3 @@ export const PeriodTypeViewModal = ({
     </div>
   );
 };
-
-function DetailRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        <p className="mt-1 text-sm font-medium text-slate-900">
-          {value}
-        </p>
-      </div>
-    </div>
-  );
-}

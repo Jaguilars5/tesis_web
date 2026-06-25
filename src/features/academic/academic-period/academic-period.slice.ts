@@ -32,18 +32,18 @@ const academicPeriodSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    periodCreated(state, action: PayloadAction<AcademicPeriodT>) {
+    entityCreated(state, action: PayloadAction<AcademicPeriodT>) {
       state.academicPeriods.unshift(action.payload);
       state.status = "succeeded";
     },
-    periodUpdated(state, action: PayloadAction<AcademicPeriodT>) {
+    entityUpdated(state, action: PayloadAction<AcademicPeriodT>) {
       const idx = state.academicPeriods.findIndex(
         (p) => p.id === action.payload.id,
       );
       if (idx !== -1) state.academicPeriods[idx] = action.payload;
       state.status = "succeeded";
     },
-    periodDeleted(state, action: PayloadAction<number>) {
+    entityDeleted(state, action: PayloadAction<number>) {
       state.academicPeriods = state.academicPeriods.filter(
         (p) => p.id !== action.payload,
       );
@@ -63,9 +63,9 @@ export const {
   loadPending,
   loadSuccess,
   loadError,
-  periodCreated,
-  periodUpdated,
-  periodDeleted,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
   mutationError,
   clearAcademicPeriodError,
 } = academicPeriodSlice.actions;

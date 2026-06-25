@@ -1,10 +1,11 @@
+export const ACADEMIC_PERIOD_BASE_URL = "/api/academic/academic-periods/";
+
 export const ACADEMIC_PERIOD_ENDPOINTS = {
-  GET: (id: number) => `/api/academic/academic-periods/${id}/`,
-  LIST: "/api/academic/academic-periods/",
-  POST: "/api/academic/academic-periods/",
-  PATCH: (id: number) => `/api/academic/academic-periods/${id}/`,
-  SOFT_DELETE: (id: number) =>
-    `/api/academic/academic-periods/${id}/soft-delete/`,
+  GET: (id: number) => `${ACADEMIC_PERIOD_BASE_URL}${id}/`,
+  LIST: ACADEMIC_PERIOD_BASE_URL,
+  CREATE: ACADEMIC_PERIOD_BASE_URL,
+  UPDATE: (id: number) => `${ACADEMIC_PERIOD_BASE_URL}${id}/`,
+  SOFT_DELETE: (id: number) => `${ACADEMIC_PERIOD_BASE_URL}${id}/soft-delete/`,
 } as const;
 
 export const ACADEMIC_PERIOD_PERMISSIONS = {

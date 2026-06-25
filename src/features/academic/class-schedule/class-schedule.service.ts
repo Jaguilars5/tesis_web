@@ -6,7 +6,7 @@ import type {
 
 import { CLASS_SCHEDULE_ENDPOINTS } from "./class-schedule.constants";
 import type {
-  ClassScheduleCreateDataT,
+  ClassScheduleCreateParamsT,
   ClassScheduleDeleteParamsT,
   ClassScheduleGetParamsT,
   ClassScheduleListParamsT,
@@ -26,10 +26,18 @@ class ClassScheduleService implements ClassScheduleServiceT {
       const orderingQuery = params?.ordering
         ? `&ordering=${encodeURIComponent(params.ordering)}`
         : "";
+      const filtersQuery = params?.filters
+        ? `&${Object.entries(params.filters)
+            .filter(([, value]) => value !== undefined && value !== null)
+            .map(
+              ([key, value]) => `${key}=${encodeURIComponent(String(value))}`,
+            )
+            .join("&")}`
+        : "";
       const { data } = await apiClient.get<
         ResponseApi<PaginatedData<ClassScheduleT>>
       >(
-        `${CLASS_SCHEDULE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+        `${CLASS_SCHEDULE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
       return data.data.results;
     } catch (error) {
@@ -37,10 +45,10 @@ class ClassScheduleService implements ClassScheduleServiceT {
     }
   }
 
-  async get(id: ClassScheduleGetParamsT): Promise<ClassScheduleT> {
+  async get(params: ClassScheduleGetParamsT): Promise<ClassScheduleT> {
     try {
       const { data } = await apiClient.get<ResponseApi<ClassScheduleT>>(
-        CLASS_SCHEDULE_ENDPOINTS.DETAIL(id),
+        CLASS_SCHEDULE_ENDPOINTS.GET(params.id),
       );
       return data.data;
     } catch (error) {
@@ -48,11 +56,11 @@ class ClassScheduleService implements ClassScheduleServiceT {
     }
   }
 
-  async create(payload: ClassScheduleCreateDataT): Promise<ClassScheduleT> {
+  async create(params: ClassScheduleCreateParamsT): Promise<ClassScheduleT> {
     try {
       const { data } = await apiClient.post<ResponseApi<ClassScheduleT>>(
-        CLASS_SCHEDULE_ENDPOINTS.LIST,
-        payload,
+        CLASS_SCHEDULE_ENDPOINTS.CREATE,
+        params,
       );
       return data.data;
     } catch (error) {
@@ -63,7 +71,7 @@ class ClassScheduleService implements ClassScheduleServiceT {
   async update(params: ClassScheduleUpdateParamsT): Promise<ClassScheduleT> {
     try {
       const { data } = await apiClient.patch<ResponseApi<ClassScheduleT>>(
-        CLASS_SCHEDULE_ENDPOINTS.DETAIL(params.id),
+        CLASS_SCHEDULE_ENDPOINTS.UPDATE(params.id),
         params.data,
       );
       return data.data;
@@ -72,10 +80,12 @@ class ClassScheduleService implements ClassScheduleServiceT {
     }
   }
 
-  async softDelete(id: ClassScheduleDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(
+    params: ClassScheduleDeleteParamsT,
+  ): Promise<{ id: number }> {
     try {
       const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
-        CLASS_SCHEDULE_ENDPOINTS.SOFT_DELETE(id),
+        CLASS_SCHEDULE_ENDPOINTS.SOFT_DELETE(params.id),
       );
       return data.data;
     } catch (error) {

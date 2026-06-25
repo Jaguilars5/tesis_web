@@ -2,35 +2,34 @@ import { AlertTriangle, Loader2, X } from "lucide-react";
 import { useState } from "react";
 
 import { formatTimeRange } from "../class-schedule.utils";
-import type { ClassScheduleT } from "../class-schedule.types";
+import type {
+  ClassScheduleDeleteParamsT,
+  ClassScheduleT,
+} from "../class-schedule.types";
 
 interface ClassScheduleDeleteModalProps {
   isOpen: boolean;
   schedule: ClassScheduleT | null;
   onClose: () => void;
-  onConfirm: (id: number) => Promise<void>;
+  onConfirm: (params: ClassScheduleDeleteParamsT) => Promise<void>;
 }
 
-export const ClassScheduleDeleteModal = ({
-  isOpen,
-  schedule,
-  onClose,
-  onConfirm,
-}: ClassScheduleDeleteModalProps) => {
+export const ClassScheduleDeleteModal: React.FC<
+  ClassScheduleDeleteModalProps
+> = ({ isOpen, schedule, onClose, onConfirm }) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
+  if (!isOpen || !schedule) return null;
+
   const handleConfirm = async () => {
-    if (!schedule) return;
     setIsDeleting(true);
     try {
-      await onConfirm(schedule.id);
+      await onConfirm({ id: schedule.id });
       onClose();
     } finally {
       setIsDeleting(false);
     }
   };
-
-  if (!isOpen || !schedule) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

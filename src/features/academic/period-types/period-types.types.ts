@@ -9,6 +9,13 @@ export interface PeriodTypeT {
   updated_at: string;
 }
 
+export interface PeriodTypeFormValues {
+  code: string;
+  name: string;
+  description: string;
+  divisions_per_year: number;
+}
+
 export type PeriodTypeOrderingT = "name" | "-name" | "code" | "-code";
 
 export interface PeriodTypeListParamsT {
@@ -18,36 +25,27 @@ export interface PeriodTypeListParamsT {
   ordering?: PeriodTypeOrderingT;
 }
 
-export type PeriodTypeCreateDataT = Omit<
-  PeriodTypeT,
-  "id" | "is_active" | "created_at" | "updated_at"
->;
+export type PeriodTypeCreateParamsT = PeriodTypeFormValues;
 
-export type PeriodTypeCreateParamsT = PeriodTypeCreateDataT;
-
-export type PeriodTypeUpdateDataT = Partial<Omit<PeriodTypeT, "id">>;
+export type PeriodTypeUpdateDataT = Partial<PeriodTypeFormValues>;
 
 export interface PeriodTypeUpdateParamsT {
   id: number;
   data: PeriodTypeUpdateDataT;
 }
 
-export type PeriodTypeGetParamsT = number;
+export interface PeriodTypeGetParamsT {
+  id: number;
+}
 
-export type PeriodTypeDeleteParamsT = number;
+export interface PeriodTypeDeleteParamsT {
+  id: number;
+}
 
 export interface PeriodTypeServiceT {
   list(params?: PeriodTypeListParamsT): Promise<PeriodTypeT[]>;
-  get(id: PeriodTypeGetParamsT): Promise<PeriodTypeT>;
-  create(data: PeriodTypeCreateDataT): Promise<PeriodTypeT>;
+  get(params: PeriodTypeGetParamsT): Promise<PeriodTypeT>;
+  create(params: PeriodTypeCreateParamsT): Promise<PeriodTypeT>;
   update(params: PeriodTypeUpdateParamsT): Promise<PeriodTypeT>;
-  softDelete(id: PeriodTypeDeleteParamsT): Promise<{ id: number }>;
-}
-
-export interface PeriodTypeFormValues {
-  code: string;
-  name: string;
-  description: string;
-  divisions_per_year: number;
-  is_active: boolean;
+  softDelete(params: PeriodTypeDeleteParamsT): Promise<{ id: number }>;
 }

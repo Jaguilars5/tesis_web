@@ -83,10 +83,35 @@ export {
   useSubjectOfferingForm,
 } from "./subject-offering";
 
-export type { PeriodTypeT, PeriodTypeFormValues, PeriodTypeOrderingT, PeriodTypeListParamsT, PeriodTypeCreateDataT, PeriodTypeCreateParamsT, PeriodTypeUpdateDataT, PeriodTypeUpdateParamsT, PeriodTypeGetParamsT, PeriodTypeDeleteParamsT, PeriodTypeServiceT } from "./period-types/period-types.types";
-export { PERIOD_TYPE_ENDPOINTS, PERIOD_TYPE_PERMISSIONS } from "./period-types/period-types.constants";
+export type { PeriodTypeT, PeriodTypeFormValues, PeriodTypeOrderingT, PeriodTypeListParamsT, PeriodTypeCreateParamsT, PeriodTypeUpdateDataT, PeriodTypeUpdateParamsT, PeriodTypeGetParamsT, PeriodTypeDeleteParamsT, PeriodTypeServiceT } from "./period-types/period-types.types";
+export { PERIOD_TYPE_BASE_URL, PERIOD_TYPE_ENDPOINTS, PERIOD_TYPE_PERMISSIONS } from "./period-types/period-types.constants";
 export { periodTypeService, periodTypeReducer, PeriodTypesPage, usePeriodTypeController, usePeriodTypeForm } from "./period-types";
-export type { PeriodTypeControllerT, SubmitErrorState, ValidationErrors, CreatePeriodTypeRejectValue } from "./period-types/period-types.controller";
+export type { PeriodTypeControllerT } from "./period-types/hooks/usePeriodTypeController";
 
-export * from "./class-schedule";
-export { classScheduleReducer, ClassSchedulesPage } from "./class-schedule";
+export type {
+  ClassScheduleT,
+  ClassScheduleFormValues,
+  ClassScheduleOrderingT,
+  ClassScheduleListParamsT,
+  ClassScheduleCreateParamsT,
+  ClassScheduleUpdateDataT,
+  ClassScheduleUpdateParamsT,
+  ClassScheduleGetParamsT,
+  ClassScheduleDeleteParamsT,
+  ClassScheduleServiceT,
+} from "./class-schedule/class-schedule.types";
+export {
+  CLASS_SCHEDULE_BASE_URL,
+  CLASS_SCHEDULE_ENDPOINTS,
+  CLASS_SCHEDULE_PERMISSIONS,
+  DAY_OF_WEEK_OPTIONS,
+} from "./class-schedule/class-schedule.constants";
+export {
+  classScheduleService,
+  classScheduleReducer,
+  ClassSchedulesPage,
+  useClassScheduleController,
+  useClassScheduleForm,
+  useTeacherSubjectSectionOptions,
+} from "./class-schedule";
+export type { ClassScheduleControllerT } from "./class-schedule/hooks/useClassScheduleController";

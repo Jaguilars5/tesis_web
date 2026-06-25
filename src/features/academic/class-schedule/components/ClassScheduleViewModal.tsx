@@ -1,22 +1,27 @@
 import { CalendarDays, Clock, FileText, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
+import { DetailRow } from "@shared/components/DetailRow";
+
 import { classScheduleService } from "../class-schedule.service";
 import { formatTimeRange } from "../class-schedule.utils";
 import type { ClassScheduleT } from "../class-schedule.types";
 
-interface State {
+interface ClassScheduleViewModalState {
   data: ClassScheduleT | null;
   loading: boolean;
   error: string | null;
 }
 
-type Action =
+type ClassScheduleViewModalAction =
   | { type: "loading" }
   | { type: "success"; data: ClassScheduleT }
   | { type: "error"; error: string };
 
-const reducer = (_state: State, action: Action): State => {
+const reducer = (
+  state: ClassScheduleViewModalState,
+  action: ClassScheduleViewModalAction,
+): ClassScheduleViewModalState => {
   switch (action.type) {
     case "loading":
       return { data: null, loading: true, error: null };
@@ -24,6 +29,8 @@ const reducer = (_state: State, action: Action): State => {
       return { data: action.data, loading: false, error: null };
     case "error":
       return { data: null, loading: false, error: action.error };
+    default:
+      return state;
   }
 };
 
@@ -33,11 +40,11 @@ interface ClassScheduleViewModalProps {
   onClose: () => void;
 }
 
-export const ClassScheduleViewModal = ({
+export const ClassScheduleViewModal: React.FC<ClassScheduleViewModalProps> = ({
   isOpen,
   scheduleId,
   onClose,
-}: ClassScheduleViewModalProps) => {
+}) => {
   const [state, dispatch] = useReducer(reducer, {
     data: null,
     loading: false,
@@ -48,7 +55,7 @@ export const ClassScheduleViewModal = ({
     if (isOpen && scheduleId !== null) {
       dispatch({ type: "loading" });
       classScheduleService
-        .get(scheduleId)
+        .get({ id: scheduleId })
         .then((data) => dispatch({ type: "success", data }))
         .catch((err: Error) => dispatch({ type: "error", error: err.message }));
     }
@@ -154,30 +161,6 @@ export const ClassScheduleViewModal = ({
             Cerrar
           </button>
         </div>
-      </div>
-    </div>
-  );
-};
-
-const DetailRow = ({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) => {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
       </div>
     </div>
   );

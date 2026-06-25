@@ -2,24 +2,28 @@ import { useFormik } from "formik";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 
-import {
-  checkboxClassname,
-  inputClassname,
-  selectClassname,
-} from "@app/styles/styles";
-import {
-  CustomCheckbox,
-  CustomInput,
-  CustomSelect,
-} from "@shared/components/Form";
+import { inputClassname, selectClassname } from "@app/styles/styles";
+import { CustomInput, CustomSelect } from "@shared/components/Form";
+import { ErrrosInForm } from "@shared/components/ErrrosInForm";
+import type { SubmitErrorState } from "@shared/utils/validationErrors";
 
 import { DAY_OF_WEEK_OPTIONS } from "../class-schedule.constants";
-import type { SubmitErrorState } from "../class-schedule.controller";
 import { classScheduleSchema } from "../class-schedule.utils";
 import type {
   ClassScheduleFormValues,
   ClassScheduleT,
 } from "../class-schedule.types";
+
+const getFieldLabel = (field: string): string => {
+  const labels: Record<string, string> = {
+    teacher_subject_section: "Asignación docente-materia",
+    day_of_week: "Día de la semana",
+    start_time: "Hora de inicio",
+    end_time: "Hora de fin",
+    non_field_errors: "Error general",
+  };
+  return labels[field] || field;
+};
 
 interface ClassScheduleFormModalProps {
   isOpen: boolean;
@@ -28,55 +32,49 @@ interface ClassScheduleFormModalProps {
   editingClassSchedule: ClassScheduleT | null;
   teacherSubjectSectionOptions: { label: string; value: string }[];
   submitErrors: SubmitErrorState;
-  onCreate: (values: ClassScheduleFormValues) => Promise<void>;
-  onUpdate: (values: ClassScheduleFormValues) => Promise<void>;
+  onSubmit: (values: ClassScheduleFormValues) => Promise<void>;
 }
 
-export const ClassScheduleFormModal = ({
+const getInitialValues = (
+  editingClassSchedule: ClassScheduleT | null,
+): ClassScheduleFormValues => {
+  if (editingClassSchedule) {
+    return {
+      teacher_subject_section: editingClassSchedule.teacher_subject_section,
+      day_of_week: editingClassSchedule.day_of_week,
+      start_time: editingClassSchedule.start_time,
+      end_time: editingClassSchedule.end_time,
+    };
+  }
+  return {
+    teacher_subject_section: 0,
+    day_of_week: 1,
+    start_time: "",
+    end_time: "",
+  };
+};
+
+export const ClassScheduleFormModal: React.FC<ClassScheduleFormModalProps> = ({
   isOpen,
   onClose,
   isEdit,
   editingClassSchedule,
   teacherSubjectSectionOptions,
   submitErrors,
-  onCreate,
-  onUpdate,
-}: ClassScheduleFormModalProps) => {
-  const getInitialValues = (): ClassScheduleFormValues => {
-    if (editingClassSchedule) {
-      return {
-        teacher_subject_section: editingClassSchedule.teacher_subject_section,
-        day_of_week: editingClassSchedule.day_of_week,
-        start_time: editingClassSchedule.start_time,
-        end_time: editingClassSchedule.end_time,
-        is_active: editingClassSchedule.is_active,
-      };
-    }
-    return {
-      teacher_subject_section: 0,
-      day_of_week: 1,
-      start_time: "",
-      end_time: "",
-      is_active: true,
-    };
-  };
-
+  onSubmit,
+}) => {
   const formik = useFormik<ClassScheduleFormValues>({
-    initialValues: getInitialValues(),
+    initialValues: getInitialValues(editingClassSchedule),
     validationSchema: classScheduleSchema,
     enableReinitialize: true,
     onSubmit: async (values) => {
-      if (isEdit) {
-        await onUpdate(values);
-      } else {
-        await onCreate(values);
-      }
+      await onSubmit(values);
     },
   });
 
   useEffect(() => {
     if (isOpen) {
-      formik.setValues(getInitialValues());
+      formik.setValues(getInitialValues(editingClassSchedule));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, editingClassSchedule]);
@@ -105,15 +103,15 @@ export const ClassScheduleFormModal = ({
           </button>
         </div>
 
-        <form onSubmit={formik.handleSubmit} className="space-y-4 p-5">
-          {submitErrors.general.length > 0 && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
-              {submitErrors.general.map((msg) => (
-                <p key={msg}>{msg}</p>
-              ))}
-            </div>
-          )}
+        {(submitErrors.general.length > 0 ||
+          Object.keys(submitErrors.validation).length > 0) && (
+          <ErrrosInForm
+            submitErrors={submitErrors}
+            getFieldLabel={getFieldLabel}
+          />
+        )}
 
+        <form onSubmit={formik.handleSubmit} className="space-y-4 p-5">
           <CustomSelect
             label="Asignación Docente-Materia"
             name="teacher_subject_section"
@@ -167,7 +165,9 @@ export const ClassScheduleFormModal = ({
               className={inputClassname}
               error={
                 submitErrors.validation.start_time ??
-                (formik.touched.start_time ? formik.errors.start_time : undefined)
+                (formik.touched.start_time
+                  ? formik.errors.start_time
+                  : undefined)
               }
             />
 
@@ -184,19 +184,6 @@ export const ClassScheduleFormModal = ({
                 (formik.touched.end_time ? formik.errors.end_time : undefined)
               }
             />
-          </div>
-
-          <div className="flex items-end pb-1">
-            {isEdit && (
-              <CustomCheckbox
-                name="is_active"
-                checked={formik.values.is_active}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                label="Activo"
-                className={checkboxClassname}
-              />
-            )}
           </div>
 
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">

@@ -1,16 +1,23 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import {
-  useClassScheduleController,
-  useClassScheduleForm,
-} from "./class-schedule.controller";
-import { useTeacherSubjectSectionOptions } from "./class-schedule.options";
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+
+import { CLASS_SCHEDULE_PERMISSIONS } from "./class-schedule.constants";
+import { useClassScheduleController } from "./hooks/useClassScheduleController";
+import { useClassScheduleForm } from "./hooks/useClassScheduleForm";
+import { useTeacherSubjectSectionOptions } from "./hooks/useTeacherSubjectSectionOptions";
 import { ClassScheduleDeleteModal } from "./components/ClassScheduleDeleteModal";
 import { ClassScheduleFormModal } from "./components/ClassScheduleFormModal";
 import { ClassScheduleTable } from "./components/ClassScheduleTable";
 import { ClassScheduleViewModal } from "./components/ClassScheduleViewModal";
-import type { ClassScheduleT } from "./class-schedule.types";
+
+import type {
+  ClassScheduleDeleteParamsT,
+  ClassScheduleT,
+} from "./class-schedule.types";
 
 export default function ClassSchedulesPage() {
   const { teacherSubjectSectionOptions } = useTeacherSubjectSectionOptions();
@@ -31,12 +38,16 @@ export default function ClassSchedulesPage() {
     submitErrors,
     openModal,
     closeModal,
-    handleCreate,
-    handleUpdate,
+    handleSubmit,
   } = useClassScheduleForm({
     create: createClassSchedule,
     update: updateClassSchedule,
   });
+
+  const permissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(permissions, CLASS_SCHEDULE_PERMISSIONS.CREATE);
+  const canEdit = hasPermission(permissions, CLASS_SCHEDULE_PERMISSIONS.UPDATE);
+  const canDelete = hasPermission(permissions, CLASS_SCHEDULE_PERMISSIONS.DELETE);
 
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
@@ -66,8 +77,12 @@ export default function ClassSchedulesPage() {
   }, []);
 
   const handleDeleteConfirm = useCallback(
-    async (id: number) => {
-      await deleteClassSchedule(id);
+    async (params: ClassScheduleDeleteParamsT) => {
+      try {
+        await deleteClassSchedule(params);
+      } catch (error) {
+        console.error(error);
+      }
     },
     [deleteClassSchedule],
   );
@@ -83,23 +98,28 @@ export default function ClassSchedulesPage() {
             Gestiona los horarios de clases
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus className="size-4" />
-          Nuevo Horario
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => openModal()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Plus className="size-4" />
+            Nuevo Horario
+          </button>
+        )}
       </div>
 
       <ClassScheduleTable
         classSchedules={classSchedules}
         isLoading={isLoading}
         loadClassSchedules={loadClassSchedules}
+        teacherSubjectSectionOptions={teacherSubjectSectionOptions}
         onEdit={openModal}
         onView={openViewModal}
         onDelete={openDeleteModal}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       <ClassScheduleFormModal
@@ -109,8 +129,7 @@ export default function ClassSchedulesPage() {
         editingClassSchedule={editingClassSchedule}
         teacherSubjectSectionOptions={teacherSubjectSectionOptions}
         submitErrors={submitErrors}
-        onCreate={handleCreate}
-        onUpdate={handleUpdate}
+        onSubmit={handleSubmit}
       />
 
       <ClassScheduleViewModal

@@ -1,35 +1,37 @@
 import { AlertTriangle, Loader2, X } from "lucide-react";
 import { useState } from "react";
 
-import type { PeriodTypeT } from "../period-types.types";
+import type {
+  PeriodTypeDeleteParamsT,
+  PeriodTypeT,
+} from "../period-types.types";
 
 interface PeriodTypeDeleteModalProps {
   isOpen: boolean;
   periodType: PeriodTypeT | null;
   onClose: () => void;
-  onConfirm: (id: number) => Promise<void>;
+  onConfirm: (params: PeriodTypeDeleteParamsT) => Promise<void>;
 }
 
-export const PeriodTypeDeleteModal = ({
+export const PeriodTypeDeleteModal: React.FC<PeriodTypeDeleteModalProps> = ({
   isOpen,
   periodType,
   onClose,
   onConfirm,
-}: PeriodTypeDeleteModalProps) => {
+}) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
+  if (!isOpen || !periodType) return null;
+
   const handleConfirm = async () => {
-    if (!periodType) return;
     setIsDeleting(true);
     try {
-      await onConfirm(periodType.id);
+      await onConfirm({ id: periodType.id });
       onClose();
     } finally {
       setIsDeleting(false);
     }
   };
-
-  if (!isOpen || !periodType) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -61,9 +63,7 @@ export const PeriodTypeDeleteModal = ({
               <p className="mt-2 text-sm font-medium text-slate-900">
                 {periodType.name}
               </p>
-              <p className="text-xs text-slate-500">
-                {periodType.code}
-              </p>
+              <p className="text-xs text-slate-500">{periodType.code}</p>
             </div>
           </div>
         </div>
