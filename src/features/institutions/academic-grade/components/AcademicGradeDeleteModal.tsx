@@ -1,26 +1,31 @@
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, X } from "lucide-react";
 import { useState } from "react";
-import type { AcademicGradeT } from "../academic-grade.types";
-export const AcademicGradeDeleteModal = ({
-  isOpen,
-  academicGrade,
-  onClose,
-  onConfirm,
-}: {
+import type {
+  AcademicGradeDeleteParamsT,
+  AcademicGradeT,
+} from "../academic-grade.types";
+
+interface AcademicGradeDeleteModalProps {
   isOpen: boolean;
   academicGrade: AcademicGradeT | null;
   onClose: () => void;
-  onConfirm: (id: number) => Promise<void>;
-}) => {
-  const [d, setD] = useState(false);
+  onConfirm: (params: AcademicGradeDeleteParamsT) => Promise<void>;
+}
+
+export const AcademicGradeDeleteModal: React.FC<
+  AcademicGradeDeleteModalProps
+> = ({ isOpen, academicGrade, onClose, onConfirm }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
   if (!isOpen || !academicGrade) return null;
-  const h = async () => {
-    setD(true);
+
+  const handleConfirm = async () => {
+    setIsDeleting(true);
     try {
-      await onConfirm(academicGrade.id);
+      await onConfirm({ id: academicGrade.id });
       onClose();
     } finally {
-      setD(false);
+      setIsDeleting(false);
     }
   };
   return (
@@ -34,22 +39,10 @@ export const AcademicGradeDeleteModal = ({
           <button
             type="button"
             onClick={onClose}
-            disabled={d}
+            disabled={isDeleting}
             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
           >
-            <svg
-              className="size-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X className="size-5" />
           </button>
         </div>
         <div className="p-5">
@@ -75,18 +68,18 @@ export const AcademicGradeDeleteModal = ({
           <button
             type="button"
             onClick={onClose}
-            disabled={d}
+            disabled={isDeleting}
             className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             Cancelar
           </button>
           <button
             type="button"
-            onClick={h}
-            disabled={d}
+            onClick={handleConfirm}
+            disabled={isDeleting}
             className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
           >
-            {d ? (
+            {isDeleting ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
                 Desactivando...

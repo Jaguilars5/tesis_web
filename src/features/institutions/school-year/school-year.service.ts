@@ -1,9 +1,89 @@
-import { apiClient, getApiErrorMessage } from "@shared/services/api.client"; import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types"; import { SCHOOL_YEAR_ENDPOINTS } from "./school-year.constants"; import type { SchoolYearCreateDataT, SchoolYearDeleteParamsT, SchoolYearGetParamsT, SchoolYearListParamsT, SchoolYearServiceT, SchoolYearT, SchoolYearUpdateParamsT } from "./school-year.types";
+import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
+
+import type {
+  PaginatedData,
+  ResponseApi,
+} from "@shared/types/api.response.types";
+
+import { SCHOOL_YEAR_ENDPOINTS } from "./school-year.constants";
+
+import type {
+  SchoolYearCreateParamsT,
+  SchoolYearDeleteParamsT,
+  SchoolYearGetParamsT,
+  SchoolYearListParamsT,
+  SchoolYearServiceT,
+  SchoolYearT,
+  SchoolYearUpdateParamsT,
+} from "./school-year.types";
+
 class SchoolYearService implements SchoolYearServiceT {
-  async list(p?: SchoolYearListParamsT): Promise<SchoolYearT[]> { try { const pg = p?.page ?? 1; const ps = p?.pageSize ?? 100; const sq = p?.search ? `&search=${encodeURIComponent(p.search)}` : ""; const oq = p?.ordering ? `&ordering=${encodeURIComponent(p.ordering)}` : ""; const { data } = await apiClient.get<ResponseApi<PaginatedData<SchoolYearT>>>(`${SCHOOL_YEAR_ENDPOINTS.LIST}?page=${pg}&page_size=${ps}${sq}${oq}`); return data.data.results; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async get(id: SchoolYearGetParamsT): Promise<SchoolYearT> { try { const { data } = await apiClient.get<ResponseApi<SchoolYearT>>(SCHOOL_YEAR_ENDPOINTS.DETAIL(id)); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async create(d: SchoolYearCreateDataT): Promise<SchoolYearT> { try { const { data } = await apiClient.post<ResponseApi<SchoolYearT>>(SCHOOL_YEAR_ENDPOINTS.LIST, d); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async update(p: SchoolYearUpdateParamsT): Promise<SchoolYearT> { try { const { data } = await apiClient.patch<ResponseApi<SchoolYearT>>(SCHOOL_YEAR_ENDPOINTS.DETAIL(p.id), p.data); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async softDelete(id: SchoolYearDeleteParamsT): Promise<{ id: number }> { try { const { data } = await apiClient.post<ResponseApi<{ id: number }>>(SCHOOL_YEAR_ENDPOINTS.SOFT_DELETE(id)); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
+  async get(params: SchoolYearGetParamsT): Promise<SchoolYearT> {
+    try {
+      const { data } = await apiClient.get<ResponseApi<SchoolYearT>>(
+        SCHOOL_YEAR_ENDPOINTS.GET(params.id),
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async list(params?: SchoolYearListParamsT): Promise<SchoolYearT[]> {
+    try {
+      const page = params?.page ?? 1;
+      const pageSize = params?.pageSize ?? 100;
+      const searchQuery = params?.search
+        ? `&search=${encodeURIComponent(params.search)}`
+        : "";
+      const orderingQuery = params?.ordering
+        ? `&ordering=${encodeURIComponent(params.ordering)}`
+        : "";
+      const { data } = await apiClient.get<
+        ResponseApi<PaginatedData<SchoolYearT>>
+      >(
+        `${SCHOOL_YEAR_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+      );
+      return data.data.results;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async create(params: SchoolYearCreateParamsT): Promise<SchoolYearT> {
+    try {
+      const { data } = await apiClient.post<ResponseApi<SchoolYearT>>(
+        SCHOOL_YEAR_ENDPOINTS.CREATE,
+        params,
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async update(params: SchoolYearUpdateParamsT): Promise<SchoolYearT> {
+    try {
+      const { data } = await apiClient.patch<ResponseApi<SchoolYearT>>(
+        SCHOOL_YEAR_ENDPOINTS.UPDATE(params.id),
+        params.data,
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async softDelete(params: SchoolYearDeleteParamsT): Promise<{ id: number }> {
+    try {
+      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
+        SCHOOL_YEAR_ENDPOINTS.SOFT_DELETE(params.id),
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
 }
+
 export const schoolYearService = new SchoolYearService();

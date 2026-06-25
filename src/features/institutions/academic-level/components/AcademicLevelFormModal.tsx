@@ -1,12 +1,146 @@
-import { useFormik } from "formik"; import { useEffect } from "react"; import { checkboxClassname, inputClassname } from "@app/styles/styles"; import { CustomCheckbox, CustomInput } from "@shared/components/Form"; import { academicLevelSchema } from "../academic-level.utils"; import type { SubmitErrorState } from "../academic-level.controller"; import type { AcademicLevelFormValues, AcademicLevelT } from "../academic-level.types";
-const getFieldLabel = (f: string): string => ({ code: "Código", name: "Nombre", description: "Descripción", non_field_errors: "Error general" }[f] || f);
-interface Props { isOpen: boolean; onClose: () => void; isEdit: boolean; editingAcademicLevel: AcademicLevelT | null; onSubmit: (values: AcademicLevelFormValues) => Promise<void>; submitErrors: SubmitErrorState; }
-export const AcademicLevelFormModal = ({ isOpen, onClose, isEdit, editingAcademicLevel, onSubmit, submitErrors }: Props) => {
-  const getIV = (): AcademicLevelFormValues => { if (editingAcademicLevel) return { code: editingAcademicLevel.code, name: editingAcademicLevel.name, description: editingAcademicLevel.description, is_active: editingAcademicLevel.is_active }; return { code: "", name: "", description: "", is_active: true }; };
-  const formik = useFormik<AcademicLevelFormValues>({ initialValues: getIV(), validationSchema: academicLevelSchema, enableReinitialize: true, onSubmit });
-  useEffect(() => { if (isOpen && editingAcademicLevel) formik.setValues(getIV()); }, [isOpen, editingAcademicLevel]);
+import { useFormik } from "formik";
+import { useEffect } from "react";
+import { inputClassname } from "@app/styles/styles";
+import { CustomInput } from "@shared/components/Form";
+import { academicLevelSchema } from "../academic-level.utils";
+import type { SubmitErrorState } from "@shared/utils/validationErrors";
+import type {
+  AcademicLevelFormValues,
+  AcademicLevelT,
+} from "../academic-level.types";
+import { ErrrosInForm } from "@shared/components/ErrrosInForm";
+import { X } from "lucide-react";
+
+const getFieldLabel = (f: string): string =>
+  ({
+    code: "Código",
+    name: "Nombre",
+    description: "Descripción",
+    non_field_errors: "Error general",
+  })[f] || f;
+
+interface AcademicLevelFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  isEdit: boolean;
+  editingAcademicLevel: AcademicLevelT | null;
+  onSubmit: (values: AcademicLevelFormValues) => Promise<void>;
+  submitErrors: SubmitErrorState;
+}
+
+export const AcademicLevelFormModal: React.FC<AcademicLevelFormModalProps> = ({
+  isOpen,
+  onClose,
+  isEdit,
+  editingAcademicLevel,
+  onSubmit,
+  submitErrors,
+}) => {
+  const getInitialValues = (): AcademicLevelFormValues => {
+    if (editingAcademicLevel)
+      return {
+        code: editingAcademicLevel.code,
+        name: editingAcademicLevel.name,
+        description: editingAcademicLevel.description,
+      };
+    return { code: "", name: "", description: "" };
+  };
+
+  const formik = useFormik<AcademicLevelFormValues>({
+    initialValues: getInitialValues(),
+    validationSchema: academicLevelSchema,
+    enableReinitialize: true,
+    onSubmit,
+  });
+
+  useEffect(() => {
+    if (isOpen && editingAcademicLevel) formik.setValues(getInitialValues());
+  }, [isOpen, editingAcademicLevel]);
+
   if (!isOpen) return null;
-  return (<div className="fixed inset-0 z-50 flex items-center justify-center"><div className="absolute inset-0 bg-black/40" onClick={onClose} /><div className="relative w-full max-w-md animate-slide-up overflow-hidden rounded-xl bg-white shadow-xl"><div className="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><h3 className="text-lg font-semibold text-slate-900">{isEdit ? "Editar" : "Nuevo"} Nivel</h3><p className="mt-0.5 text-sm text-slate-500">Configure el nivel académico</p></div><button type="button" onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"><svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div>
-    {(submitErrors.general.length > 0 || Object.keys(submitErrors.validation).length > 0) && (<div className="mx-5 mt-3 rounded-lg border border-red-300 bg-red-50 p-4 shadow-sm"><div className="flex items-start gap-2"><svg className="mt-0.5 size-5 flex-shrink-0 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg><div className="flex-1"><p className="mb-2 text-sm font-semibold text-red-800">Error al guardar</p>{submitErrors.general.length > 0 && (<ul>{submitErrors.general.map((e, i) => (<li key={i} className="text-sm text-red-700">• {e}</li>))}</ul>)}{Object.keys(submitErrors.validation).length > 0 && (<ul>{Object.entries(submitErrors.validation).map(([f, m]) => (<li key={f} className="text-sm text-red-700"><span className="font-semibold">{getFieldLabel(f)}:</span> {m}</li>))}</ul>)}</div></div></div>)}
-    <form onSubmit={formik.handleSubmit} className="space-y-4 p-5"><CustomInput label="Código" name="code" placeholder="Ej: BASICA, BGU" value={formik.values.code} onBlur={formik.handleBlur} onChange={formik.handleChange} type="text" error={formik.touched.code ? formik.errors.code : undefined} className={inputClassname} /><CustomInput label="Nombre" name="name" placeholder="Ej: Educación Básica" value={formik.values.name} onBlur={formik.handleBlur} onChange={formik.handleChange} type="text" error={formik.touched.name ? formik.errors.name : undefined} className={inputClassname} /><CustomInput label="Descripción" name="description" placeholder="Descripción opcional" value={formik.values.description} onBlur={formik.handleBlur} onChange={formik.handleChange} type="text" error={formik.touched.description ? formik.errors.description : undefined} className={inputClassname} />{isEdit && <CustomCheckbox name="is_active" checked={formik.values.is_active} onChange={formik.handleChange} onBlur={formik.handleBlur} label="Activo" className={checkboxClassname} />}<div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4"><button type="button" onClick={onClose} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancelar</button><button type="submit" disabled={formik.isSubmitting} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60">{formik.isSubmitting ? "Guardando..." : "Guardar"}</button></div></form></div></div>);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative w-full max-w-md animate-slide-up overflow-hidden rounded-xl bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">
+              {isEdit ? "Editar" : "Nuevo"} Nivel
+            </h3>
+            <p className="mt-0.5 text-sm text-slate-500">
+              Configure el nivel académico
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
+        {(submitErrors.general.length > 0 ||
+          Object.keys(submitErrors.validation).length > 0) && (
+          <ErrrosInForm
+            submitErrors={submitErrors}
+            getFieldLabel={getFieldLabel}
+          />
+        )}
+        <form onSubmit={formik.handleSubmit} className="space-y-4 p-5">
+          <CustomInput
+            label="Código"
+            name="code"
+            placeholder="Ej: BASICA, BGU"
+            value={formik.values.code}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            type="text"
+            error={formik.touched.code ? formik.errors.code : undefined}
+            className={inputClassname}
+          />
+          <CustomInput
+            label="Nombre"
+            name="name"
+            placeholder="Ej: Educación Básica"
+            value={formik.values.name}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            type="text"
+            error={formik.touched.name ? formik.errors.name : undefined}
+            className={inputClassname}
+          />
+          <CustomInput
+            label="Descripción"
+            name="description"
+            placeholder="Descripción opcional"
+            value={formik.values.description}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            type="text"
+            error={
+              formik.touched.description ? formik.errors.description : undefined
+            }
+            className={inputClassname}
+          />
+
+          <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={formik.isSubmitting}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-60"
+            >
+              {formik.isSubmitting ? "Guardando..." : "Guardar"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };

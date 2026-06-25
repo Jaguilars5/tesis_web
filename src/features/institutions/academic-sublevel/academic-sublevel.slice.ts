@@ -1,9 +1,82 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit"; import type { RootState } from "@shared/redux/store"; import type { RequestStatusT } from "@shared/types/request.types"; import type { AcademicSubLevelT } from "./academic-sublevel.types";
-export interface AcademicSubLevelStateT { academicSubLevels: AcademicSubLevelT[]; status: RequestStatusT; error: string | null; }
-const initialState: AcademicSubLevelStateT = { academicSubLevels: [], status: "idle", error: null };
-const slice = createSlice({ name: "academicSubLevel", initialState, reducers: { loadPending(s) { s.status = "loading"; s.error = null; }, loadSuccess(s, a: PayloadAction<AcademicSubLevelT[]>) { s.academicSubLevels = a.payload; s.status = "succeeded"; }, loadError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, entityCreated(s, a: PayloadAction<AcademicSubLevelT>) { s.academicSubLevels.unshift(a.payload); s.status = "succeeded"; }, entityUpdated(s, a: PayloadAction<AcademicSubLevelT>) { const idx = s.academicSubLevels.findIndex((p) => p.id === a.payload.id); if (idx !== -1) s.academicSubLevels[idx] = a.payload; s.status = "succeeded"; }, entityDeleted(s, a: PayloadAction<number>) { s.academicSubLevels = s.academicSubLevels.filter((p) => p.id !== a.payload); s.status = "succeeded"; }, mutationError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, clearError(s) { s.error = null; } } });
-export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearError } = slice.actions;
-export const selectAcademicSubLevels = (s: RootState): AcademicSubLevelT[] => s.institutions.academicSubLevel.academicSubLevels;
-export const selectAcademicSubLevelsStatus = (s: RootState): RequestStatusT => s.institutions.academicSubLevel.status;
-export const selectAcademicSubLevelError = (s: RootState): string | null => s.institutions.academicSubLevel.error;
-export const academicSubLevelReducer = slice.reducer; export default slice.reducer;
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { RootState } from "@shared/redux/store";
+import type { RequestStatusT } from "@shared/types/request.types";
+import type { AcademicSubLevelT } from "./academic-sublevel.types";
+
+export interface AcademicSubLevelStateT {
+  academicSubLevels: AcademicSubLevelT[];
+  status: RequestStatusT;
+  error: string | null;
+}
+
+const initialState: AcademicSubLevelStateT = {
+  academicSubLevels: [],
+  status: "idle",
+  error: null,
+};
+
+const slice = createSlice({
+  name: "academicSubLevel",
+  initialState,
+  reducers: {
+    loadPending(state) {
+      state.status = "loading";
+      state.error = null;
+    },
+    loadSuccess(state, action: PayloadAction<AcademicSubLevelT[]>) {
+      state.academicSubLevels = action.payload;
+      state.status = "succeeded";
+    },
+    loadError(state, action: PayloadAction<string>) {
+      state.status = "failed";
+      state.error = action.payload;
+    },
+    entityCreated(state, action: PayloadAction<AcademicSubLevelT>) {
+      state.academicSubLevels.unshift(action.payload);
+      state.status = "succeeded";
+    },
+    entityUpdated(state, action: PayloadAction<AcademicSubLevelT>) {
+      const idx = state.academicSubLevels.findIndex(
+        (p) => p.id === action.payload.id,
+      );
+      if (idx !== -1) state.academicSubLevels[idx] = action.payload;
+      state.status = "succeeded";
+    },
+    entityDeleted(state, action: PayloadAction<number>) {
+      state.academicSubLevels = state.academicSubLevels.filter(
+        (p) => p.id !== action.payload,
+      );
+      state.status = "succeeded";
+    },
+    mutationError(state, action: PayloadAction<string>) {
+      state.status = "failed";
+      state.error = action.payload;
+    },
+    clearAcademicSubLevelError(state) {
+      state.error = null;
+    },
+  },
+});
+
+export const {
+  loadPending,
+  loadSuccess,
+  loadError,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
+  mutationError,
+  clearAcademicSubLevelError,
+} = slice.actions;
+
+export const selectAcademicSubLevels = (state: RootState): AcademicSubLevelT[] =>
+  state.institutions.academicSubLevel.academicSubLevels;
+
+export const selectAcademicSubLevelsStatus = (state: RootState): RequestStatusT =>
+  state.institutions.academicSubLevel.status;
+
+export const selectAcademicSubLevelError = (state: RootState): string | null =>
+  state.institutions.academicSubLevel.error;
+
+export const academicSubLevelReducer = slice.reducer;
+export default slice.reducer;

@@ -1,9 +1,94 @@
-import { apiClient, getApiErrorMessage } from "@shared/services/api.client"; import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types"; import { ACADEMIC_GRADE_ENDPOINTS } from "./academic-grade.constants"; import type { AcademicGradeCreateDataT, AcademicGradeDeleteParamsT, AcademicGradeGetParamsT, AcademicGradeListParamsT, AcademicGradeServiceT, AcademicGradeT, AcademicGradeUpdateParamsT } from "./academic-grade.types";
+import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
+import type {
+  PaginatedData,
+  ResponseApi,
+} from "@shared/types/api.response.types";
+import { ACADEMIC_GRADE_ENDPOINTS } from "./academic-grade.constants";
+import type {
+  AcademicGradeCreateParamsT,
+  AcademicGradeDeleteParamsT,
+  AcademicGradeGetParamsT,
+  AcademicGradeListParamsT,
+  AcademicGradeServiceT,
+  AcademicGradeT,
+  AcademicGradeUpdateParamsT,
+} from "./academic-grade.types";
+
 class AcademicGradeService implements AcademicGradeServiceT {
-  async list(p?: AcademicGradeListParamsT): Promise<AcademicGradeT[]> { try { const pg = p?.page ?? 1; const ps = p?.pageSize ?? 100; const sq = p?.search ? `&search=${encodeURIComponent(p.search)}` : ""; const oq = p?.ordering ? `&ordering=${encodeURIComponent(p.ordering)}` : ""; const { data } = await apiClient.get<ResponseApi<PaginatedData<AcademicGradeT>>>(`${ACADEMIC_GRADE_ENDPOINTS.LIST}?page=${pg}&page_size=${ps}${sq}${oq}`); return data.data.results; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async get(id: AcademicGradeGetParamsT): Promise<AcademicGradeT> { try { const { data } = await apiClient.get<ResponseApi<AcademicGradeT>>(`${ACADEMIC_GRADE_ENDPOINTS.LIST}${id}/`); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async create(d: AcademicGradeCreateDataT): Promise<AcademicGradeT> { try { const { data } = await apiClient.post<ResponseApi<AcademicGradeT>>(ACADEMIC_GRADE_ENDPOINTS.LIST, d); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async update(p: AcademicGradeUpdateParamsT): Promise<AcademicGradeT> { try { const { data } = await apiClient.patch<ResponseApi<AcademicGradeT>>(`${ACADEMIC_GRADE_ENDPOINTS.LIST}${p.id}/`, p.data); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async softDelete(id: AcademicGradeDeleteParamsT): Promise<{ id: number }> { try { const { data } = await apiClient.post<ResponseApi<{ id: number }>>(`${ACADEMIC_GRADE_ENDPOINTS.LIST}${id}/soft-delete/`); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
+  async get(params: AcademicGradeGetParamsT): Promise<AcademicGradeT> {
+    try {
+      const { data } = await apiClient.get<ResponseApi<AcademicGradeT>>(
+        ACADEMIC_GRADE_ENDPOINTS.GET(params.id),
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async list(params?: AcademicGradeListParamsT): Promise<AcademicGradeT[]> {
+    try {
+      const page = params?.page ?? 1;
+      const pageSize = params?.pageSize ?? 100;
+      const searchQuery = params?.search
+        ? `&search=${encodeURIComponent(params.search)}`
+        : "";
+      const orderingQuery = params?.ordering
+        ? `&ordering=${encodeURIComponent(params.ordering)}`
+        : "";
+      const filtersQuery = params?.filters
+        ? `&${Object.entries(params.filters)
+            .map(
+              ([key, value]) => `${key}=${encodeURIComponent(String(value))}`,
+            )
+            .join("&")}`
+        : "";
+      const { data } = await apiClient.get<
+        ResponseApi<PaginatedData<AcademicGradeT>>
+      >(
+        `${ACADEMIC_GRADE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
+      );
+      return data.data.results;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async create(params: AcademicGradeCreateParamsT): Promise<AcademicGradeT> {
+    try {
+      const { data } = await apiClient.post<ResponseApi<AcademicGradeT>>(
+        ACADEMIC_GRADE_ENDPOINTS.CREATE,
+        params,
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async update(params: AcademicGradeUpdateParamsT): Promise<AcademicGradeT> {
+    try {
+      const { data } = await apiClient.patch<ResponseApi<AcademicGradeT>>(
+        ACADEMIC_GRADE_ENDPOINTS.UPDATE(params.id),
+        params.data,
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async softDelete(
+    params: AcademicGradeDeleteParamsT,
+  ): Promise<{ id: number }> {
+    try {
+      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
+        ACADEMIC_GRADE_ENDPOINTS.SOFT_DELETE(params.id),
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
 }
 export const academicGradeService = new AcademicGradeService();
