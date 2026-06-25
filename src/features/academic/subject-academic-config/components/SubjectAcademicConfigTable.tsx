@@ -2,12 +2,13 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
 import { Badge } from "@shared/components/Badge";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
@@ -18,7 +19,7 @@ import type {
   SubjectAcademicConfigT,
 } from "../subject-academic-config.types";
 
-const ORDERING_OPTIONS: {
+const OrderingOptions: {
   label: string;
   value: SubjectAcademicConfigOrderingT;
 }[] = [
@@ -26,79 +27,142 @@ const ORDERING_OPTIONS: {
   { label: "Horas (desc)", value: "-weekly_hours" },
 ];
 
-type SubjectAcademicConfigTableProps = {
+interface SubjectAcademicConfigTableProps {
   subjectAcademicConfigs: SubjectAcademicConfigT[];
   isLoading: boolean;
-  loadSubjectAcademicConfigs: (params?: SubjectAcademicConfigListParamsT) => void;
+  loadSubjectAcademicConfigs: (
+    params?: SubjectAcademicConfigListParamsT,
+  ) => void;
+  subjectOptions: { label: string; value: string }[];
+  academicGradeOptions: { label: string; value: string }[];
   onEdit: (config: SubjectAcademicConfigT) => void;
   onView: (config: SubjectAcademicConfigT) => void;
   onDelete: (config: SubjectAcademicConfigT) => void;
-};
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
 
-export const SubjectAcademicConfigTable = ({
+export const SubjectAcademicConfigTable: React.FC<
+  SubjectAcademicConfigTableProps
+> = ({
   subjectAcademicConfigs,
   isLoading,
   loadSubjectAcademicConfigs,
+  subjectOptions,
+  academicGradeOptions,
   onEdit,
   onView,
   onDelete,
-}: SubjectAcademicConfigTableProps) => {
+  canEdit = true,
+  canDelete = true,
+}) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] =
     useState<SubjectAcademicConfigOrderingT>("weekly_hours");
+  const [subject, setSubject] = useState<number | undefined>(undefined);
+  const [academicGrade, setAcademicGrade] = useState<number | undefined>(
+    undefined,
+  );
   const [hasSearched, setHasSearched] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const fetchData = useCallback(
+  const buildFilters = useCallback(
     (overrides?: {
-      page?: number;
-      pageSize?: number;
-      search?: string;
-      ordering?: SubjectAcademicConfigOrderingT;
-    }) => {
-      loadSubjectAcademicConfigs({
-        page: overrides?.page ?? page,
-        pageSize: overrides?.pageSize ?? pageSize,
-        search:
-          overrides?.search !== undefined
-            ? overrides.search
-            : search || undefined,
-        ordering: overrides?.ordering ?? ordering,
-      });
+      subject?: number;
+      academic_grade?: number;
+    }): SubjectAcademicConfigListParamsT["filters"] => {
+      const nextSubject =
+        overrides?.subject !== undefined ? overrides.subject : subject;
+      const nextAcademicGrade =
+        overrides?.academic_grade !== undefined
+          ? overrides.academic_grade
+          : academicGrade;
+      const filters: NonNullable<SubjectAcademicConfigListParamsT["filters"]> =
+        {};
+      if (nextSubject) filters.subject = nextSubject;
+      if (nextAcademicGrade) filters.academic_grade = nextAcademicGrade;
+      return Object.keys(filters).length > 0 ? filters : undefined;
     },
-    [loadSubjectAcademicConfigs, page, pageSize, search, ordering],
+    [subject, academicGrade],
+  );
+
+  const fetchData = useCallback(
+    (params?: SubjectAcademicConfigListParamsT) => {
+      loadSubjectAcademicConfigs(params);
+    },
+    [loadSubjectAcademicConfigs],
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ page: 1, pageSize: 10, ordering: "weekly_hours" });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSearchChange = useCallback(
+  const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearch(value);
       setPage(1);
       setHasSearched(true);
-
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: value || undefined });
+        fetchData({
+          page: 1,
+          pageSize,
+          search: value || undefined,
+          ordering,
+          filters: buildFilters(),
+        });
       }, 400);
     },
-    [fetchData],
+    [fetchData, pageSize, ordering, buildFilters],
   );
 
-  const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as SubjectAcademicConfigOrderingT;
-      setOrdering(newOrdering);
+  const handleOrdering = useCallback(
+    (value: SubjectAcademicConfigOrderingT) => {
+      setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: newOrdering });
+      fetchData({
+        page: 1,
+        pageSize,
+        search: search || undefined,
+        ordering: value,
+        filters: buildFilters(),
+      });
     },
-    [fetchData],
+    [fetchData, pageSize, search, buildFilters],
+  );
+
+  const handleSubjectChange = useCallback(
+    (value: number | undefined) => {
+      setSubject(value);
+      setPage(1);
+      fetchData({
+        page: 1,
+        pageSize,
+        search: search || undefined,
+        ordering,
+        filters: buildFilters({ subject: value ?? 0 }),
+      });
+    },
+    [fetchData, pageSize, search, ordering, buildFilters],
+  );
+
+  const handleAcademicGradeChange = useCallback(
+    (value: number | undefined) => {
+      setAcademicGrade(value);
+      setPage(1);
+      fetchData({
+        page: 1,
+        pageSize,
+        search: search || undefined,
+        ordering,
+        filters: buildFilters({ academic_grade: value ?? 0 }),
+      });
+    },
+    [fetchData, pageSize, search, ordering, buildFilters],
   );
 
   const hasNextPage = subjectAcademicConfigs.length >= pageSize;
@@ -123,8 +187,8 @@ export const SubjectAcademicConfigTable = ({
       key: "is_required",
       label: "Obligatorio",
       className: tableColumnsClassname,
-      render: (c) =>
-        c.is_required ? (
+      render: (config) =>
+        config.is_required ? (
           <Badge variant="default">Si</Badge>
         ) : (
           <Badge variant="outline">No</Badge>
@@ -134,8 +198,8 @@ export const SubjectAcademicConfigTable = ({
       key: "is_active",
       label: "Estado",
       className: tableColumnsClassname,
-      render: (c) =>
-        c.is_active ? (
+      render: (config) =>
+        config.is_active ? (
           <Badge variant="default">Activo</Badge>
         ) : (
           <Badge variant="outline">Inactivo</Badge>
@@ -149,24 +213,49 @@ export const SubjectAcademicConfigTable = ({
         <SearchInput
           name="search"
           type="text"
-          onChange={handleSearchChange}
+          onChange={handleSearch}
           value={search}
           className="relative min-w-50 flex-1"
           placeholder="Filtrar configuraciones..."
         />
 
-        <select
+        <CustomSelect
+          name="subject"
+          label=""
+          placeholder="Materia"
+          value={subject ? String(subject) : ""}
+          options={subjectOptions}
+          onChange={(option) =>
+            handleSubjectChange(option.value ? Number(option.value) : undefined)
+          }
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="academic_grade"
+          label=""
+          placeholder="Grado"
+          value={academicGrade ? String(academicGrade) : ""}
+          options={academicGradeOptions}
+          onChange={(option) =>
+            handleAcademicGradeChange(
+              option.value ? Number(option.value) : undefined,
+            )
+          }
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por"
           value={ordering}
-          onChange={handleOrderingChange}
-          className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Ordenar por"
-        >
-          {ORDERING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          options={OrderingOptions}
+          onChange={(option) =>
+            handleOrdering(option.value as SubjectAcademicConfigOrderingT)
+          }
+          className={filterSelectClassname}
+        />
       </div>
 
       <CustomTable<SubjectAcademicConfigT>
@@ -181,32 +270,36 @@ export const SubjectAcademicConfigTable = ({
         actionsTitle="Acciones"
         className={tableClassname}
         loadingMessage="Cargando configuraciones..."
-        rowActions={(c) => (
+        rowActions={(config) => (
           <div className="flex items-center justify-end gap-1">
             <button
               type="button"
-              onClick={() => onView(c)}
+              onClick={() => onView(config)}
               className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
               title="Ver detalle"
             >
               <Eye className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(c)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Editar"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(c)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-              title="Desactivar"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(config)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                title="Editar"
+              >
+                <Pencil className="size-4" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(config)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                title="Desactivar"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       />
@@ -219,12 +312,24 @@ export const SubjectAcademicConfigTable = ({
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {
           setPage(newPage);
-          fetchData({ page: newPage });
+          fetchData({
+            page: newPage,
+            pageSize,
+            search: search || undefined,
+            ordering,
+            filters: buildFilters(),
+          });
         }}
         onPageSizeChange={(newSize) => {
           setPageSize(newSize);
           setPage(1);
-          fetchData({ page: 1, pageSize: newSize });
+          fetchData({
+            page: 1,
+            pageSize: newSize,
+            search: search || undefined,
+            ordering,
+            filters: buildFilters(),
+          });
         }}
       />
     </div>

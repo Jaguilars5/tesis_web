@@ -10,5 +10,4 @@ export const subjectOfferingSchema = Yup.object({
   subject_academic_config: Yup.number()
     .min(1, "La configuracion academica es obligatoria")
     .required("La configuracion academica es obligatoria"),
-  is_active: Yup.boolean(),
 });

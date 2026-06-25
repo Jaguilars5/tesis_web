@@ -1,5 +1,4 @@
 import { useFormik } from "formik";
-import { useEffect } from "react";
 import { inputClassname, selectClassname } from "@app/styles/styles";
 import { CustomInput, CustomSelect } from "@shared/components/Form";
 import { academicGradeSchema } from "../academic-grade.utils";
@@ -51,13 +50,8 @@ export const AcademicGradeFormModal: React.FC<AcademicGradeFormModalProps> = ({
   const formik = useFormik<AcademicGradeFormValues>({
     initialValues: getInitialValues(),
     validationSchema: academicGradeSchema,
-    enableReinitialize: true,
     onSubmit,
   });
-
-  useEffect(() => {
-    if (isOpen && editingAcademicGrade) formik.setValues(getInitialValues());
-  }, [isOpen, editingAcademicGrade]);
 
   if (!isOpen) return null;
   return (

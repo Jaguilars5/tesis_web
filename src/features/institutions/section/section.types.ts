@@ -1,3 +1,5 @@
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface SectionT {
   id: number;
   parallel: string;
@@ -50,6 +52,7 @@ export type SectionGetParamsT = {
 
 export type SectionDeleteParamsT = {
   id: number;
+  confirm?: boolean;
 };
 
 export interface SectionServiceT {
@@ -57,5 +60,5 @@ export interface SectionServiceT {
   get(params: SectionGetParamsT): Promise<SectionT>;
   create(params: SectionCreateParamsT): Promise<SectionT>;
   update(params: SectionUpdateParamsT): Promise<SectionT>;
-  softDelete(params: SectionDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: SectionDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

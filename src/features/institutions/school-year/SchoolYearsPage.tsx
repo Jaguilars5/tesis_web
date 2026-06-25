@@ -10,7 +10,7 @@ import { SchoolYearFormModal } from "./components/SchoolYearFormModal";
 import { SchoolYearTable } from "./components/SchoolYearTable";
 import { SchoolYearViewModal } from "./components/SchoolYearViewModal";
 import { SCHOOL_YEAR_PERMISSIONS } from "./school-year.constants";
-import type { SchoolYearDeleteParamsT, SchoolYearT } from "./school-year.types";
+import type { SchoolYearT } from "./school-year.types";
 
 export default function SchoolYearsPage() {
   const {
@@ -61,16 +61,6 @@ export default function SchoolYearsPage() {
     setIsDeleteOpen(false);
   }, []);
 
-  const handleDeleteConfirm = useCallback(
-    async (params: SchoolYearDeleteParamsT) => {
-      try {
-        await deleteSchoolYear(params);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [deleteSchoolYear],
-  );
   return (
     <div className="space-y-4">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -104,6 +94,7 @@ export default function SchoolYearsPage() {
         canDelete={canDelete}
       />
       <SchoolYearFormModal
+        key={editingSchoolYear?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -120,7 +111,7 @@ export default function SchoolYearsPage() {
         isOpen={isDeleteOpen}
         schoolYear={deleting}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteSchoolYear}
       />
     </div>
   );

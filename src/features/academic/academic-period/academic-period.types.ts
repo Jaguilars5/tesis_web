@@ -1,3 +1,5 @@
+import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface AcademicPeriodT {
   id: number;
   code: string;
@@ -58,14 +60,12 @@ export interface AcademicPeriodGetParamsT {
   id: number;
 }
 
-export interface AcademicPeriodDeleteParamsT {
-  id: number;
-}
+export type AcademicPeriodDeleteParamsT = SoftDeleteParamsT;
 
 export interface AcademicPeriodServiceT {
   list(params?: AcademicPeriodListParamsT): Promise<AcademicPeriodT[]>;
   get(params: AcademicPeriodGetParamsT): Promise<AcademicPeriodT>;
   create(params: AcademicPeriodCreateParamsT): Promise<AcademicPeriodT>;
   update(params: AcademicPeriodUpdateParamsT): Promise<AcademicPeriodT>;
-  softDelete(params: AcademicPeriodDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: AcademicPeriodDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

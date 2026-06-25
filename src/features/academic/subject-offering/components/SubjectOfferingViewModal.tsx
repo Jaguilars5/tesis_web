@@ -1,22 +1,27 @@
 import { CalendarDays, GraduationCap, LayoutGrid, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
+import { DetailRow } from "@shared/components/DetailRow";
+
 import { subjectOfferingService } from "../subject-offering.service";
 
 import type { SubjectOfferingT } from "../subject-offering.types";
 
-interface State {
+interface SubjectOfferingViewModalState {
   data: SubjectOfferingT | null;
   loading: boolean;
   error: string | null;
 }
 
-type Action =
+type SubjectOfferingViewModalAction =
   | { type: "loading" }
   | { type: "success"; data: SubjectOfferingT }
   | { type: "error"; error: string };
 
-function reducer(_state: State, action: Action): State {
+const reducer = (
+  state: SubjectOfferingViewModalState,
+  action: SubjectOfferingViewModalAction,
+): SubjectOfferingViewModalState => {
   switch (action.type) {
     case "loading":
       return { data: null, loading: true, error: null };
@@ -24,8 +29,10 @@ function reducer(_state: State, action: Action): State {
       return { data: action.data, loading: false, error: null };
     case "error":
       return { data: null, loading: false, error: action.error };
+    default:
+      return state;
   }
-}
+};
 
 interface SubjectOfferingViewModalProps {
   isOpen: boolean;
@@ -33,11 +40,9 @@ interface SubjectOfferingViewModalProps {
   onClose: () => void;
 }
 
-export const SubjectOfferingViewModal = ({
-  isOpen,
-  offeringId,
-  onClose,
-}: SubjectOfferingViewModalProps) => {
+export const SubjectOfferingViewModal: React.FC<
+  SubjectOfferingViewModalProps
+> = ({ isOpen, offeringId, onClose }) => {
   const [state, dispatch] = useReducer(reducer, {
     data: null,
     loading: false,
@@ -48,7 +53,7 @@ export const SubjectOfferingViewModal = ({
     if (isOpen && offeringId !== null) {
       dispatch({ type: "loading" });
       subjectOfferingService
-        .get(offeringId)
+        .get({ id: offeringId })
         .then((data) => dispatch({ type: "success", data }))
         .catch((err: Error) => dispatch({ type: "error", error: err.message }));
     }
@@ -158,27 +163,3 @@ export const SubjectOfferingViewModal = ({
     </div>
   );
 };
-
-function DetailRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
-      </div>
-    </div>
-  );
-}

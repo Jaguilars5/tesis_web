@@ -1,6 +1,8 @@
 import { BookOpen, GraduationCap, Hash, User, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
+import { DetailRow } from "@shared/components/DetailRow";
+
 import { teacherSubjectSectionService } from "../teacher-subject-section.service";
 
 import type { TeacherSubjectSectionT } from "../teacher-subject-section.types";
@@ -29,32 +31,30 @@ function reducer(_state: State, action: Action): State {
 
 interface TeacherSubjectSectionViewModalProps {
   isOpen: boolean;
-  assignmentId: number | null;
+  entityId: number | null;
   onClose: () => void;
 }
 
-export const TeacherSubjectSectionViewModal = ({
-  isOpen,
-  assignmentId,
-  onClose,
-}: TeacherSubjectSectionViewModalProps) => {
-  const [state, stateDispatch] = useReducer(reducer, {
+export const TeacherSubjectSectionViewModal: React.FC<
+  TeacherSubjectSectionViewModalProps
+> = ({ isOpen, entityId, onClose }) => {
+  const [state, dispatch] = useReducer(reducer, {
     data: null,
     loading: false,
     error: null,
   });
 
   useEffect(() => {
-    if (isOpen && assignmentId !== null) {
-      stateDispatch({ type: "loading" });
+    if (isOpen && entityId !== null) {
+      dispatch({ type: "loading" });
       teacherSubjectSectionService
-        .get(assignmentId)
-        .then((data) => stateDispatch({ type: "success", data }))
+        .get({ id: entityId })
+        .then((data) => dispatch({ type: "success", data }))
         .catch((err: Error) =>
-          stateDispatch({ type: "error", error: err.message }),
+          dispatch({ type: "error", error: err.message }),
         );
     }
-  }, [isOpen, assignmentId]);
+  }, [isOpen, entityId]);
 
   if (!isOpen) return null;
 
@@ -171,26 +171,4 @@ export const TeacherSubjectSectionViewModal = ({
   );
 };
 
-function DetailRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
-      </div>
-    </div>
-  );
-}
+

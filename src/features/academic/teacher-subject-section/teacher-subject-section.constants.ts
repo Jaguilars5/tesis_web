@@ -1,8 +1,12 @@
+export const TEACHER_SUBJECT_SECTION_BASE_URL = "/api/academic/teacher-subject-sections/";
+
 export const TEACHER_SUBJECT_SECTION_ENDPOINTS = {
-  LIST: "/api/academic/teacher-subject-sections/",
-  DETAIL: (id: number) => `/api/academic/teacher-subject-sections/${id}/`,
+  LIST: TEACHER_SUBJECT_SECTION_BASE_URL,
+  CREATE: TEACHER_SUBJECT_SECTION_BASE_URL,
+  GET: (id: number) => `${TEACHER_SUBJECT_SECTION_BASE_URL}${id}/`,
+  UPDATE: (id: number) => `${TEACHER_SUBJECT_SECTION_BASE_URL}${id}/`,
   SOFT_DELETE: (id: number) =>
-    `/api/academic/teacher-subject-sections/${id}/soft-delete/`,
+    `${TEACHER_SUBJECT_SECTION_BASE_URL}${id}/soft-delete/`,
 } as const;
 
 export const TEACHER_ENDPOINTS = {

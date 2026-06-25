@@ -2,12 +2,13 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
 import { Badge } from "@shared/components/Badge";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
@@ -18,83 +19,166 @@ import type {
   SubjectOfferingT,
 } from "../subject-offering.types";
 
-const ORDERING_OPTIONS: { label: string; value: SubjectOfferingOrderingT }[] = [
+const OrderingOptions: { label: string; value: SubjectOfferingOrderingT }[] = [
   { label: "Mas recientes", value: "-id" },
   { label: "Mas antiguos", value: "id" },
 ];
 
-type SubjectOfferingTableProps = {
+interface SubjectOfferingTableProps {
   subjectOfferings: SubjectOfferingT[];
   isLoading: boolean;
   loadSubjectOfferings: (params?: SubjectOfferingListParamsT) => void;
+  schoolYearOptions: { label: string; value: string }[];
+  sectionOptions: { label: string; value: string }[];
+  subjectAcademicConfigOptions: { label: string; value: string }[];
   onEdit: (offering: SubjectOfferingT) => void;
   onView: (offering: SubjectOfferingT) => void;
   onDelete: (offering: SubjectOfferingT) => void;
-};
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
 
-export const SubjectOfferingTable = ({
+export const SubjectOfferingTable: React.FC<SubjectOfferingTableProps> = ({
   subjectOfferings,
   isLoading,
   loadSubjectOfferings,
+  schoolYearOptions,
+  sectionOptions,
+  subjectAcademicConfigOptions,
   onEdit,
   onView,
   onDelete,
-}: SubjectOfferingTableProps) => {
+  canEdit = true,
+  canDelete = true,
+}) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] = useState<SubjectOfferingOrderingT>("-id");
+  const [schoolYear, setSchoolYear] = useState<number | undefined>(undefined);
+  const [section, setSection] = useState<number | undefined>(undefined);
+  const [subjectAcademicConfig, setSubjectAcademicConfig] = useState<
+    number | undefined
+  >(undefined);
   const [hasSearched, setHasSearched] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const fetchData = useCallback(
+  const buildFilters = useCallback(
     (overrides?: {
-      page?: number;
-      pageSize?: number;
-      search?: string;
-      ordering?: SubjectOfferingOrderingT;
-    }) => {
-      loadSubjectOfferings({
-        page: overrides?.page ?? page,
-        pageSize: overrides?.pageSize ?? pageSize,
-        search:
-          overrides?.search !== undefined
-            ? overrides.search
-            : search || undefined,
-        ordering: overrides?.ordering ?? ordering,
-      });
+      school_year?: number;
+      section?: number;
+      subject_academic_config?: number;
+    }): SubjectOfferingListParamsT["filters"] => {
+      const nextSchoolYear =
+        overrides?.school_year !== undefined
+          ? overrides.school_year
+          : schoolYear;
+      const nextSection =
+        overrides?.section !== undefined ? overrides.section : section;
+      const nextSubjectAcademicConfig =
+        overrides?.subject_academic_config !== undefined
+          ? overrides.subject_academic_config
+          : subjectAcademicConfig;
+      const filters: NonNullable<SubjectOfferingListParamsT["filters"]> = {};
+      if (nextSchoolYear) filters.school_year = nextSchoolYear;
+      if (nextSection) filters.section = nextSection;
+      if (nextSubjectAcademicConfig)
+        filters.subject_academic_config = nextSubjectAcademicConfig;
+      return Object.keys(filters).length > 0 ? filters : undefined;
     },
-    [loadSubjectOfferings, page, pageSize, search, ordering],
+    [schoolYear, section, subjectAcademicConfig],
+  );
+
+  const fetchData = useCallback(
+    (params?: SubjectOfferingListParamsT) => {
+      loadSubjectOfferings(params);
+    },
+    [loadSubjectOfferings],
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ page: 1, pageSize: 10, ordering: "-id" });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSearchChange = useCallback(
+  const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearch(value);
       setPage(1);
       setHasSearched(true);
-
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: value || undefined });
+        fetchData({
+          page: 1,
+          pageSize,
+          search: value || undefined,
+          ordering,
+          filters: buildFilters(),
+        });
       }, 400);
     },
-    [fetchData],
+    [fetchData, pageSize, ordering, buildFilters],
   );
 
-  const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as SubjectOfferingOrderingT;
-      setOrdering(newOrdering);
+  const handleOrdering = useCallback(
+    (value: SubjectOfferingOrderingT) => {
+      setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: newOrdering });
+      fetchData({
+        page: 1,
+        pageSize,
+        search: search || undefined,
+        ordering: value,
+        filters: buildFilters(),
+      });
     },
-    [fetchData],
+    [fetchData, pageSize, search, buildFilters],
+  );
+
+  const handleSchoolYearChange = useCallback(
+    (value: number | undefined) => {
+      setSchoolYear(value);
+      setPage(1);
+      fetchData({
+        page: 1,
+        pageSize,
+        search: search || undefined,
+        ordering,
+        filters: buildFilters({ school_year: value ?? 0 }),
+      });
+    },
+    [fetchData, pageSize, search, ordering, buildFilters],
+  );
+
+  const handleSectionChange = useCallback(
+    (value: number | undefined) => {
+      setSection(value);
+      setPage(1);
+      fetchData({
+        page: 1,
+        pageSize,
+        search: search || undefined,
+        ordering,
+        filters: buildFilters({ section: value ?? 0 }),
+      });
+    },
+    [fetchData, pageSize, search, ordering, buildFilters],
+  );
+
+  const handleSubjectAcademicConfigChange = useCallback(
+    (value: number | undefined) => {
+      setSubjectAcademicConfig(value);
+      setPage(1);
+      fetchData({
+        page: 1,
+        pageSize,
+        search: search || undefined,
+        ordering,
+        filters: buildFilters({ subject_academic_config: value ?? 0 }),
+      });
+    },
+    [fetchData, pageSize, search, ordering, buildFilters],
   );
 
   const hasNextPage = subjectOfferings.length >= pageSize;
@@ -119,8 +203,8 @@ export const SubjectOfferingTable = ({
       key: "is_active",
       label: "Estado",
       className: tableColumnsClassname,
-      render: (o) =>
-        o.is_active ? (
+      render: (offering) =>
+        offering.is_active ? (
           <Badge variant="default">Activo</Badge>
         ) : (
           <Badge variant="outline">Inactivo</Badge>
@@ -134,24 +218,63 @@ export const SubjectOfferingTable = ({
         <SearchInput
           name="search"
           type="text"
-          onChange={handleSearchChange}
+          onChange={handleSearch}
           value={search}
           className="relative min-w-50 flex-1"
           placeholder="Filtrar ofertas..."
         />
 
-        <select
+        <CustomSelect
+          name="school_year"
+          label=""
+          placeholder="Año escolar"
+          value={schoolYear ? String(schoolYear) : ""}
+          options={schoolYearOptions}
+          onChange={(option) =>
+            handleSchoolYearChange(
+              option.value ? Number(option.value) : undefined,
+            )
+          }
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="section"
+          label=""
+          placeholder="Sección"
+          value={section ? String(section) : ""}
+          options={sectionOptions}
+          onChange={(option) =>
+            handleSectionChange(option.value ? Number(option.value) : undefined)
+          }
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="subject_academic_config"
+          label=""
+          placeholder="Configuración"
+          value={subjectAcademicConfig ? String(subjectAcademicConfig) : ""}
+          options={subjectAcademicConfigOptions}
+          onChange={(option) =>
+            handleSubjectAcademicConfigChange(
+              option.value ? Number(option.value) : undefined,
+            )
+          }
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por"
           value={ordering}
-          onChange={handleOrderingChange}
-          className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Ordenar por"
-        >
-          {ORDERING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          options={OrderingOptions}
+          onChange={(option) =>
+            handleOrdering(option.value as SubjectOfferingOrderingT)
+          }
+          className={filterSelectClassname}
+        />
       </div>
 
       <CustomTable<SubjectOfferingT>
@@ -166,32 +289,36 @@ export const SubjectOfferingTable = ({
         actionsTitle="Acciones"
         className={tableClassname}
         loadingMessage="Cargando ofertas..."
-        rowActions={(o) => (
+        rowActions={(offering) => (
           <div className="flex items-center justify-end gap-1">
             <button
               type="button"
-              onClick={() => onView(o)}
+              onClick={() => onView(offering)}
               className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
               title="Ver detalle"
             >
               <Eye className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(o)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Editar"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(o)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-              title="Desactivar"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(offering)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                title="Editar"
+              >
+                <Pencil className="size-4" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(offering)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                title="Desactivar"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       />
@@ -204,12 +331,24 @@ export const SubjectOfferingTable = ({
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {
           setPage(newPage);
-          fetchData({ page: newPage });
+          fetchData({
+            page: newPage,
+            pageSize,
+            search: search || undefined,
+            ordering,
+            filters: buildFilters(),
+          });
         }}
         onPageSizeChange={(newSize) => {
           setPageSize(newSize);
           setPage(1);
-          fetchData({ page: 1, pageSize: newSize });
+          fetchData({
+            page: 1,
+            pageSize: newSize,
+            search: search || undefined,
+            ordering,
+            filters: buildFilters(),
+          });
         }}
       />
     </div>

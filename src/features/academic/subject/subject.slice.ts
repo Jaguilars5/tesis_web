@@ -32,21 +32,17 @@ const subjectSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    subjectCreated(state, action: PayloadAction<SubjectT>) {
+    entityCreated(state, action: PayloadAction<SubjectT>) {
       state.subjects.unshift(action.payload);
       state.status = "succeeded";
     },
-    subjectUpdated(state, action: PayloadAction<SubjectT>) {
-      const idx = state.subjects.findIndex(
-        (p) => p.id === action.payload.id,
-      );
+    entityUpdated(state, action: PayloadAction<SubjectT>) {
+      const idx = state.subjects.findIndex((p) => p.id === action.payload.id);
       if (idx !== -1) state.subjects[idx] = action.payload;
       state.status = "succeeded";
     },
-    subjectDeleted(state, action: PayloadAction<number>) {
-      state.subjects = state.subjects.filter(
-        (p) => p.id !== action.payload,
-      );
+    entityDeleted(state, action: PayloadAction<number>) {
+      state.subjects = state.subjects.filter((p) => p.id !== action.payload);
       state.status = "succeeded";
     },
     mutationError(state, action: PayloadAction<string>) {
@@ -63,9 +59,9 @@ export const {
   loadPending,
   loadSuccess,
   loadError,
-  subjectCreated,
-  subjectUpdated,
-  subjectDeleted,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
   mutationError,
   clearSubjectError,
 } = subjectSlice.actions;

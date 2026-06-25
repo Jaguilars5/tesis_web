@@ -12,7 +12,7 @@ import { SectionFormModal } from "./components/SectionFormModal";
 import { SectionTable } from "./components/SectionTable";
 import { SectionViewModal } from "./components/SectionViewModal";
 import { SECTION_PERMISSIONS } from "./section.constants";
-import type { SectionDeleteParamsT, SectionT } from "./section.types";
+import type { SectionT } from "./section.types";
 
 export default function SectionsPage() {
   const {
@@ -63,17 +63,6 @@ export default function SectionsPage() {
     setIsDeleteOpen(false);
   }, []);
 
-  const handleDeleteConfirm = useCallback(
-    async (params: SectionDeleteParamsT) => {
-      try {
-        await deleteSection(params);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [deleteSection],
-  );
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -107,6 +96,7 @@ export default function SectionsPage() {
         canDelete={canDelete}
       />
       <SectionFormModal
+        key={editingSection?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -125,7 +115,7 @@ export default function SectionsPage() {
         isOpen={isDeleteOpen}
         section={deleting}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteSection}
       />
     </div>
   );

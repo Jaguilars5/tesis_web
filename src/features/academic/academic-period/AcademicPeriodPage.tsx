@@ -15,10 +15,7 @@ import { AcademicPeriodFormModal } from "./components/AcademicPeriodFormModal";
 import { AcademicPeriodTable } from "./components/AcademicPeriodTable";
 import { AcademicPeriodViewModal } from "./components/AcademicPeriodViewModal";
 
-import type {
-  AcademicPeriodDeleteParamsT,
-  AcademicPeriodT,
-} from "./academic-period.types";
+import type { AcademicPeriodT } from "./academic-period.types";
 
 export default function AcademicPeriodsPage() {
   const { periodTypeOptions } = usePeriodTypeOptions();
@@ -55,7 +52,7 @@ export default function AcademicPeriodsPage() {
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
-  const [deletingPeriod, setDeletingPeriod] = useState<AcademicPeriodT | null>(
+  const [deletingEntity, setDeletingEntity] = useState<AcademicPeriodT | null>(
     null,
   );
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -71,25 +68,14 @@ export default function AcademicPeriodsPage() {
   }, []);
 
   const openDeleteModal = useCallback((period: AcademicPeriodT) => {
-    setDeletingPeriod(period);
+    setDeletingEntity(period);
     setIsDeleteOpen(true);
   }, []);
 
   const closeDeleteModal = useCallback(() => {
     setIsDeleteOpen(false);
-    setDeletingPeriod(null);
+    setDeletingEntity(null);
   }, []);
-
-  const handleDeleteConfirm = useCallback(
-    async (params: AcademicPeriodDeleteParamsT) => {
-      try {
-        await deleteAcademicPeriod(params);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [deleteAcademicPeriod],
-  );
 
   return (
     <div className="space-y-4">
@@ -147,9 +133,9 @@ export default function AcademicPeriodsPage() {
 
       <AcademicPeriodDeleteModal
         isOpen={isDeleteOpen}
-        period={deletingPeriod}
+        entity={deletingEntity}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteAcademicPeriod}
       />
     </div>
   );

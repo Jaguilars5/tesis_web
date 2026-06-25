@@ -1,13 +1,13 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
-import { useEffect } from "react";
 
-import { checkboxClassname, selectClassname } from "@app/styles/styles";
-import { CustomCheckbox, CustomSelect } from "@shared/components/Form";
+import { selectClassname } from "@app/styles/styles";
+import { CustomSelect } from "@shared/components/Form";
+import { ErrrosInForm } from "@shared/components/ErrrosInForm";
+import type { SubmitErrorState } from "@shared/utils/validationErrors";
 
 import { teacherSubjectSectionSchema } from "../teacher-subject-section.utils";
 
-import type { SubmitErrorState } from "../teacher-subject-section.controller";
 import type {
   TeacherSubjectSectionFormValues,
   TeacherSubjectSectionT,
@@ -33,7 +33,9 @@ interface TeacherSubjectSectionFormModalProps {
   submitErrors: SubmitErrorState;
 }
 
-export const TeacherSubjectSectionFormModal = ({
+export const TeacherSubjectSectionFormModal: React.FC<
+  TeacherSubjectSectionFormModalProps
+> = ({
   isOpen,
   onClose,
   isEdit,
@@ -42,36 +44,31 @@ export const TeacherSubjectSectionFormModal = ({
   subjectOfferingOptions,
   onSubmit,
   submitErrors,
-}: TeacherSubjectSectionFormModalProps) => {
+}) => {
   const getInitialValues = (): TeacherSubjectSectionFormValues => {
     if (editingTeacherSubjectSection) {
       return {
         user: editingTeacherSubjectSection.user,
         subject_offering: editingTeacherSubjectSection.subject_offering,
-        is_active: editingTeacherSubjectSection.is_active,
       };
     }
     return {
       user: 0,
       subject_offering: 0,
-      is_active: true,
     };
   };
 
   const formik = useFormik<TeacherSubjectSectionFormValues>({
     initialValues: getInitialValues(),
     validationSchema: teacherSubjectSectionSchema,
-    enableReinitialize: true,
     onSubmit,
   });
 
-  useEffect(() => {
-    if (isOpen && editingTeacherSubjectSection) {
-      formik.setValues(getInitialValues());
-    }
-  }, [isOpen, editingTeacherSubjectSection]); // eslint-disable-line react-hooks/exhaustive-deps
-
   if (!isOpen) return null;
+
+  const hasSubmitErrors =
+    submitErrors.general.length > 0 ||
+    Object.keys(submitErrors.validation).length > 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -95,51 +92,11 @@ export const TeacherSubjectSectionFormModal = ({
           </button>
         </div>
 
-        {(submitErrors.general.length > 0 ||
-          Object.keys(submitErrors.validation).length > 0) && (
-          <div className="mx-5 mt-3 rounded-lg border border-red-300 bg-red-50 p-4 shadow-sm">
-            <div className="flex items-start gap-2">
-              <svg
-                className="mt-0.5 size-5 flex-shrink-0 text-red-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <div className="flex-1">
-                <p className="mb-2 text-sm font-semibold text-red-800">
-                  Error al guardar la asignacion
-                </p>
-                {submitErrors.general.length > 0 && (
-                  <ul className="mb-2 space-y-1">
-                    {submitErrors.general.map((err, i) => (
-                      <li key={i} className="text-sm text-red-700">
-                        • {err}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {Object.keys(submitErrors.validation).length > 0 && (
-                  <ul className="space-y-1">
-                    {Object.entries(submitErrors.validation).map(
-                      ([field, message]) => (
-                        <li key={field} className="text-sm text-red-700">
-                          <span className="font-semibold">
-                            {getFieldLabel(field)}:
-                          </span>{" "}
-                          {message}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
+        {hasSubmitErrors && (
+          <ErrrosInForm
+            submitErrors={submitErrors}
+            getFieldLabel={getFieldLabel}
+          />
         )}
 
         <form onSubmit={formik.handleSubmit} className="space-y-4 p-5">
@@ -170,19 +127,6 @@ export const TeacherSubjectSectionFormModal = ({
             options={subjectOfferingOptions}
             className={selectClassname}
           />
-
-          <div className="flex items-end pb-1">
-            {isEdit && (
-              <CustomCheckbox
-                name="is_active"
-                checked={formik.values.is_active}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                label="Activo"
-                className={checkboxClassname}
-              />
-            )}
-          </div>
 
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <button

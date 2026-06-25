@@ -1,5 +1,4 @@
 import { useFormik } from "formik";
-import { useEffect } from "react";
 import { X } from "lucide-react";
 import { inputClassname, selectClassname } from "@app/styles/styles";
 import { CustomInput, CustomSelect } from "@shared/components/Form";
@@ -50,13 +49,8 @@ export const SectionFormModal: React.FC<SectionFormModalProps> = ({
   const formik = useFormik<SectionFormValues>({
     initialValues: getInitialValues(),
     validationSchema: sectionSchema,
-    enableReinitialize: true,
     onSubmit,
   });
-
-  useEffect(() => {
-    if (isOpen && editingSection) formik.setValues(getInitialValues());
-  }, [isOpen, editingSection]);
 
   if (!isOpen) return null;
   return (

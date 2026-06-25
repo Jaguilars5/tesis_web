@@ -1,5 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@shared/redux/hooks";
 import { toRejectValue } from "@shared/utils/validationErrors";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { useCallback } from "react";
 import { schoolYearService } from "../school-year.service";
 import {
@@ -73,12 +74,18 @@ export const useSchoolYearController = () => {
   );
 
   const disable = useCallback(
-    async (params: SchoolYearDeleteParamsT): Promise<void> => {
+    async (params: SchoolYearDeleteParamsT): Promise<SoftDeleteResponseT> => {
       try {
-        const { id } = await schoolYearService.softDelete(params);
-        dispatch(entityDeleted(id));
+        const response = await schoolYearService.softDelete(params);
+        // Only dispatch entityDeleted when actually deactivated
+        if (response.is_active === false) {
+          dispatch(entityDeleted(response.id));
+        }
+        return response;
       } catch (err) {
-        dispatch(loadError(err instanceof Error ? err.message : "Error"));
+        const rv = toRejectValue(err);
+        dispatch(loadError(rv.msg));
+        throw rv;
       }
     },
     [dispatch],

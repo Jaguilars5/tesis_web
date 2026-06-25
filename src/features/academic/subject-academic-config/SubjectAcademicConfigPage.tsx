@@ -1,11 +1,15 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import {
-  useSubjectAcademicConfigController,
-  useSubjectAcademicConfigForm,
-} from "./subject-academic-config.controller";
-import { useAcademicGradeOptions, useSubjectOptions } from "./subject-academic-config.options";
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+
+import { SUBJECT_ACADEMIC_CONFIG_PERMISSIONS } from "./subject-academic-config.constants";
+import { useAcademicGradeOptions } from "./hooks/useAcademicGradeOptions";
+import { useSubjectAcademicConfigController } from "./hooks/useSubjectAcademicConfigController";
+import { useSubjectAcademicConfigForm } from "./hooks/useSubjectAcademicConfigForm";
+import { useSubjectOptions } from "./hooks/useSubjectOptions";
 import { SubjectAcademicConfigDeleteModal } from "./components/SubjectAcademicConfigDeleteModal";
 import { SubjectAcademicConfigFormModal } from "./components/SubjectAcademicConfigFormModal";
 import { SubjectAcademicConfigTable } from "./components/SubjectAcademicConfigTable";
@@ -39,10 +43,24 @@ export default function SubjectAcademicConfigsPage() {
     update: updateSubjectAcademicConfig,
   });
 
+  const permissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(
+    permissions,
+    SUBJECT_ACADEMIC_CONFIG_PERMISSIONS.CREATE,
+  );
+  const canEdit = hasPermission(
+    permissions,
+    SUBJECT_ACADEMIC_CONFIG_PERMISSIONS.UPDATE,
+  );
+  const canDelete = hasPermission(
+    permissions,
+    SUBJECT_ACADEMIC_CONFIG_PERMISSIONS.DELETE,
+  );
+
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
-  const [deletingConfig, setDeletingConfig] =
+  const [deletingEntity, setDeletingEntity] =
     useState<SubjectAcademicConfigT | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -57,21 +75,14 @@ export default function SubjectAcademicConfigsPage() {
   }, []);
 
   const openDeleteModal = useCallback((config: SubjectAcademicConfigT) => {
-    setDeletingConfig(config);
+    setDeletingEntity(config);
     setIsDeleteOpen(true);
   }, []);
 
   const closeDeleteModal = useCallback(() => {
     setIsDeleteOpen(false);
-    setDeletingConfig(null);
+    setDeletingEntity(null);
   }, []);
-
-  const handleDeleteConfirm = useCallback(
-    async (id: number) => {
-      await deleteSubjectAcademicConfig(id);
-    },
-    [deleteSubjectAcademicConfig],
-  );
 
   return (
     <div className="space-y-4">
@@ -84,26 +95,33 @@ export default function SubjectAcademicConfigsPage() {
             Gestiona las horas semanales y materias por grado academico
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus className="size-4" />
-          Nueva Configuracion
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => openModal()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Plus className="size-4" />
+            Nueva Configuracion
+          </button>
+        )}
       </div>
 
       <SubjectAcademicConfigTable
         subjectAcademicConfigs={subjectAcademicConfigs}
         isLoading={isLoading}
         loadSubjectAcademicConfigs={loadSubjectAcademicConfigs}
+        subjectOptions={subjectOptions}
+        academicGradeOptions={academicGradeOptions}
         onEdit={openModal}
         onView={openViewModal}
         onDelete={openDeleteModal}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       <SubjectAcademicConfigFormModal
+        key={editingSubjectAcademicConfig?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -122,9 +140,9 @@ export default function SubjectAcademicConfigsPage() {
 
       <SubjectAcademicConfigDeleteModal
         isOpen={isDeleteOpen}
-        config={deletingConfig}
+        entity={deletingEntity}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteSubjectAcademicConfig}
       />
     </div>
   );

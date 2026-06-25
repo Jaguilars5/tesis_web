@@ -2,12 +2,13 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
 import { Badge } from "@shared/components/Badge";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
@@ -18,30 +19,34 @@ import type {
   SubjectT,
 } from "../subject.types";
 
-const ORDERING_OPTIONS: { label: string; value: SubjectOrderingT }[] = [
+const OrderingOptions: { label: string; value: SubjectOrderingT }[] = [
   { label: "Nombre (A-Z)", value: "name" },
   { label: "Nombre (Z-A)", value: "-name" },
   { label: "Código (A-Z)", value: "code" },
   { label: "Código (Z-A)", value: "-code" },
 ];
 
-type SubjectTableProps = {
+interface SubjectTableProps {
   subjects: SubjectT[];
   isLoading: boolean;
   loadSubjects: (params?: SubjectListParamsT) => void;
   onEdit: (subject: SubjectT) => void;
   onView: (subject: SubjectT) => void;
   onDelete: (subject: SubjectT) => void;
-};
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
 
-export const SubjectTable = ({
+export const SubjectTable: React.FC<SubjectTableProps> = ({
   subjects,
   isLoading,
   loadSubjects,
   onEdit,
   onView,
   onDelete,
-}: SubjectTableProps) => {
+  canEdit = true,
+  canDelete = true,
+}) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -51,52 +56,47 @@ export const SubjectTable = ({
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const fetchData = useCallback(
-    (overrides?: {
-      page?: number;
-      pageSize?: number;
-      search?: string;
-      ordering?: SubjectOrderingT;
-    }) => {
-      loadSubjects({
-        page: overrides?.page ?? page,
-        pageSize: overrides?.pageSize ?? pageSize,
-        search:
-          overrides?.search !== undefined
-            ? overrides.search
-            : search || undefined,
-        ordering: overrides?.ordering ?? ordering,
-      });
+    (params?: SubjectListParamsT) => {
+      loadSubjects(params);
     },
-    [loadSubjects, page, pageSize, search, ordering],
+    [loadSubjects],
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ page: 1, pageSize: 10, ordering: "name" });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSearchChange = useCallback(
+  const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearch(value);
       setPage(1);
       setHasSearched(true);
-
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: value || undefined });
+        fetchData({
+          page: 1,
+          pageSize,
+          search: value || undefined,
+          ordering,
+        });
       }, 400);
     },
-    [fetchData],
+    [fetchData, pageSize, ordering],
   );
 
-  const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as SubjectOrderingT;
-      setOrdering(newOrdering);
+  const handleOrdering = useCallback(
+    (value: SubjectOrderingT) => {
+      setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: newOrdering });
+      fetchData({
+        page: 1,
+        pageSize,
+        search: search || undefined,
+        ordering: value,
+      });
     },
-    [fetchData],
+    [fetchData, pageSize, search],
   );
 
   const hasNextPage = subjects.length >= pageSize;
@@ -127,24 +127,23 @@ export const SubjectTable = ({
         <SearchInput
           name="search"
           type="text"
-          onChange={handleSearchChange}
+          onChange={handleSearch}
           value={search}
           className="relative min-w-50 flex-1"
           placeholder="Filtrar materias..."
         />
 
-        <select
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por"
           value={ordering}
-          onChange={handleOrderingChange}
-          className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Ordenar por"
-        >
-          {ORDERING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          options={OrderingOptions}
+          onChange={(option) =>
+            handleOrdering(option.value as SubjectOrderingT)
+          }
+          className={filterSelectClassname}
+        />
       </div>
 
       <CustomTable<SubjectT>
@@ -169,22 +168,26 @@ export const SubjectTable = ({
             >
               <Eye className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(s)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Editar"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(s)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-              title="Desactivar"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(s)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                title="Editar"
+              >
+                <Pencil className="size-4" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(s)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                title="Desactivar"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       />
@@ -197,12 +200,22 @@ export const SubjectTable = ({
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {
           setPage(newPage);
-          fetchData({ page: newPage });
+          fetchData({
+            page: newPage,
+            pageSize,
+            search: search || undefined,
+            ordering,
+          });
         }}
         onPageSizeChange={(newSize) => {
           setPageSize(newSize);
           setPage(1);
-          fetchData({ page: 1, pageSize: newSize });
+          fetchData({
+            page: 1,
+            pageSize: newSize,
+            search: search || undefined,
+            ordering,
+          });
         }}
       />
     </div>

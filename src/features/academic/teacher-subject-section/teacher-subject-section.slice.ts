@@ -32,18 +32,18 @@ const teacherSubjectSectionSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    assignmentCreated(state, action: PayloadAction<TeacherSubjectSectionT>) {
+    entityCreated(state, action: PayloadAction<TeacherSubjectSectionT>) {
       state.teacherSubjectSections.unshift(action.payload);
       state.status = "succeeded";
     },
-    assignmentUpdated(state, action: PayloadAction<TeacherSubjectSectionT>) {
+    entityUpdated(state, action: PayloadAction<TeacherSubjectSectionT>) {
       const idx = state.teacherSubjectSections.findIndex(
         (p) => p.id === action.payload.id,
       );
       if (idx !== -1) state.teacherSubjectSections[idx] = action.payload;
       state.status = "succeeded";
     },
-    assignmentDeleted(state, action: PayloadAction<number>) {
+    entityDeleted(state, action: PayloadAction<number>) {
       state.teacherSubjectSections = state.teacherSubjectSections.filter(
         (p) => p.id !== action.payload,
       );
@@ -53,7 +53,7 @@ const teacherSubjectSectionSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    clearError(state) {
+    clearTeacherSubjectSectionError(state) {
       state.error = null;
     },
   },
@@ -63,11 +63,11 @@ export const {
   loadPending,
   loadSuccess,
   loadError,
-  assignmentCreated,
-  assignmentUpdated,
-  assignmentDeleted,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
   mutationError,
-  clearError,
+  clearTeacherSubjectSectionError,
 } = teacherSubjectSectionSlice.actions;
 
 export const selectTeacherSubjectSections = (state: RootState): TeacherSubjectSectionT[] =>

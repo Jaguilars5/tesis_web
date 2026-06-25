@@ -32,20 +32,20 @@ const subjectOfferingSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    offeringCreated(state, action: PayloadAction<SubjectOfferingT>) {
+    entityCreated(state, action: PayloadAction<SubjectOfferingT>) {
       state.subjectOfferings.unshift(action.payload);
       state.status = "succeeded";
     },
-    offeringUpdated(state, action: PayloadAction<SubjectOfferingT>) {
+    entityUpdated(state, action: PayloadAction<SubjectOfferingT>) {
       const idx = state.subjectOfferings.findIndex(
-        (p) => p.id === action.payload.id,
+        (offering) => offering.id === action.payload.id,
       );
       if (idx !== -1) state.subjectOfferings[idx] = action.payload;
       state.status = "succeeded";
     },
-    offeringDeleted(state, action: PayloadAction<number>) {
+    entityDeleted(state, action: PayloadAction<number>) {
       state.subjectOfferings = state.subjectOfferings.filter(
-        (p) => p.id !== action.payload,
+        (offering) => offering.id !== action.payload,
       );
       state.status = "succeeded";
     },
@@ -53,7 +53,7 @@ const subjectOfferingSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    clearError(state) {
+    clearSubjectOfferingError(state) {
       state.error = null;
     },
   },
@@ -63,11 +63,11 @@ export const {
   loadPending,
   loadSuccess,
   loadError,
-  offeringCreated,
-  offeringUpdated,
-  offeringDeleted,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
   mutationError,
-  clearError,
+  clearSubjectOfferingError,
 } = subjectOfferingSlice.actions;
 
 export const selectSubjectOfferings = (state: RootState): SubjectOfferingT[] =>

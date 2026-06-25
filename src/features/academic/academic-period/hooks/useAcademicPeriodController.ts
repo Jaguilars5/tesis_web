@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@shared/redux/hooks";
 import { toRejectValue } from "@shared/utils/validationErrors";
 import { useCallback } from "react";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 import { academicPeriodService } from "../academic-period.service";
 import {
@@ -75,12 +76,17 @@ export const useAcademicPeriodController = () => {
   );
 
   const deleteAcademicPeriod = useCallback(
-    async (params: AcademicPeriodDeleteParamsT): Promise<void> => {
+    async (params: AcademicPeriodDeleteParamsT): Promise<SoftDeleteResponseT> => {
       try {
-        const { id } = await academicPeriodService.softDelete(params);
-        dispatch(entityDeleted(id));
+        const response = await academicPeriodService.softDelete(params);
+        if (response.is_active === false) {
+          dispatch(entityDeleted(response.id));
+        }
+        return response;
       } catch (err) {
-        dispatch(mutationError(err instanceof Error ? err.message : "Error"));
+        const rv = toRejectValue(err);
+        dispatch(mutationError(rv.msg));
+        throw rv;
       }
     },
     [dispatch],

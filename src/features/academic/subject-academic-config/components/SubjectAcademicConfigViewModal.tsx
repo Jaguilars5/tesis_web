@@ -1,22 +1,27 @@
 import { BookOpen, Clock, GraduationCap, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
+import { DetailRow } from "@shared/components/DetailRow";
+
 import { subjectAcademicConfigService } from "../subject-academic-config.service";
 
 import type { SubjectAcademicConfigT } from "../subject-academic-config.types";
 
-interface State {
+interface SubjectAcademicConfigViewModalState {
   data: SubjectAcademicConfigT | null;
   loading: boolean;
   error: string | null;
 }
 
-type Action =
+type SubjectAcademicConfigViewModalAction =
   | { type: "loading" }
   | { type: "success"; data: SubjectAcademicConfigT }
   | { type: "error"; error: string };
 
-function reducer(_state: State, action: Action): State {
+const reducer = (
+  state: SubjectAcademicConfigViewModalState,
+  action: SubjectAcademicConfigViewModalAction,
+): SubjectAcademicConfigViewModalState => {
   switch (action.type) {
     case "loading":
       return { data: null, loading: true, error: null };
@@ -24,8 +29,10 @@ function reducer(_state: State, action: Action): State {
       return { data: action.data, loading: false, error: null };
     case "error":
       return { data: null, loading: false, error: action.error };
+    default:
+      return state;
   }
-}
+};
 
 interface SubjectAcademicConfigViewModalProps {
   isOpen: boolean;
@@ -33,12 +40,10 @@ interface SubjectAcademicConfigViewModalProps {
   onClose: () => void;
 }
 
-export const SubjectAcademicConfigViewModal = ({
-  isOpen,
-  configId,
-  onClose,
-}: SubjectAcademicConfigViewModalProps) => {
-  const [state, stateDispatch] = useReducer(reducer, {
+export const SubjectAcademicConfigViewModal: React.FC<
+  SubjectAcademicConfigViewModalProps
+> = ({ isOpen, configId, onClose }) => {
+  const [state, dispatch] = useReducer(reducer, {
     data: null,
     loading: false,
     error: null,
@@ -46,13 +51,11 @@ export const SubjectAcademicConfigViewModal = ({
 
   useEffect(() => {
     if (isOpen && configId !== null) {
-      stateDispatch({ type: "loading" });
+      dispatch({ type: "loading" });
       subjectAcademicConfigService
-        .get(configId)
-        .then((data) => stateDispatch({ type: "success", data }))
-        .catch((err: Error) =>
-          stateDispatch({ type: "error", error: err.message }),
-        );
+        .get({ id: configId })
+        .then((data) => dispatch({ type: "success", data }))
+        .catch((err: Error) => dispatch({ type: "error", error: err.message }));
     }
   }, [isOpen, configId]);
 
@@ -186,27 +189,3 @@ export const SubjectAcademicConfigViewModal = ({
     </div>
   );
 };
-
-function DetailRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
-      </div>
-    </div>
-  );
-}

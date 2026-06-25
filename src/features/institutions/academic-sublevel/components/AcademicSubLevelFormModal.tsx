@@ -1,5 +1,4 @@
 import { useFormik } from "formik";
-import { useEffect } from "react";
 import {
   inputClassname,
   selectClassname,
@@ -66,13 +65,8 @@ export const AcademicSubLevelFormModal: React.FC<
   const formik = useFormik<AcademicSubLevelFormValues>({
     initialValues: getInitialValues(),
     validationSchema: academicSubLevelSchema,
-    enableReinitialize: true,
     onSubmit,
   });
-
-  useEffect(() => {
-    if (isOpen && editingAcademicSubLevel) formik.setValues(getInitialValues());
-  }, [isOpen, editingAcademicSubLevel]);
 
   if (!isOpen) return null;
 

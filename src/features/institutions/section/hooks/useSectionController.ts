@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@shared/redux/hooks";
 import { useCallback } from "react";
 import { toRejectValue } from "@shared/utils/validationErrors";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { sectionService } from "../section.service";
 import {
   selectSections,
@@ -74,12 +75,18 @@ export const useSectionController = () => {
   );
 
   const disable = useCallback(
-    async (params: SectionDeleteParamsT): Promise<void> => {
+    async (params: SectionDeleteParamsT): Promise<SoftDeleteResponseT> => {
       try {
-        const { id } = await sectionService.softDelete(params);
-        dispatch(entityDeleted(id));
+        const response = await sectionService.softDelete(params);
+        // Only dispatch entityDeleted when actually deactivated
+        if (response.is_active === false) {
+          dispatch(entityDeleted(response.id));
+        }
+        return response;
       } catch (err) {
-        dispatch(mutationError(err instanceof Error ? err.message : "Error"));
+        const rv = toRejectValue(err);
+        dispatch(mutationError(rv.msg));
+        throw rv;
       }
     },
     [dispatch],

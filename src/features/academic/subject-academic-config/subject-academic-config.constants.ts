@@ -1,7 +1,13 @@
+export const SUBJECT_ACADEMIC_CONFIG_BASE_URL =
+  "/api/academic/subject-academic-configs/";
+
 export const SUBJECT_ACADEMIC_CONFIG_ENDPOINTS = {
-  LIST: "/api/academic/subject-academic-configs/",
-  DETAIL: (id: number) => `/api/academic/subject-academic-configs/${id}/`,
-  SOFT_DELETE: (id: number) => `/api/academic/subject-academic-configs/${id}/soft-delete/`,
+  GET: (id: number) => `${SUBJECT_ACADEMIC_CONFIG_BASE_URL}${id}/`,
+  LIST: SUBJECT_ACADEMIC_CONFIG_BASE_URL,
+  CREATE: SUBJECT_ACADEMIC_CONFIG_BASE_URL,
+  UPDATE: (id: number) => `${SUBJECT_ACADEMIC_CONFIG_BASE_URL}${id}/`,
+  SOFT_DELETE: (id: number) =>
+    `${SUBJECT_ACADEMIC_CONFIG_BASE_URL}${id}/soft-delete/`,
 } as const;
 
 export const SUBJECT_ACADEMIC_CONFIG_PERMISSIONS = {

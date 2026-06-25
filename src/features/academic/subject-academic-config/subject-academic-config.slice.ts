@@ -32,20 +32,20 @@ const subjectAcademicConfigSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    configCreated(state, action: PayloadAction<SubjectAcademicConfigT>) {
+    entityCreated(state, action: PayloadAction<SubjectAcademicConfigT>) {
       state.subjectAcademicConfigs.unshift(action.payload);
       state.status = "succeeded";
     },
-    configUpdated(state, action: PayloadAction<SubjectAcademicConfigT>) {
+    entityUpdated(state, action: PayloadAction<SubjectAcademicConfigT>) {
       const idx = state.subjectAcademicConfigs.findIndex(
-        (p) => p.id === action.payload.id,
+        (config) => config.id === action.payload.id,
       );
       if (idx !== -1) state.subjectAcademicConfigs[idx] = action.payload;
       state.status = "succeeded";
     },
-    configDeleted(state, action: PayloadAction<number>) {
+    entityDeleted(state, action: PayloadAction<number>) {
       state.subjectAcademicConfigs = state.subjectAcademicConfigs.filter(
-        (p) => p.id !== action.payload,
+        (config) => config.id !== action.payload,
       );
       state.status = "succeeded";
     },
@@ -53,7 +53,7 @@ const subjectAcademicConfigSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    clearError(state) {
+    clearSubjectAcademicConfigError(state) {
       state.error = null;
     },
   },
@@ -63,21 +63,25 @@ export const {
   loadPending,
   loadSuccess,
   loadError,
-  configCreated,
-  configUpdated,
-  configDeleted,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
   mutationError,
-  clearError,
+  clearSubjectAcademicConfigError,
 } = subjectAcademicConfigSlice.actions;
 
-export const selectSubjectAcademicConfigs = (state: RootState): SubjectAcademicConfigT[] =>
+export const selectSubjectAcademicConfigs = (
+  state: RootState,
+): SubjectAcademicConfigT[] =>
   state.academic.subjectAcademicConfigs.subjectAcademicConfigs;
 
-export const selectSubjectAcademicConfigsStatus = (state: RootState): RequestStatusT =>
-  state.academic.subjectAcademicConfigs.status;
+export const selectSubjectAcademicConfigsStatus = (
+  state: RootState,
+): RequestStatusT => state.academic.subjectAcademicConfigs.status;
 
-export const selectSubjectAcademicConfigError = (state: RootState): string | null =>
-  state.academic.subjectAcademicConfigs.error;
+export const selectSubjectAcademicConfigError = (
+  state: RootState,
+): string | null => state.academic.subjectAcademicConfigs.error;
 
 export const subjectAcademicConfigReducer = subjectAcademicConfigSlice.reducer;
 

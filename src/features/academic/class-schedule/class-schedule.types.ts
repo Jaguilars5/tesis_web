@@ -48,14 +48,14 @@ export interface ClassScheduleGetParamsT {
   id: number;
 }
 
-export interface ClassScheduleDeleteParamsT {
-  id: number;
-}
+import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
+export type ClassScheduleDeleteParamsT = SoftDeleteParamsT;
 
 export interface ClassScheduleServiceT {
   list(params?: ClassScheduleListParamsT): Promise<ClassScheduleT[]>;
   get(params: ClassScheduleGetParamsT): Promise<ClassScheduleT>;
   create(params: ClassScheduleCreateParamsT): Promise<ClassScheduleT>;
   update(params: ClassScheduleUpdateParamsT): Promise<ClassScheduleT>;
-  softDelete(params: ClassScheduleDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: ClassScheduleDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

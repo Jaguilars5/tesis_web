@@ -7,6 +7,7 @@ import type {
 
 import { SCHOOL_YEAR_ENDPOINTS } from "./school-year.constants";
 
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import type {
   SchoolYearCreateParamsT,
   SchoolYearDeleteParamsT,
@@ -74,11 +75,16 @@ class SchoolYearService implements SchoolYearServiceT {
     }
   }
 
-  async softDelete(params: SchoolYearDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(
+    params: SchoolYearDeleteParamsT,
+  ): Promise<SoftDeleteResponseT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
         SCHOOL_YEAR_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
+      console.log(data.data);
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });

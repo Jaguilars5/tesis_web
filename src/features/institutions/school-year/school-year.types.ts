@@ -1,3 +1,5 @@
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface SchoolYearT {
   id: number;
   name?: string;
@@ -38,6 +40,7 @@ export interface SchoolYearGetParamsT {
 }
 export interface SchoolYearDeleteParamsT {
   id: number;
+  confirm?: boolean;
 }
 
 export interface SchoolYearServiceT {
@@ -45,5 +48,5 @@ export interface SchoolYearServiceT {
   get(params: SchoolYearGetParamsT): Promise<SchoolYearT>;
   create(params: SchoolYearCreateParamsT): Promise<SchoolYearT>;
   update(params: SchoolYearUpdateParamsT): Promise<SchoolYearT>;
-  softDelete(params: SchoolYearDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: SchoolYearDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

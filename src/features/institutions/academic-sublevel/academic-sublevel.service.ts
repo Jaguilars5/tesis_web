@@ -3,6 +3,7 @@ import type {
   PaginatedData,
   ResponseApi,
 } from "@shared/types/api.response.types";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { ACADEMIC_SUBLEVEL_ENDPOINTS } from "./academic-sublevel.constants";
 import type {
   AcademicSubLevelCreateParamsT,
@@ -92,10 +93,12 @@ class AcademicSubLevelService implements AcademicSubLevelServiceT {
 
   async softDelete(
     params: AcademicSubLevelDeleteParamsT,
-  ): Promise<{ id: number }> {
+  ): Promise<SoftDeleteResponseT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
         ACADEMIC_SUBLEVEL_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
       return data.data;
     } catch (error) {

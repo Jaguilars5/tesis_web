@@ -14,10 +14,7 @@ import { ClassScheduleFormModal } from "./components/ClassScheduleFormModal";
 import { ClassScheduleTable } from "./components/ClassScheduleTable";
 import { ClassScheduleViewModal } from "./components/ClassScheduleViewModal";
 
-import type {
-  ClassScheduleDeleteParamsT,
-  ClassScheduleT,
-} from "./class-schedule.types";
+import type { ClassScheduleT } from "./class-schedule.types";
 
 export default function ClassSchedulesPage() {
   const { teacherSubjectSectionOptions } = useTeacherSubjectSectionOptions();
@@ -52,7 +49,7 @@ export default function ClassSchedulesPage() {
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
-  const [deletingSchedule, setDeletingSchedule] =
+  const [deletingEntity, setDeletingEntity] =
     useState<ClassScheduleT | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -67,25 +64,14 @@ export default function ClassSchedulesPage() {
   }, []);
 
   const openDeleteModal = useCallback((schedule: ClassScheduleT) => {
-    setDeletingSchedule(schedule);
+    setDeletingEntity(schedule);
     setIsDeleteOpen(true);
   }, []);
 
   const closeDeleteModal = useCallback(() => {
     setIsDeleteOpen(false);
-    setDeletingSchedule(null);
+    setDeletingEntity(null);
   }, []);
-
-  const handleDeleteConfirm = useCallback(
-    async (params: ClassScheduleDeleteParamsT) => {
-      try {
-        await deleteClassSchedule(params);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [deleteClassSchedule],
-  );
 
   return (
     <div className="space-y-4">
@@ -123,6 +109,7 @@ export default function ClassSchedulesPage() {
       />
 
       <ClassScheduleFormModal
+        key={editingClassSchedule?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -140,9 +127,9 @@ export default function ClassSchedulesPage() {
 
       <ClassScheduleDeleteModal
         isOpen={isDeleteOpen}
-        schedule={deletingSchedule}
+        entity={deletingEntity}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteClassSchedule}
       />
     </div>
   );

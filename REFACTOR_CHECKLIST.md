@@ -82,20 +82,25 @@ export interface EntityGetParamsT {
 }
 export interface EntityDeleteParamsT {
   id: number;
+  confirm?: boolean; // Para soft-delete con confirmación
 }
 ```
 
 ### Service interface
 
 ```ts
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface EntityServiceT {
   list(params?: EntityListParamsT): Promise<EntityT[]>;
   get(params: EntityGetParamsT): Promise<EntityT>;
   create(params: EntityCreateParamsT): Promise<EntityT>;
   update(params: EntityUpdateParamsT): Promise<EntityT>;
-  softDelete(params: EntityDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: EntityDeleteParamsT): Promise<SoftDeleteResponseT>;
 }
 ```
+
+> **Nota:** El tipo `SoftDeleteResponseT` se importa desde `@shared/types/soft-delete.types` y representa la respuesta unión del backend para el flujo de soft-delete con confirmación previa.
 
 ### Ordenamiento
 
@@ -186,16 +191,28 @@ ENDPOINTS.CREATE; // POST
 ENDPOINTS.UPDATE(id); // PATCH (NO DETAIL)
 ```
 
-### softDelete()
+### softDelete() — Two-Phase Pattern
+
+Servicio adaptado al nuevo contrato de soft-delete con confirmación previa:
 
 ```ts
-async softDelete(params: DeleteParamsT): Promise<{ id: number }> {
-  const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
+async softDelete(
+  params: EntityDeleteParamsT,
+): Promise<SoftDeleteResponseT> {
+  const body = params.confirm ? { confirm: true } : undefined;
+  const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
     ENDPOINTS.SOFT_DELETE(params.id),
+    body,
   );
   return data.data;
 }
 ```
+
+**Flujo:**
+1. Primera llamada (sin `confirm`): Backend retorna `{ requires_confirmation: true, message, affected_records }` si tiene hijos, o `{ is_active: false, deactivated_records }` si no tiene hijos
+2. Segunda llamada (con `confirm: true`): Backend desactiva la entidad y sus hijos, retorna `{ is_active: false, deactivated_records }`
 
 ### Errores
 
@@ -280,7 +297,27 @@ export const useModuleController = () => {
     },
     [dispatch],
   );
-  // update, disable: mismo patrón
+
+  // update: mismo patrón que create
+
+  // disable (soft-delete) - two-phase pattern
+  const disable = useCallback(
+    async (params: EntityDeleteParamsT): Promise<SoftDeleteResponseT> => {
+      try {
+        const response = await service.softDelete(params);
+        // Solo despachar entityDeleted cuando realmente se desactivó
+        if (response.is_active === false) {
+          dispatch(entityDeleted(response.id));
+        }
+        return response;
+      } catch (err) {
+        const rv = toRejectValue(err);
+        dispatch(mutationError(rv.msg));
+        throw rv;
+      }
+    },
+    [dispatch],
+  );
 
   return {
     items, // nombre del módulo (ej: academicLevels)
@@ -296,7 +333,8 @@ export const useModuleController = () => {
 
 - ✅ Usar `toRejectValue` de `@shared/utils/validationErrors`
 - ✅ En create/update catch: `dispatch(mutationError(rv.msg))` (NO `loadError`)
-- ✅ En delete catch: `dispatch(mutationError(...))` (NO `loadError`)
+- ✅ En delete catch: `dispatch(mutationError(rv.msg))` con `throw rv` para que el modal capture el error
+- ✅ `disable` retorna `Promise<SoftDeleteResponseT>` y solo despacha `entityDeleted` cuando `is_active === false`
 - ❌ NO incluir lógica de formulario aquí (eso va en el form hook)
 
 ---
@@ -370,6 +408,50 @@ export const MyModal: React.FC<MyModalProps> = ({ ... }) => { ... };
 - Usar `ErrrosInForm` para mostrar errores
 - NO incluir `is_active` checkbox (eliminado del formulario; backend controla activación vía soft delete)
 
+### Formik — Patrón correcto (sin `enableReinitialize`)
+
+❌ **NO usar** `enableReinitialize: true` + `useEffect` para sincronizar valores:
+
+```tsx
+// ❌ INCORRECTO: causa warning "controlled/uncontrolled input"
+const formik = useFormik({
+  initialValues: getInitialValues(),
+  enableReinitialize: true,   // ← evita rer
+  ...
+});
+useEffect(() => {
+  if (isOpen && editing) formik.setValues(getInitialValues());
+}, [isOpen, editing]);
+```
+
+✅ En su lugar:
+
+1. **FormModal**: Usar `initialValues` simple, sin `enableReinitialize` y sin `useEffect`:
+
+```tsx
+// ✅ CORRECTO
+const formik = useFormik({
+  initialValues: getInitialValues(),
+  validationSchema: schema,
+  onSubmit,
+});
+```
+
+2. **Page**: Agregar `key` prop al modal para forzar remount limpio al cambiar entre crear/editar:
+
+```tsx
+<ModuleFormModal
+  key={editingItem?.id ?? "create"}
+  isOpen={isOpen}
+  editingItem={editingItem}
+  ...
+/>
+```
+
+Esto elimina la dependencia de `enableReinitialize` y previene el warning de React sobre inputs controlados/no controlados. Al cambiar de entidad (o de crear a editar), React desmonta y monta un nuevo componente con el Formik state correcto desde el inicio.
+
+> ⚠️ Aplicado en todos los módulos de `institutions` como parte del refactor. Verificar que no haya más módulos con el patrón antiguo.
+
 ### ✅ Table
 
 - Constantes de ordenamiento: `OrderingOptions` (PascalCase) — no `O` ni `ORDERING_OPTIONS`
@@ -386,11 +468,60 @@ export const MyModal: React.FC<MyModalProps> = ({ ... }) => { ... };
 - `useReducer` dispatch: `dispatch` (no `sd`)
 - Error display: `<X className="size-4 shrink-0" />` (no SVG inline)
 
-### ✅ DeleteModal
+### ✅ DeleteModal — Two-Phase Pattern
 
-- Props interface con `onConfirm: (params: DeleteParamsT) => Promise<void>`
-- `isDeleting` (no `d`), `handleConfirm` (no `h`)
-- `onConfirm({ id: entity.id })` con objeto
+El DeleteModal ahora usa el hook `useSoftDeleteFlow` para manejar el flujo de confirmación:
+
+```tsx
+import { useSoftDeleteFlow } from "@shared/hooks/useSoftDeleteFlow";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
+interface DeleteModalProps {
+  isOpen: boolean;
+  entity: EntityT | null;
+  onClose: () => void;
+  onSoftDelete: (params: EntityDeleteParamsT) => Promise<SoftDeleteResponseT>;
+}
+
+export const DeleteModal: React.FC<DeleteModalProps> = ({
+  isOpen,
+  entity,
+  onClose,
+  onSoftDelete,
+}) => {
+  const { phase, message, affectedRecords, deactivatedRecords, errorMsg, confirm } =
+    useSoftDeleteFlow({ isOpen, id: entity?.id ?? null, softDelete: onSoftDelete });
+
+  if (!isOpen || !entity) return null;
+
+  const isBusy = phase === "probing" || phase === "deactivating";
+
+  return (
+    <Modal>
+      {/* Fases: probing | confirm | deactivating | done | error */}
+      {phase === "probing" && <Spinner message="Verificando..." />}
+      {phase === "confirm" && (
+        <>
+          <Alert message={message} affected={affectedRecords} />
+          <Buttons>
+            <button onClick={onClose}>Cancelar</button>
+            <button onClick={confirm}>Confirmar</button>
+          </Buttons>
+        </>
+      )}
+      {phase === "done" && <Success deactivated={deactivatedRecords} onClose={onClose} />}
+      {phase === "error" && <Error message={errorMsg} onClose={onClose} />}
+    </Modal>
+  );
+};
+```
+
+- ✅ Props: `onSoftDelete` (NO `onConfirm`)
+- ✅ Usar `useSoftDeleteFlow` del shared
+- ✅ Renderizado por fases: `probing`, `confirm`, `deactivating`, `done`, `error`
+- ✅ Mostrar mensaje del backend y conteo de registros afectados en fase `confirm`
+- ✅ Mostrar conteo de registros desactivados en fase `done`
+- ✅ Tipos: importar desde `@shared/types/soft-delete.types`
 
 ---
 
@@ -581,6 +712,72 @@ export const ModuleNameTable = ({
 
 ---
 
+## 8.3 Soft-Delete Two-Phase Pattern (Shared)
+
+Para el flujo de desactivación con confirmación previa y cascada sobre entidades hijas, se usan tipos y hooks compartidos.
+
+### Tipos compartidos (`@shared/types/soft-delete.types.ts`)
+
+```ts
+/** Respuesta cuando se requiere confirmación (tiene hijos activos) */
+export interface SoftDeleteConfirmationRequiredT {
+  requires_confirmation: true;
+  affected_records: number;
+  message: string;
+  id: number;
+  is_active: boolean;
+}
+
+/** Respuesta cuando se desactivó (directamente o tras confirmación) */
+export interface SoftDeleteResultT {
+  id: number;
+  is_active: boolean;
+  deactivated_records: number;
+}
+
+export type SoftDeleteResponseT =
+  | SoftDeleteConfirmationRequiredT
+  | SoftDeleteResultT;
+
+/** Type guard para verificar si requiere confirmación */
+export function requiresConfirmation(
+  response: SoftDeleteResponseT,
+): response is SoftDeleteConfirmationRequiredT {
+  return "requires_confirmation" in response && response.requires_confirmation === true;
+}
+
+/** Parámetros para soft-delete */
+export interface SoftDeleteParamsT {
+  id: number;
+  confirm?: boolean;
+}
+```
+
+### Hook compartido (`@shared/hooks/useSoftDeleteFlow.ts`)
+
+El hook maneja el estado del flujo de fases:
+
+```ts
+const { phase, message, affectedRecords, deactivatedRecords, errorMsg, confirm } =
+  useSoftDeleteFlow({ isOpen, id, softDelete });
+```
+
+**Fases:**
+- `idle`: Estado inicial
+- `probing`: Verificando registros relacionados (POST sin confirm)
+- `confirm`: Backend requiere confirmación, mostrar mensaje + affected_records
+- `deactivating`: Enviando confirmación (POST con confirm: true)
+- `done`: Desactivado exitosamente, mostrar deactivated_records
+- `error`: Error en el proceso
+
+**Uso en DeleteModal:**
+- Importar `useSoftDeleteFlow` desde `@shared/hooks/useSoftDeleteFlow`
+- Importar tipos desde `@shared/types/soft-delete.types`
+- Recibir `onSoftDelete` como prop (NO `onConfirm`)
+- Renderizar UI según la fase actual
+
+---
+
 ## 9. Página (`ModuleNamePage.tsx`)
 
 ### Imports
@@ -597,27 +794,24 @@ import { useXxxOptions } from "./hooks/useXxxOptions";
 - ❌ NO: `openV`, `closeV`, `openD`, `closeD`, `handleDel`
 - ✅ Sí: `openViewModal`, `closeViewModal`, `openDeleteModal`, `closeDeleteModal`, `handleDeleteConfirm`
 
-### Delete
+### Delete — Two-Phase Pattern
+
+NO se requiere `handleDeleteConfirm`. Pasar directamente el `disable` del controller:
 
 ```tsx
-const handleDeleteConfirm = useCallback(
-  async (params: AcademicSubLevelDeleteParamsT) => {
-    try {
-      await deleteEntity(params);
-    } catch (error) {
-      console.error(error);
-    }
-  },
-  [deleteEntity],
-);
+// En el Page, pasar directamente el controller disable:
+<DeleteModal
+  isOpen={isDeleteOpen}
+  entity={deleting}
+  onClose={closeDeleteModal}
+  onSoftDelete={deleteEntity} // directo del controller
+/>
 ```
 
-### Modal onConfirm
-
-```tsx
-onConfirm = { handleDeleteConfirm }; // passes params: { id: number }
-// NO wrapper inline: onConfirm={() => handleDeleteConfirm({ id: deleting?.id ?? 0 })}
-```
+El DeleteModal ahora:
+1. Recibe `onSoftDelete` (NO `onConfirm`)
+2. Usa `useSoftDeleteFlow` para manejar automáticamente las fases
+3. Muestra mensaje del backend con registros afectados antes de confirmar
 
 ---
 
@@ -683,14 +877,24 @@ export { moduleService, moduleReducer, ModuleNamePage, useModuleController, useM
 - [ ] Sin `getIV` (usar `getInitialValues`)
 - [ ] Sin `SubmitErrorState` importado desde controller (debe ser `@shared/utils/validationErrors`)
 - [ ] `ServiceT` params con `{ id }` (no `number` suelto)
-- [ ] `ServiceT.softDelete` retorna `Promise<{ id: number }>`
+- [ ] `ServiceT.softDelete` retorna `Promise<SoftDeleteResponseT>`
 - [ ] Controller usa `toRejectValue` y `mutationError`
+- [ ] Controller `disable` retorna `Promise<SoftDeleteResponseT>` y solo despacha `entityDeleted` cuando `is_active === false`
+- [ ] DeleteModal usa `useSoftDeleteFlow` y recibe `onSoftDelete` (NO `onConfirm`)
+- [ ] Page pasa directamente `onSoftDelete={deleteEntity}` al DeleteModal (sin `handleDeleteConfirm`)
 - [ ] Form hook usa `unwrapMutation`
 - [ ] `is_active` eliminado de `FormValues`
 - [ ] Endpoints con claves `GET`, `LIST`, `CREATE`, `UPDATE`, `SOFT_DELETE`
 - [ ] `BASE_URL` reutilizable en constants
 - [ ] Domain barrel actualizado (sin nombres antiguos)
 - [ ] Store key coincide con slice name
+
+### FormModal (ver Formik — sección 8)
+
+- [ ] `useFormik` SIN `enableReinitialize` (NO usar `enableReinitialize: true`)
+- [ ] SIN `useEffect` para sincronizar `formik.setValues()`
+- [ ] Page pasa `key={editingItem?.id ?? "create"}` al modal
+- [ ] Sin import `useEffect` desde `react` en FormModal (salvo que se necesite para otra cosa)
 
 ### Filtros en tablas (si el módulo tiene FK — ver sección 8.1)
 
@@ -710,3 +914,16 @@ export { moduleService, moduleReducer, ModuleNamePage, useModuleController, useM
 - [ ] Tabla recibe props `canEdit`/`canDelete` (default `true`)
 - [ ] Botones Editar/Eliminar de la tabla renderizados condicionalmente
 - [ ] Botón Ver siempre visible (cubierto por permiso `GET`)
+
+### Soft-Delete Two-Phase Pattern (ver sección 8.3)
+
+- [ ] Tipos: `confirm?: boolean` en `DeleteParamsT`
+- [ ] Service: `softDelete` envía body `{ confirm: true }` cuando `params.confirm === true`
+- [ ] Service: `softDelete` retorna `Promise<SoftDeleteResponseT>`
+- [ ] Import de `SoftDeleteResponseT` desde `@shared/types/soft-delete.types`
+- [ ] Controller: `disable` retorna `SoftDeleteResponseT` y solo despacha cuando `is_active === false`
+- [ ] Controller: catch usa `toRejectValue` + `dispatch(mutationError(rv.msg))` + `throw rv`
+- [ ] DeleteModal: usa `useSoftDeleteFlow` del shared
+- [ ] DeleteModal: recibe prop `onSoftDelete` (no `onConfirm`)
+- [ ] DeleteModal: renderiza por fases (`probing`, `confirm`, `deactivating`, `done`, `error`)
+- [ ] Page: pasa directamente `onSoftDelete={deleteEntity}` (sin handler wrapper)

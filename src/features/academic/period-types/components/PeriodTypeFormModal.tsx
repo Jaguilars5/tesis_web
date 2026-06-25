@@ -1,6 +1,5 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
-import { useEffect } from "react";
 
 import { inputClassname } from "@app/styles/styles";
 import { CustomInput } from "@shared/components/Form";
@@ -62,16 +61,8 @@ export const PeriodTypeFormModal: React.FC<PeriodTypeFormModalProps> = ({
   const formik = useFormik<PeriodTypeFormValues>({
     initialValues: getInitialValues(),
     validationSchema: periodTypeSchema,
-    enableReinitialize: true,
     onSubmit,
   });
-
-  useEffect(() => {
-    if (isOpen && editingPeriodType) {
-      formik.setValues(getInitialValues());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, editingPeriodType]);
 
   if (!isOpen) return null;
 

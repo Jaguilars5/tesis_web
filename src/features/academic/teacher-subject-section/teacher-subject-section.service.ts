@@ -1,5 +1,6 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 import { TEACHER_SUBJECT_SECTION_ENDPOINTS } from "./teacher-subject-section.constants";
 import type {
@@ -41,10 +42,10 @@ class TeacherSubjectSectionService implements TeacherSubjectSectionServiceT {
     }
   }
 
-  async get(id: TeacherSubjectSectionGetParamsT): Promise<TeacherSubjectSectionT> {
+  async get(params: TeacherSubjectSectionGetParamsT): Promise<TeacherSubjectSectionT> {
     try {
       const { data } = await apiClient.get<ResponseApi<TeacherSubjectSectionT>>(
-        TEACHER_SUBJECT_SECTION_ENDPOINTS.DETAIL(id),
+        TEACHER_SUBJECT_SECTION_ENDPOINTS.GET(params.id),
       );
       return data.data;
     } catch (error) {
@@ -55,7 +56,7 @@ class TeacherSubjectSectionService implements TeacherSubjectSectionServiceT {
   async create(payload: TeacherSubjectSectionCreateDataT): Promise<TeacherSubjectSectionT> {
     try {
       const { data } = await apiClient.post<ResponseApi<TeacherSubjectSectionT>>(
-        TEACHER_SUBJECT_SECTION_ENDPOINTS.LIST,
+        TEACHER_SUBJECT_SECTION_ENDPOINTS.CREATE,
         payload,
       );
       return data.data;
@@ -67,7 +68,7 @@ class TeacherSubjectSectionService implements TeacherSubjectSectionServiceT {
   async update(params: TeacherSubjectSectionUpdateParamsT): Promise<TeacherSubjectSectionT> {
     try {
       const { data } = await apiClient.patch<ResponseApi<TeacherSubjectSectionT>>(
-        TEACHER_SUBJECT_SECTION_ENDPOINTS.DETAIL(params.id),
+        TEACHER_SUBJECT_SECTION_ENDPOINTS.UPDATE(params.id),
         params.data,
       );
       return data.data;
@@ -76,10 +77,12 @@ class TeacherSubjectSectionService implements TeacherSubjectSectionServiceT {
     }
   }
 
-  async softDelete(id: TeacherSubjectSectionDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(params: TeacherSubjectSectionDeleteParamsT): Promise<SoftDeleteResponseT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
-        TEACHER_SUBJECT_SECTION_ENDPOINTS.SOFT_DELETE(id),
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
+        TEACHER_SUBJECT_SECTION_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
       return data.data;
     } catch (error) {

@@ -4,6 +4,8 @@ import type {
   ResponseApi,
 } from "@shared/types/api.response.types";
 
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 import { PERIOD_TYPE_ENDPOINTS } from "./period-types.constants";
 import type {
   PeriodTypeCreateParamsT,
@@ -72,10 +74,12 @@ class PeriodTypeService implements PeriodTypeServiceT {
     }
   }
 
-  async softDelete(params: PeriodTypeDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(params: PeriodTypeDeleteParamsT): Promise<SoftDeleteResponseT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
         PERIOD_TYPE_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
       return data.data;
     } catch (error) {

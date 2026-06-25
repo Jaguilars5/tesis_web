@@ -38,14 +38,14 @@ export interface PeriodTypeGetParamsT {
   id: number;
 }
 
-export interface PeriodTypeDeleteParamsT {
-  id: number;
-}
+import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
+export type PeriodTypeDeleteParamsT = SoftDeleteParamsT;
 
 export interface PeriodTypeServiceT {
   list(params?: PeriodTypeListParamsT): Promise<PeriodTypeT[]>;
   get(params: PeriodTypeGetParamsT): Promise<PeriodTypeT>;
   create(params: PeriodTypeCreateParamsT): Promise<PeriodTypeT>;
   update(params: PeriodTypeUpdateParamsT): Promise<PeriodTypeT>;
-  softDelete(params: PeriodTypeDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: PeriodTypeDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

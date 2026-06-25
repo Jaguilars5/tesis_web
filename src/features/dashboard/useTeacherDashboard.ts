@@ -124,7 +124,7 @@ export const useTeacherDashboard = () => {
             if (!sectionId) {
               try {
                 sectionId =
-                  (await teacherSubjectSectionService.get(t.id))
+                  (await teacherSubjectSectionService.get({ id: t.id }))
                     .subject_offering_section ?? null;
               } catch {
                 sectionId = null;

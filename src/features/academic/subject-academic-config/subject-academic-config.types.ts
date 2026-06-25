@@ -11,45 +11,56 @@ export interface SubjectAcademicConfigT {
   updated_at: string;
 }
 
+export interface SubjectAcademicConfigFormValues {
+  subject: number;
+  academic_grade: number;
+  weekly_hours: number;
+  is_required: boolean;
+}
+
 export type SubjectAcademicConfigOrderingT = "weekly_hours" | "-weekly_hours";
 
 export interface SubjectAcademicConfigListParamsT {
   page?: number;
   pageSize?: number;
   search?: string;
+  filters?: {
+    subject?: number;
+    academic_grade?: number;
+  };
   ordering?: SubjectAcademicConfigOrderingT;
 }
 
-export type SubjectAcademicConfigCreateDataT = Omit<
-  SubjectAcademicConfigT,
-  "id" | "is_active" | "subject_name" | "academic_grade_name" | "created_at" | "updated_at"
->;
+export type SubjectAcademicConfigCreateParamsT = SubjectAcademicConfigFormValues;
 
-export type SubjectAcademicConfigCreateParamsT = SubjectAcademicConfigCreateDataT;
-
-export type SubjectAcademicConfigUpdateDataT = Partial<Omit<SubjectAcademicConfigT, "id">>;
+export type SubjectAcademicConfigUpdateDataT =
+  Partial<SubjectAcademicConfigFormValues>;
 
 export interface SubjectAcademicConfigUpdateParamsT {
   id: number;
   data: SubjectAcademicConfigUpdateDataT;
 }
 
-export type SubjectAcademicConfigGetParamsT = number;
-
-export type SubjectAcademicConfigDeleteParamsT = number;
-
-export interface SubjectAcademicConfigServiceT {
-  list(params?: SubjectAcademicConfigListParamsT): Promise<SubjectAcademicConfigT[]>;
-  get(id: SubjectAcademicConfigGetParamsT): Promise<SubjectAcademicConfigT>;
-  create(data: SubjectAcademicConfigCreateDataT): Promise<SubjectAcademicConfigT>;
-  update(params: SubjectAcademicConfigUpdateParamsT): Promise<SubjectAcademicConfigT>;
-  softDelete(id: SubjectAcademicConfigDeleteParamsT): Promise<{ id: number }>;
+export interface SubjectAcademicConfigGetParamsT {
+  id: number;
 }
 
-export interface SubjectAcademicConfigFormValues {
-  subject: number;
-  academic_grade: number;
-  weekly_hours: number;
-  is_required: boolean;
-  is_active: boolean;
+import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
+export type SubjectAcademicConfigDeleteParamsT = SoftDeleteParamsT;
+
+export interface SubjectAcademicConfigServiceT {
+  list(
+    params?: SubjectAcademicConfigListParamsT,
+  ): Promise<SubjectAcademicConfigT[]>;
+  get(params: SubjectAcademicConfigGetParamsT): Promise<SubjectAcademicConfigT>;
+  create(
+    params: SubjectAcademicConfigCreateParamsT,
+  ): Promise<SubjectAcademicConfigT>;
+  update(
+    params: SubjectAcademicConfigUpdateParamsT,
+  ): Promise<SubjectAcademicConfigT>;
+  softDelete(
+    params: SubjectAcademicConfigDeleteParamsT,
+  ): Promise<SoftDeleteResponseT>;
 }

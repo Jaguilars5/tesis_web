@@ -1,10 +1,13 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import {
-  useSubjectController,
-  useSubjectForm,
-} from "./subject.controller";
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+
+import { SUBJECT_PERMISSIONS } from "./subject.constants";
+import { useSubjectController } from "./hooks/useSubjectController";
+import { useSubjectForm } from "./hooks/useSubjectForm";
 import { SubjectDeleteModal } from "./components/SubjectDeleteModal";
 import { SubjectFormModal } from "./components/SubjectFormModal";
 import { SubjectTable } from "./components/SubjectTable";
@@ -32,10 +35,15 @@ export default function SubjectsPage() {
     handleSubmit,
   } = useSubjectForm({ create: createSubject, update: updateSubject });
 
+  const permissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(permissions, SUBJECT_PERMISSIONS.CREATE);
+  const canEdit = hasPermission(permissions, SUBJECT_PERMISSIONS.UPDATE);
+  const canDelete = hasPermission(permissions, SUBJECT_PERMISSIONS.DELETE);
+
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
-  const [deletingSubject, setDeletingSubject] = useState<SubjectT | null>(null);
+  const [deletingEntity, setDeletingEntity] = useState<SubjectT | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const openViewModal = useCallback((subject: SubjectT) => {
@@ -49,21 +57,14 @@ export default function SubjectsPage() {
   }, []);
 
   const openDeleteModal = useCallback((subject: SubjectT) => {
-    setDeletingSubject(subject);
+    setDeletingEntity(subject);
     setIsDeleteOpen(true);
   }, []);
 
   const closeDeleteModal = useCallback(() => {
     setIsDeleteOpen(false);
-    setDeletingSubject(null);
+    setDeletingEntity(null);
   }, []);
-
-  const handleDeleteConfirm = useCallback(
-    async (id: number) => {
-      await deleteSubject(id);
-    },
-    [deleteSubject],
-  );
 
   return (
     <div className="space-y-4">
@@ -74,14 +75,16 @@ export default function SubjectsPage() {
             Gestiona las materias del sistema académico
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus className="size-4" />
-          Nueva Materia
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => openModal()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Plus className="size-4" />
+            Nueva Materia
+          </button>
+        )}
       </div>
 
       <SubjectTable
@@ -91,9 +94,12 @@ export default function SubjectsPage() {
         onEdit={openModal}
         onView={openViewModal}
         onDelete={openDeleteModal}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       <SubjectFormModal
+        key={editingSubject?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -110,9 +116,9 @@ export default function SubjectsPage() {
 
       <SubjectDeleteModal
         isOpen={isDeleteOpen}
-        subject={deletingSubject}
+        entity={deletingEntity}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteSubject}
       />
     </div>
   );

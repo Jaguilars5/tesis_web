@@ -73,20 +73,23 @@ export interface TeacherSubjectSectionUpdateParamsT {
   data: TeacherSubjectSectionUpdateDataT;
 }
 
-export type TeacherSubjectSectionGetParamsT = number;
+import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
-export type TeacherSubjectSectionDeleteParamsT = number;
+export interface TeacherSubjectSectionGetParamsT {
+  id: number;
+}
+
+export type TeacherSubjectSectionDeleteParamsT = SoftDeleteParamsT;
 
 export interface TeacherSubjectSectionServiceT {
   list(params?: TeacherSubjectSectionListParamsT): Promise<TeacherSubjectSectionT[]>;
-  get(id: TeacherSubjectSectionGetParamsT): Promise<TeacherSubjectSectionT>;
+  get(params: TeacherSubjectSectionGetParamsT): Promise<TeacherSubjectSectionT>;
   create(data: TeacherSubjectSectionCreateDataT): Promise<TeacherSubjectSectionT>;
   update(params: TeacherSubjectSectionUpdateParamsT): Promise<TeacherSubjectSectionT>;
-  softDelete(id: TeacherSubjectSectionDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: TeacherSubjectSectionDeleteParamsT): Promise<SoftDeleteResponseT>;
 }
 
 export interface TeacherSubjectSectionFormValues {
   user: number;
   subject_offering: number;
-  is_active: boolean;
 }

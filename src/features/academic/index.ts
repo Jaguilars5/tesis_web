@@ -3,7 +3,6 @@ export type {
   SubjectAcademicConfigFormValues,
   SubjectAcademicConfigOrderingT,
   SubjectAcademicConfigListParamsT,
-  SubjectAcademicConfigCreateDataT,
   SubjectAcademicConfigCreateParamsT,
   SubjectAcademicConfigUpdateDataT,
   SubjectAcademicConfigUpdateParamsT,
@@ -12,6 +11,7 @@ export type {
   SubjectAcademicConfigServiceT,
 } from "./subject-academic-config/subject-academic-config.types";
 export {
+  SUBJECT_ACADEMIC_CONFIG_BASE_URL,
   SUBJECT_ACADEMIC_CONFIG_ENDPOINTS,
   SUBJECT_ACADEMIC_CONFIG_PERMISSIONS,
 } from "./subject-academic-config/subject-academic-config.constants";
@@ -22,11 +22,12 @@ export {
   useSubjectAcademicConfigController,
   useSubjectAcademicConfigForm,
 } from "./subject-academic-config";
+export type { SubjectAcademicConfigControllerT } from "./subject-academic-config/hooks/useSubjectAcademicConfigController";
 
-export type { SubjectT, SubjectFormValues, SubjectOrderingT, SubjectListParamsT, SubjectCreateDataT, SubjectCreateParamsT, SubjectUpdateDataT, SubjectUpdateParamsT, SubjectGetParamsT, SubjectDeleteParamsT, SubjectServiceT } from "./subject/subject.types";
-export { SUBJECT_ENDPOINTS, SUBJECT_PERMISSIONS } from "./subject/subject.constants";
+export type { SubjectT, SubjectFormValues, SubjectOrderingT, SubjectListParamsT, SubjectCreateParamsT, SubjectUpdateDataT, SubjectUpdateParamsT, SubjectGetParamsT, SubjectDeleteParamsT, SubjectServiceT } from "./subject/subject.types";
+export { SUBJECT_BASE_URL, SUBJECT_ENDPOINTS, SUBJECT_PERMISSIONS } from "./subject/subject.constants";
 export { subjectService, subjectsReducer, SubjectsPage, useSubjectController, useSubjectForm } from "./subject";
-export type { SubjectControllerT } from "./subject/subject.controller";
+export type { SubjectControllerT } from "./subject/hooks/useSubjectController";
 
 export * from "./academic-period";
 export { AcademicPeriodsPage, academicPeriodsReducer } from "./academic-period";
@@ -46,6 +47,7 @@ export type {
   TeacherSubjectSectionServiceT,
 } from "./teacher-subject-section/teacher-subject-section.types";
 export {
+  TEACHER_SUBJECT_SECTION_BASE_URL,
   TEACHER_SUBJECT_SECTION_ENDPOINTS,
   TEACHER_SUBJECT_SECTION_PERMISSIONS,
 } from "./teacher-subject-section/teacher-subject-section.constants";
@@ -55,7 +57,9 @@ export {
   TeacherSubjectSectionsPage,
   useTeacherSubjectSectionController,
   useTeacherSubjectSectionForm,
-  useCatalogOptions,
+  useUserOptions,
+  useSubjectOfferingOptions,
+  useTeacherAssignmentFilters,
 } from "./teacher-subject-section";
 
 export type {
@@ -63,7 +67,6 @@ export type {
   SubjectOfferingFormValues,
   SubjectOfferingOrderingT,
   SubjectOfferingListParamsT,
-  SubjectOfferingCreateDataT,
   SubjectOfferingCreateParamsT,
   SubjectOfferingUpdateDataT,
   SubjectOfferingUpdateParamsT,
@@ -72,6 +75,7 @@ export type {
   SubjectOfferingServiceT,
 } from "./subject-offering/subject-offering.types";
 export {
+  SUBJECT_OFFERING_BASE_URL,
   SUBJECT_OFFERING_ENDPOINTS,
   SUBJECT_OFFERING_PERMISSIONS,
 } from "./subject-offering/subject-offering.constants";
@@ -81,7 +85,11 @@ export {
   SubjectOfferingsPage,
   useSubjectOfferingController,
   useSubjectOfferingForm,
+  useSchoolYearOptions,
+  useSectionOptions,
+  useSubjectAcademicConfigOptions,
 } from "./subject-offering";
+export type { SubjectOfferingControllerT } from "./subject-offering/hooks/useSubjectOfferingController";
 
 export type { PeriodTypeT, PeriodTypeFormValues, PeriodTypeOrderingT, PeriodTypeListParamsT, PeriodTypeCreateParamsT, PeriodTypeUpdateDataT, PeriodTypeUpdateParamsT, PeriodTypeGetParamsT, PeriodTypeDeleteParamsT, PeriodTypeServiceT } from "./period-types/period-types.types";
 export { PERIOD_TYPE_BASE_URL, PERIOD_TYPE_ENDPOINTS, PERIOD_TYPE_PERMISSIONS } from "./period-types/period-types.constants";

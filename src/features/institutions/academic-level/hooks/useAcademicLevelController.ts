@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@shared/redux/hooks";
 import { useCallback } from "react";
 import { toRejectValue } from "@shared/utils/validationErrors";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { academicLevelService } from "../academic-level.service";
 import {
   selectAcademicLevels,
@@ -72,12 +73,18 @@ export const useAcademicLevelController = () => {
     [dispatch],
   );
   const disable = useCallback(
-    async (params: AcademicLevelDeleteParamsT): Promise<void> => {
+    async (params: AcademicLevelDeleteParamsT): Promise<SoftDeleteResponseT> => {
       try {
-        const { id } = await academicLevelService.softDelete(params);
-        dispatch(entityDeleted(id));
+        const response = await academicLevelService.softDelete(params);
+        // Only dispatch entityDeleted when actually deactivated
+        if (response.is_active === false) {
+          dispatch(entityDeleted(response.id));
+        }
+        return response;
       } catch (err) {
-        dispatch(mutationError(err instanceof Error ? err.message : "Error"));
+        const rv = toRejectValue(err);
+        dispatch(mutationError(rv.msg));
+        throw rv;
       }
     },
     [dispatch],

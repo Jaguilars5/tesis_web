@@ -77,7 +77,7 @@ export const useTakeAttendance = () => {
     setState((prev) => ({ ...prev, loadingRoster: true, error: null, loaded: false, success: false }));
 
     try {
-      const tss = await teacherSubjectSectionService.get(teacherSubjectSectionId);
+      const tss = await teacherSubjectSectionService.get({ id: teacherSubjectSectionId });
       const sectionId = tss.subject_offering_section;
       if (!sectionId) throw new Error("La clase no tiene una sección asignada");
 

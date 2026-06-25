@@ -10,10 +10,7 @@ import { AcademicLevelFormModal } from "./components/AcademicLevelFormModal";
 import { AcademicLevelTable } from "./components/AcademicLevelTable";
 import { AcademicLevelViewModal } from "./components/AcademicLevelViewModal";
 import { ACADEMIC_LEVEL_PERMISSIONS } from "./academic-level.constants";
-import type {
-  AcademicLevelDeleteParamsT,
-  AcademicLevelT,
-} from "./academic-level.types";
+import type { AcademicLevelT } from "./academic-level.types";
 
 export default function AcademicLevelsPage() {
   const {
@@ -60,16 +57,6 @@ export default function AcademicLevelsPage() {
     setDeleting(null);
     setIsDeleteOpen(false);
   }, []);
-  const handleDeleteConfirm = useCallback(
-    async (params: AcademicLevelDeleteParamsT) => {
-      try {
-        await deleteAcademicLevel(params);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [deleteAcademicLevel],
-  );
   return (
     <div className="space-y-4">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -103,6 +90,7 @@ export default function AcademicLevelsPage() {
         canDelete={canDelete}
       />
       <AcademicLevelFormModal
+        key={editingAcademicLevel?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -119,7 +107,7 @@ export default function AcademicLevelsPage() {
         isOpen={isDeleteOpen}
         academicLevel={deleting}
         onClose={closeDeleteModal}
-        onConfirm={() => handleDeleteConfirm({ id: deleting?.id ?? 0 })}
+        onSoftDelete={deleteAcademicLevel}
       />
     </div>
   );

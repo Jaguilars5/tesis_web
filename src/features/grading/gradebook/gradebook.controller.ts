@@ -173,7 +173,7 @@ export const useGradebook = () => {
 
     try {
       const [tss, activity] = await Promise.all([
-        teacherSubjectSectionService.get(teacherSubjectSectionId),
+        teacherSubjectSectionService.get({ id: teacherSubjectSectionId }),
         evaluativeActivityService.get(evaluativeActivityId),
       ]);
       const sectionId = tss.subject_offering_section;

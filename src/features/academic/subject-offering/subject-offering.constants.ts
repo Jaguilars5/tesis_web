@@ -1,7 +1,11 @@
+export const SUBJECT_OFFERING_BASE_URL = "/api/academic/subject-offerings/";
+
 export const SUBJECT_OFFERING_ENDPOINTS = {
-  LIST: "/api/academic/subject-offerings/",
-  DETAIL: (id: number) => `/api/academic/subject-offerings/${id}/`,
-  SOFT_DELETE: (id: number) => `/api/academic/subject-offerings/${id}/soft-delete/`,
+  GET: (id: number) => `${SUBJECT_OFFERING_BASE_URL}${id}/`,
+  LIST: SUBJECT_OFFERING_BASE_URL,
+  CREATE: SUBJECT_OFFERING_BASE_URL,
+  UPDATE: (id: number) => `${SUBJECT_OFFERING_BASE_URL}${id}/`,
+  SOFT_DELETE: (id: number) => `${SUBJECT_OFFERING_BASE_URL}${id}/soft-delete/`,
 } as const;
 
 export const SUBJECT_OFFERING_PERMISSIONS = {

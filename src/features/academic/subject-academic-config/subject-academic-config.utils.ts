@@ -11,5 +11,4 @@ export const subjectAcademicConfigSchema = Yup.object({
     .min(1, "Debe ser al menos 1 hora")
     .required("Las horas semanales son obligatorias"),
   is_required: Yup.boolean(),
-  is_active: Yup.boolean(),
 });

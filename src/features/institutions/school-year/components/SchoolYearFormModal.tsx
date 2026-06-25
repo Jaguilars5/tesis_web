@@ -1,5 +1,4 @@
 import { useFormik } from "formik";
-import { useEffect } from "react";
 import { inputClassname } from "@app/styles/styles";
 import { CustomInput } from "@shared/components/Form";
 import { schoolYearSchema } from "../school-year.utils";
@@ -45,13 +44,8 @@ export const SchoolYearFormModal: React.FC<SchoolYearFormModalProps> = ({
   const formik = useFormik<SchoolYearFormValuesT>({
     initialValues: getInitialValues(),
     validationSchema: schoolYearSchema,
-    enableReinitialize: true,
     onSubmit,
   });
-
-  useEffect(() => {
-    if (isOpen && editingSchoolYear) formik.setValues(getInitialValues());
-  }, [isOpen, editingSchoolYear]);
 
   if (!isOpen) return null;
 

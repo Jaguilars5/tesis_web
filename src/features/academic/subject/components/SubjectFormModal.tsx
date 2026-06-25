@@ -1,14 +1,14 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
-import { useEffect } from "react";
 
-import { checkboxClassname, inputClassname } from "@app/styles/styles";
-import { CustomCheckbox, CustomInput } from "@shared/components/Form";
+import { inputClassname } from "@app/styles/styles";
+import { CustomInput } from "@shared/components/Form";
+import { ErrrosInForm } from "@shared/components/ErrrosInForm";
+import type { SubmitErrorState } from "@shared/utils/validationErrors";
 
 import { subjectSchema } from "../subject.utils";
 
 import type { SubjectFormValues, SubjectT } from "../subject.types";
-import type { SubmitErrorState } from "../subject.controller";
 
 const getFieldLabel = (field: string): string => {
   const labels: Record<string, string> = {
@@ -28,43 +28,38 @@ interface SubjectFormModalProps {
   submitErrors: SubmitErrorState;
 }
 
-export const SubjectFormModal = ({
+export const SubjectFormModal: React.FC<SubjectFormModalProps> = ({
   isOpen,
   onClose,
   isEdit,
   editingSubject,
   onSubmit,
   submitErrors,
-}: SubjectFormModalProps) => {
+}) => {
   const getInitialValues = (): SubjectFormValues => {
     if (editingSubject) {
       return {
         name: editingSubject.name,
         code: editingSubject.code,
-        is_active: editingSubject.is_active,
       };
     }
     return {
       name: "",
       code: "",
-      is_active: true,
     };
   };
 
   const formik = useFormik<SubjectFormValues>({
     initialValues: getInitialValues(),
     validationSchema: subjectSchema,
-    enableReinitialize: true,
     onSubmit,
   });
 
-  useEffect(() => {
-    if (isOpen && editingSubject) {
-      formik.setValues(getInitialValues());
-    }
-  }, [isOpen, editingSubject]); // eslint-disable-line react-hooks/exhaustive-deps
-
   if (!isOpen) return null;
+
+  const hasSubmitErrors =
+    submitErrors.general.length > 0 ||
+    Object.keys(submitErrors.validation).length > 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -88,51 +83,11 @@ export const SubjectFormModal = ({
           </button>
         </div>
 
-        {(submitErrors.general.length > 0 ||
-          Object.keys(submitErrors.validation).length > 0) && (
-          <div className="mx-5 mt-3 rounded-lg border border-red-300 bg-red-50 p-4 shadow-sm">
-            <div className="flex items-start gap-2">
-              <svg
-                className="mt-0.5 size-5 flex-shrink-0 text-red-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <div className="flex-1">
-                <p className="mb-2 text-sm font-semibold text-red-800">
-                  Error al guardar la materia
-                </p>
-                {submitErrors.general.length > 0 && (
-                  <ul className="mb-2 space-y-1">
-                    {submitErrors.general.map((err, i) => (
-                      <li key={i} className="text-sm text-red-700">
-                        • {err}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {Object.keys(submitErrors.validation).length > 0 && (
-                  <ul className="space-y-1">
-                    {Object.entries(submitErrors.validation).map(
-                      ([field, message]) => (
-                        <li key={field} className="text-sm text-red-700">
-                          <span className="font-semibold">
-                            {getFieldLabel(field)}:
-                          </span>{" "}
-                          {message}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
+        {hasSubmitErrors && (
+          <ErrrosInForm
+            submitErrors={submitErrors}
+            getFieldLabel={getFieldLabel}
+          />
         )}
 
         <form onSubmit={formik.handleSubmit} className="space-y-4 p-5">
@@ -160,19 +115,6 @@ export const SubjectFormModal = ({
             className={inputClassname}
           />
 
-          {isEdit && (
-            <div className="flex items-end pb-1">
-              <CustomCheckbox
-                name="is_active"
-                checked={formik.values.is_active}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                label="Activo"
-                className={checkboxClassname}
-              />
-            </div>
-          )}
-
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <button
               type="button"
@@ -184,11 +126,11 @@ export const SubjectFormModal = ({
             <button
               type="submit"
               disabled={formik.isSubmitting}
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center rounded-lg bg-primary px-5 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {formik.isSubmitting ? (
                 <>
-                  <span className="mr-2 size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  <span className="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   Guardando...
                 </>
               ) : isEdit ? (

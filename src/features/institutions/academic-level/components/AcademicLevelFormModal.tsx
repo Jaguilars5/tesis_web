@@ -1,5 +1,4 @@
 import { useFormik } from "formik";
-import { useEffect } from "react";
 import { inputClassname } from "@app/styles/styles";
 import { CustomInput } from "@shared/components/Form";
 import { academicLevelSchema } from "../academic-level.utils";
@@ -49,13 +48,8 @@ export const AcademicLevelFormModal: React.FC<AcademicLevelFormModalProps> = ({
   const formik = useFormik<AcademicLevelFormValues>({
     initialValues: getInitialValues(),
     validationSchema: academicLevelSchema,
-    enableReinitialize: true,
     onSubmit,
   });
-
-  useEffect(() => {
-    if (isOpen && editingAcademicLevel) formik.setValues(getInitialValues());
-  }, [isOpen, editingAcademicLevel]);
 
   if (!isOpen) return null;
   return (

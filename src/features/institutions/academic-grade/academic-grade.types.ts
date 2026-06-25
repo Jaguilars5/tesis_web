@@ -1,3 +1,5 @@
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface AcademicGradeT {
   id: number;
   code: string;
@@ -42,6 +44,7 @@ export type AcademicGradeGetParamsT = {
 
 export type AcademicGradeDeleteParamsT = {
   id: number;
+  confirm?: boolean;
 };
 
 export interface AcademicGradeServiceT {
@@ -49,5 +52,5 @@ export interface AcademicGradeServiceT {
   get(params: AcademicGradeGetParamsT): Promise<AcademicGradeT>;
   create(params: AcademicGradeCreateParamsT): Promise<AcademicGradeT>;
   update(params: AcademicGradeUpdateParamsT): Promise<AcademicGradeT>;
-  softDelete(params: AcademicGradeDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: AcademicGradeDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

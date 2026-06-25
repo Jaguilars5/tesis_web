@@ -11,44 +11,47 @@ export interface SubjectOfferingT {
   updated_at: string;
 }
 
+export interface SubjectOfferingFormValues {
+  school_year: number;
+  section: number;
+  subject_academic_config: number;
+}
+
 export type SubjectOfferingOrderingT = "id" | "-id";
 
 export interface SubjectOfferingListParamsT {
   page?: number;
   pageSize?: number;
   search?: string;
+  filters?: {
+    school_year?: number;
+    section?: number;
+    subject_academic_config?: number;
+  };
   ordering?: SubjectOfferingOrderingT;
 }
 
-export type SubjectOfferingCreateDataT = Omit<
-  SubjectOfferingT,
-  "id" | "school_year" | "is_active" | "school_year_name" | "section_name" | "subject_academic_config_name" | "created_at" | "updated_at"
->;
+export type SubjectOfferingCreateParamsT = SubjectOfferingFormValues;
 
-export type SubjectOfferingCreateParamsT = SubjectOfferingCreateDataT;
-
-export type SubjectOfferingUpdateDataT = Partial<Omit<SubjectOfferingT, "id">>;
+export type SubjectOfferingUpdateDataT = Partial<SubjectOfferingFormValues>;
 
 export interface SubjectOfferingUpdateParamsT {
   id: number;
   data: SubjectOfferingUpdateDataT;
 }
 
-export type SubjectOfferingGetParamsT = number;
+export interface SubjectOfferingGetParamsT {
+  id: number;
+}
 
-export type SubjectOfferingDeleteParamsT = number;
+import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
+export type SubjectOfferingDeleteParamsT = SoftDeleteParamsT;
 
 export interface SubjectOfferingServiceT {
   list(params?: SubjectOfferingListParamsT): Promise<SubjectOfferingT[]>;
-  get(id: SubjectOfferingGetParamsT): Promise<SubjectOfferingT>;
-  create(data: SubjectOfferingCreateDataT): Promise<SubjectOfferingT>;
+  get(params: SubjectOfferingGetParamsT): Promise<SubjectOfferingT>;
+  create(params: SubjectOfferingCreateParamsT): Promise<SubjectOfferingT>;
   update(params: SubjectOfferingUpdateParamsT): Promise<SubjectOfferingT>;
-  softDelete(id: SubjectOfferingDeleteParamsT): Promise<{ id: number }>;
-}
-
-export interface SubjectOfferingFormValues {
-  school_year: number;
-  section: number;
-  subject_academic_config: number;
-  is_active: boolean;
+  softDelete(params: SubjectOfferingDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

@@ -12,7 +12,15 @@ import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect"
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
-import { useTeacherAssignmentFilters } from "../teacher-subject-section.options";
+import { useTeacherAssignmentFilters } from "../hooks/useTeacherAssignmentFilters";
+import type {
+  GradeFilterValue,
+  SchoolYearFilterValue,
+  SectionFilterValue,
+  StatusFilterValue,
+  SubjectFilterValue,
+  TeacherFilterValue,
+} from "../hooks/useTeacherAssignmentFilters";
 
 import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps";
 import type { TableColumnProps } from "@shared/components/Table";
@@ -22,14 +30,7 @@ import type {
   TeacherSubjectSectionOrderingT,
   TeacherSubjectSectionT,
 } from "../teacher-subject-section.types";
-import type {
-  GradeFilterValue,
-  SchoolYearFilterValue,
-  SectionFilterValue,
-  StatusFilterValue,
-  SubjectFilterValue,
-  TeacherFilterValue,
-} from "../teacher-subject-section.options";
+
 
 const ORDERING_OPTIONS: {
   label: string;
@@ -48,6 +49,8 @@ type TeacherSubjectSectionTableProps = {
   onEdit: (assignment: TeacherSubjectSectionT) => void;
   onView: (assignment: TeacherSubjectSectionT) => void;
   onDelete: (assignment: TeacherSubjectSectionT) => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
 };
 
 type GroupedRow = {
@@ -94,6 +97,8 @@ export const TeacherSubjectSectionTable = ({
   onEdit,
   onView,
   onDelete,
+  canEdit = true,
+  canDelete = true,
 }: TeacherSubjectSectionTableProps) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -492,22 +497,26 @@ export const TeacherSubjectSectionTable = ({
                       >
                         <Eye className="size-4" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => onEdit(row)}
-                        className="inline-flex items-center justify-center rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-                        title="Editar"
-                      >
-                        <Pencil className="size-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(row)}
-                        className="inline-flex items-center justify-center rounded-md p-1.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                        title="Desactivar"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={() => onEdit(row)}
+                          className="inline-flex items-center justify-center rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                          title="Editar"
+                        >
+                          <Pencil className="size-4" />
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={() => onDelete(row)}
+                          className="inline-flex items-center justify-center rounded-md p-1.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                          title="Desactivar"
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      )}
                     </div>
                   )}
                 />

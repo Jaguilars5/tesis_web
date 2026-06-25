@@ -13,10 +13,7 @@ import { PeriodTypeFormModal } from "./components/PeriodTypeFormModal";
 import { PeriodTypeTable } from "./components/PeriodTypeTable";
 import { PeriodTypeViewModal } from "./components/PeriodTypeViewModal";
 
-import type {
-  PeriodTypeDeleteParamsT,
-  PeriodTypeT,
-} from "./period-types.types";
+import type { PeriodTypeT } from "./period-types.types";
 
 export default function PeriodTypesPage() {
   const {
@@ -49,7 +46,7 @@ export default function PeriodTypesPage() {
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
-  const [deletingPeriodType, setDeletingPeriodType] =
+  const [deletingEntity, setDeletingEntity] =
     useState<PeriodTypeT | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -64,25 +61,14 @@ export default function PeriodTypesPage() {
   }, []);
 
   const openDeleteModal = useCallback((periodType: PeriodTypeT) => {
-    setDeletingPeriodType(periodType);
+    setDeletingEntity(periodType);
     setIsDeleteOpen(true);
   }, []);
 
   const closeDeleteModal = useCallback(() => {
     setIsDeleteOpen(false);
-    setDeletingPeriodType(null);
+    setDeletingEntity(null);
   }, []);
-
-  const handleDeleteConfirm = useCallback(
-    async (params: PeriodTypeDeleteParamsT) => {
-      try {
-        await deletePeriodType(params);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [deletePeriodType],
-  );
 
   return (
     <div className="space-y-4">
@@ -119,6 +105,7 @@ export default function PeriodTypesPage() {
       />
 
       <PeriodTypeFormModal
+        key={editingPeriodType?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -135,9 +122,9 @@ export default function PeriodTypesPage() {
 
       <PeriodTypeDeleteModal
         isOpen={isDeleteOpen}
-        periodType={deletingPeriodType}
+        entity={deletingEntity}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deletePeriodType}
       />
     </div>
   );

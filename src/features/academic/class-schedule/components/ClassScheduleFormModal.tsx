@@ -1,6 +1,5 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
-import { useEffect } from "react";
 
 import { inputClassname, selectClassname } from "@app/styles/styles";
 import { CustomInput, CustomSelect } from "@shared/components/Form";
@@ -66,18 +65,10 @@ export const ClassScheduleFormModal: React.FC<ClassScheduleFormModalProps> = ({
   const formik = useFormik<ClassScheduleFormValues>({
     initialValues: getInitialValues(editingClassSchedule),
     validationSchema: classScheduleSchema,
-    enableReinitialize: true,
     onSubmit: async (values) => {
       await onSubmit(values);
     },
   });
-
-  useEffect(() => {
-    if (isOpen) {
-      formik.setValues(getInitialValues(editingClassSchedule));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, editingClassSchedule]);
 
   if (!isOpen) return null;
 

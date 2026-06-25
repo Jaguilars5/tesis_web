@@ -11,10 +11,7 @@ import { AcademicGradeFormModal } from "./components/AcademicGradeFormModal";
 import { AcademicGradeTable } from "./components/AcademicGradeTable";
 import { AcademicGradeViewModal } from "./components/AcademicGradeViewModal";
 import { ACADEMIC_GRADE_PERMISSIONS } from "./academic-grade.constants";
-import type {
-  AcademicGradeDeleteParamsT,
-  AcademicGradeT,
-} from "./academic-grade.types";
+import type { AcademicGradeT } from "./academic-grade.types";
 
 export default function AcademicGradePage() {
   const {
@@ -67,17 +64,6 @@ export default function AcademicGradePage() {
     setIsDeleteOpen(false);
   }, []);
 
-  const handleDeleteConfirm = useCallback(
-    async (params: AcademicGradeDeleteParamsT) => {
-      try {
-        await deleteAcademicGrade(params);
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [deleteAcademicGrade],
-  );
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -110,6 +96,7 @@ export default function AcademicGradePage() {
         canDelete={canDelete}
       />
       <AcademicGradeFormModal
+        key={editingAcademicGrade?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -127,7 +114,7 @@ export default function AcademicGradePage() {
         isOpen={isDeleteOpen}
         academicGrade={deleting}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteAcademicGrade}
       />
     </div>
   );

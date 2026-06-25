@@ -1,15 +1,16 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import {
-  useSubjectOfferingController,
-  useSubjectOfferingForm,
-} from "./subject-offering.controller";
-import {
-  useSchoolYearOptions,
-  useSectionOptions,
-  useSubjectAcademicConfigOptions,
-} from "./subject-offering.options";
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+
+import { SUBJECT_OFFERING_PERMISSIONS } from "./subject-offering.constants";
+import { useSchoolYearOptions } from "./hooks/useSchoolYearOptions";
+import { useSectionOptions } from "./hooks/useSectionOptions";
+import { useSubjectAcademicConfigOptions } from "./hooks/useSubjectAcademicConfigOptions";
+import { useSubjectOfferingController } from "./hooks/useSubjectOfferingController";
+import { useSubjectOfferingForm } from "./hooks/useSubjectOfferingForm";
 import { SubjectOfferingDeleteModal } from "./components/SubjectOfferingDeleteModal";
 import { SubjectOfferingFormModal } from "./components/SubjectOfferingFormModal";
 import { SubjectOfferingTable } from "./components/SubjectOfferingTable";
@@ -44,10 +45,21 @@ export default function SubjectOfferingsPage() {
     update: updateSubjectOffering,
   });
 
+  const permissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(
+    permissions,
+    SUBJECT_OFFERING_PERMISSIONS.CREATE,
+  );
+  const canEdit = hasPermission(permissions, SUBJECT_OFFERING_PERMISSIONS.UPDATE);
+  const canDelete = hasPermission(
+    permissions,
+    SUBJECT_OFFERING_PERMISSIONS.DELETE,
+  );
+
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
-  const [deletingOffering, setDeletingOffering] =
+  const [deletingEntity, setDeletingEntity] =
     useState<SubjectOfferingT | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
@@ -62,21 +74,14 @@ export default function SubjectOfferingsPage() {
   }, []);
 
   const openDeleteModal = useCallback((offering: SubjectOfferingT) => {
-    setDeletingOffering(offering);
+    setDeletingEntity(offering);
     setIsDeleteOpen(true);
   }, []);
 
   const closeDeleteModal = useCallback(() => {
     setIsDeleteOpen(false);
-    setDeletingOffering(null);
+    setDeletingEntity(null);
   }, []);
-
-  const handleDeleteConfirm = useCallback(
-    async (id: number) => {
-      await deleteSubjectOffering(id);
-    },
-    [deleteSubjectOffering],
-  );
 
   return (
     <div className="space-y-4">
@@ -89,26 +94,34 @@ export default function SubjectOfferingsPage() {
             Gestiona las ofertas curriculares de materias en aulas
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus className="size-4" />
-          Nueva Oferta
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => openModal()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Plus className="size-4" />
+            Nueva Oferta
+          </button>
+        )}
       </div>
 
       <SubjectOfferingTable
         subjectOfferings={subjectOfferings}
         isLoading={isLoading}
         loadSubjectOfferings={loadSubjectOfferings}
+        schoolYearOptions={schoolYearOptions}
+        sectionOptions={sectionOptions}
+        subjectAcademicConfigOptions={subjectAcademicConfigOptions}
         onEdit={openModal}
         onView={openViewModal}
         onDelete={openDeleteModal}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       <SubjectOfferingFormModal
+        key={editingSubjectOffering?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -128,9 +141,9 @@ export default function SubjectOfferingsPage() {
 
       <SubjectOfferingDeleteModal
         isOpen={isDeleteOpen}
-        offering={deletingOffering}
+        entity={deletingEntity}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteSubjectOffering}
       />
     </div>
   );

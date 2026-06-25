@@ -1,9 +1,14 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type {
+  PaginatedData,
+  ResponseApi,
+} from "@shared/types/api.response.types";
+
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 import { SUBJECT_ACADEMIC_CONFIG_ENDPOINTS } from "./subject-academic-config.constants";
 import type {
-  SubjectAcademicConfigCreateDataT,
+  SubjectAcademicConfigCreateParamsT,
   SubjectAcademicConfigDeleteParamsT,
   SubjectAcademicConfigGetParamsT,
   SubjectAcademicConfigListParamsT,
@@ -13,7 +18,9 @@ import type {
 } from "./subject-academic-config.types";
 
 class SubjectAcademicConfigService implements SubjectAcademicConfigServiceT {
-  async list(params?: SubjectAcademicConfigListParamsT): Promise<SubjectAcademicConfigT[]> {
+  async list(
+    params?: SubjectAcademicConfigListParamsT,
+  ): Promise<SubjectAcademicConfigT[]> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -23,10 +30,18 @@ class SubjectAcademicConfigService implements SubjectAcademicConfigServiceT {
       const orderingQuery = params?.ordering
         ? `&ordering=${encodeURIComponent(params.ordering)}`
         : "";
+      const filtersQuery = params?.filters
+        ? `&${Object.entries(params.filters)
+            .filter(([, value]) => value !== undefined && value !== null)
+            .map(
+              ([key, value]) => `${key}=${encodeURIComponent(String(value))}`,
+            )
+            .join("&")}`
+        : "";
       const { data } = await apiClient.get<
         ResponseApi<PaginatedData<SubjectAcademicConfigT>>
       >(
-        `${SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+        `${SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
       return data.data.results;
     } catch (error) {
@@ -34,10 +49,12 @@ class SubjectAcademicConfigService implements SubjectAcademicConfigServiceT {
     }
   }
 
-  async get(id: SubjectAcademicConfigGetParamsT): Promise<SubjectAcademicConfigT> {
+  async get(
+    params: SubjectAcademicConfigGetParamsT,
+  ): Promise<SubjectAcademicConfigT> {
     try {
       const { data } = await apiClient.get<ResponseApi<SubjectAcademicConfigT>>(
-        SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.DETAIL(id),
+        SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.GET(params.id),
       );
       return data.data;
     } catch (error) {
@@ -45,11 +62,13 @@ class SubjectAcademicConfigService implements SubjectAcademicConfigServiceT {
     }
   }
 
-  async create(payload: SubjectAcademicConfigCreateDataT): Promise<SubjectAcademicConfigT> {
+  async create(
+    params: SubjectAcademicConfigCreateParamsT,
+  ): Promise<SubjectAcademicConfigT> {
     try {
       const { data } = await apiClient.post<ResponseApi<SubjectAcademicConfigT>>(
-        SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.LIST,
-        payload,
+        SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.CREATE,
+        params,
       );
       return data.data;
     } catch (error) {
@@ -57,22 +76,27 @@ class SubjectAcademicConfigService implements SubjectAcademicConfigServiceT {
     }
   }
 
-  async update(params: SubjectAcademicConfigUpdateParamsT): Promise<SubjectAcademicConfigT> {
+  async update(
+    params: SubjectAcademicConfigUpdateParamsT,
+  ): Promise<SubjectAcademicConfigT> {
     try {
-      const { data } = await apiClient.patch<ResponseApi<SubjectAcademicConfigT>>(
-        SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.DETAIL(params.id),
-        params.data,
-      );
+      const { data } = await apiClient.patch<
+        ResponseApi<SubjectAcademicConfigT>
+      >(SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.UPDATE(params.id), params.data);
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
   }
 
-  async softDelete(id: SubjectAcademicConfigDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(
+    params: SubjectAcademicConfigDeleteParamsT,
+  ): Promise<SoftDeleteResponseT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
-        SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.SOFT_DELETE(id),
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
+        SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
       return data.data;
     } catch (error) {

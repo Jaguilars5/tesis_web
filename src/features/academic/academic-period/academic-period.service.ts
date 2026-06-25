@@ -3,6 +3,7 @@ import type {
   PaginatedData,
   ResponseApi,
 } from "@shared/types/api.response.types";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 import { ACADEMIC_PERIOD_ENDPOINTS } from "./academic-period.constants";
 import type {
@@ -88,10 +89,12 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
 
   async softDelete(
     params: AcademicPeriodDeleteParamsT,
-  ): Promise<{ id: number }> {
+  ): Promise<SoftDeleteResponseT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
         ACADEMIC_PERIOD_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
       return data.data;
     } catch (error) {

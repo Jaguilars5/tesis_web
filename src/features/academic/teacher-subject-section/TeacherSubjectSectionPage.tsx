@@ -1,14 +1,15 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import {
-  useTeacherSubjectSectionController,
-  useTeacherSubjectSectionForm,
-} from "./teacher-subject-section.controller";
-import {
-  useSubjectOfferingOptions,
-  useUserOptions,
-} from "./teacher-subject-section.options";
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+
+import { TEACHER_SUBJECT_SECTION_PERMISSIONS } from "./teacher-subject-section.constants";
+import { useTeacherSubjectSectionController } from "./hooks/useTeacherSubjectSectionController";
+import { useTeacherSubjectSectionForm } from "./hooks/useTeacherSubjectSectionForm";
+import { useUserOptions } from "./hooks/useUserOptions";
+import { useSubjectOfferingOptions } from "./hooks/useSubjectOfferingOptions";
 import { TeacherSubjectSectionDeleteModal } from "./components/TeacherSubjectSectionDeleteModal";
 import { TeacherSubjectSectionFormModal } from "./components/TeacherSubjectSectionFormModal";
 import { TeacherSubjectSectionTable } from "./components/TeacherSubjectSectionTable";
@@ -42,6 +43,11 @@ export default function TeacherSubjectSectionsPage() {
     update: updateTeacherSubjectSection,
   });
 
+  const permissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(permissions, TEACHER_SUBJECT_SECTION_PERMISSIONS.CREATE);
+  const canEdit = hasPermission(permissions, TEACHER_SUBJECT_SECTION_PERMISSIONS.UPDATE);
+  const canDelete = hasPermission(permissions, TEACHER_SUBJECT_SECTION_PERMISSIONS.DELETE);
+
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
@@ -69,13 +75,6 @@ export default function TeacherSubjectSectionsPage() {
     setDeletingAssignment(null);
   }, []);
 
-  const handleDeleteConfirm = useCallback(
-    async (id: number) => {
-      await deleteTeacherSubjectSection(id);
-    },
-    [deleteTeacherSubjectSection],
-  );
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -87,14 +86,16 @@ export default function TeacherSubjectSectionsPage() {
             Asigna docentes a ofertas de materia
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus className="size-4" />
-          Nueva Asignacion
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => openModal()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Plus className="size-4" />
+            Nueva Asignacion
+          </button>
+        )}
       </div>
 
       <TeacherSubjectSectionTable
@@ -104,9 +105,12 @@ export default function TeacherSubjectSectionsPage() {
         onEdit={openModal}
         onView={openViewModal}
         onDelete={openDeleteModal}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       <TeacherSubjectSectionFormModal
+        key={editingTeacherSubjectSection?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -119,15 +123,15 @@ export default function TeacherSubjectSectionsPage() {
 
       <TeacherSubjectSectionViewModal
         isOpen={isViewOpen}
-        assignmentId={viewingId}
+        entityId={viewingId}
         onClose={closeViewModal}
       />
 
       <TeacherSubjectSectionDeleteModal
         isOpen={isDeleteOpen}
-        assignment={deletingAssignment}
+        entity={deletingAssignment}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteTeacherSubjectSection}
       />
     </div>
   );

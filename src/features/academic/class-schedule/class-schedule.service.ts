@@ -4,6 +4,8 @@ import type {
   ResponseApi,
 } from "@shared/types/api.response.types";
 
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 import { CLASS_SCHEDULE_ENDPOINTS } from "./class-schedule.constants";
 import type {
   ClassScheduleCreateParamsT,
@@ -82,10 +84,12 @@ class ClassScheduleService implements ClassScheduleServiceT {
 
   async softDelete(
     params: ClassScheduleDeleteParamsT,
-  ): Promise<{ id: number }> {
+  ): Promise<SoftDeleteResponseT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
         CLASS_SCHEDULE_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
       return data.data;
     } catch (error) {

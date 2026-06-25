@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@shared/redux/hooks";
 import { toRejectValue } from "@shared/utils/validationErrors";
 import { useCallback } from "react";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 import { classScheduleService } from "../class-schedule.service";
 import {
@@ -75,12 +76,17 @@ export const useClassScheduleController = () => {
   );
 
   const deleteClassSchedule = useCallback(
-    async (params: ClassScheduleDeleteParamsT): Promise<void> => {
+    async (params: ClassScheduleDeleteParamsT): Promise<SoftDeleteResponseT> => {
       try {
-        const { id } = await classScheduleService.softDelete(params);
-        dispatch(entityDeleted(id));
+        const response = await classScheduleService.softDelete(params);
+        if (response.is_active === false) {
+          dispatch(entityDeleted(response.id));
+        }
+        return response;
       } catch (err) {
-        dispatch(mutationError(err instanceof Error ? err.message : "Error"));
+        const rv = toRejectValue(err);
+        dispatch(mutationError(rv.msg));
+        throw rv;
       }
     },
     [dispatch],

@@ -1,21 +1,26 @@
 import { BookOpen, FileText, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
+import { DetailRow } from "@shared/components/DetailRow";
+
 import { subjectService } from "../subject.service";
 import type { SubjectT } from "../subject.types";
 
-interface State {
+interface SubjectViewModalState {
   data: SubjectT | null;
   loading: boolean;
   error: string | null;
 }
 
-type Action =
+type SubjectViewModalAction =
   | { type: "loading" }
   | { type: "success"; data: SubjectT }
   | { type: "error"; error: string };
 
-function reducer(_state: State, action: Action): State {
+const reducer = (
+  state: SubjectViewModalState,
+  action: SubjectViewModalAction,
+): SubjectViewModalState => {
   switch (action.type) {
     case "loading":
       return { data: null, loading: true, error: null };
@@ -23,8 +28,10 @@ function reducer(_state: State, action: Action): State {
       return { data: action.data, loading: false, error: null };
     case "error":
       return { data: null, loading: false, error: action.error };
+    default:
+      return state;
   }
-}
+};
 
 interface SubjectViewModalProps {
   isOpen: boolean;
@@ -32,12 +39,12 @@ interface SubjectViewModalProps {
   onClose: () => void;
 }
 
-export const SubjectViewModal = ({
+export const SubjectViewModal: React.FC<SubjectViewModalProps> = ({
   isOpen,
   subjectId,
   onClose,
-}: SubjectViewModalProps) => {
-  const [state, stateDispatch] = useReducer(reducer, {
+}) => {
+  const [state, dispatch] = useReducer(reducer, {
     data: null,
     loading: false,
     error: null,
@@ -45,13 +52,11 @@ export const SubjectViewModal = ({
 
   useEffect(() => {
     if (isOpen && subjectId !== null) {
-      stateDispatch({ type: "loading" });
+      dispatch({ type: "loading" });
       subjectService
-        .get(subjectId)
-        .then((data) => stateDispatch({ type: "success", data }))
-        .catch((err: Error) =>
-          stateDispatch({ type: "error", error: err.message }),
-        );
+        .get({ id: subjectId })
+        .then((data) => dispatch({ type: "success", data }))
+        .catch((err: Error) => dispatch({ type: "error", error: err.message }));
     }
   }, [isOpen, subjectId]);
 
@@ -154,27 +159,3 @@ export const SubjectViewModal = ({
     </div>
   );
 };
-
-function DetailRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
-      </div>
-    </div>
-  );
-}

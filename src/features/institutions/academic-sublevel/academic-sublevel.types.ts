@@ -1,3 +1,5 @@
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface AcademicSubLevelT {
   id: number;
   code: string;
@@ -44,6 +46,7 @@ export interface AcademicSubLevelGetParamsT {
 
 export interface AcademicSubLevelDeleteParamsT {
   id: number;
+  confirm?: boolean;
 }
 
 export interface AcademicSubLevelServiceT {
@@ -51,5 +54,5 @@ export interface AcademicSubLevelServiceT {
   get(params: AcademicSubLevelGetParamsT): Promise<AcademicSubLevelT>;
   create(params: AcademicSubLevelCreateParamsT): Promise<AcademicSubLevelT>;
   update(params: AcademicSubLevelUpdateParamsT): Promise<AcademicSubLevelT>;
-  softDelete(params: AcademicSubLevelDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: AcademicSubLevelDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

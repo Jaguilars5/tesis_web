@@ -4,9 +4,11 @@ import type {
   ResponseApi,
 } from "@shared/types/api.response.types";
 
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 import { SUBJECT_ENDPOINTS } from "./subject.constants";
 import type {
-  SubjectCreateDataT,
+  SubjectCreateParamsT,
   SubjectDeleteParamsT,
   SubjectGetParamsT,
   SubjectListParamsT,
@@ -37,10 +39,10 @@ class SubjectService implements SubjectServiceT {
     }
   }
 
-  async get(id: SubjectGetParamsT): Promise<SubjectT> {
+  async get(params: SubjectGetParamsT): Promise<SubjectT> {
     try {
       const { data } = await apiClient.get<ResponseApi<SubjectT>>(
-        SUBJECT_ENDPOINTS.DETAIL(id),
+        SUBJECT_ENDPOINTS.GET(params.id),
       );
       return data.data;
     } catch (error) {
@@ -48,11 +50,11 @@ class SubjectService implements SubjectServiceT {
     }
   }
 
-  async create(payload: SubjectCreateDataT): Promise<SubjectT> {
+  async create(params: SubjectCreateParamsT): Promise<SubjectT> {
     try {
       const { data } = await apiClient.post<ResponseApi<SubjectT>>(
-        SUBJECT_ENDPOINTS.LIST,
-        payload,
+        SUBJECT_ENDPOINTS.CREATE,
+        params,
       );
       return data.data;
     } catch (error) {
@@ -63,7 +65,7 @@ class SubjectService implements SubjectServiceT {
   async update(params: SubjectUpdateParamsT): Promise<SubjectT> {
     try {
       const { data } = await apiClient.patch<ResponseApi<SubjectT>>(
-        SUBJECT_ENDPOINTS.DETAIL(params.id),
+        SUBJECT_ENDPOINTS.UPDATE(params.id),
         params.data,
       );
       return data.data;
@@ -72,10 +74,12 @@ class SubjectService implements SubjectServiceT {
     }
   }
 
-  async softDelete(id: SubjectDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(params: SubjectDeleteParamsT): Promise<SoftDeleteResponseT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
-        SUBJECT_ENDPOINTS.SOFT_DELETE(id),
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
+        SUBJECT_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
       return data.data;
     } catch (error) {
