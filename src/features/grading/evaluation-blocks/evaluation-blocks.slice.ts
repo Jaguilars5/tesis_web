@@ -1,9 +1,51 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit"; import type { RootState } from "@shared/redux/store"; import type { RequestStatusT } from "@shared/types/request.types"; import type { EvaluationBlockT } from "./evaluation-blocks.types";
-export interface EvaluationBlocksStateT { evaluationBlocks: EvaluationBlockT[]; status: RequestStatusT; error: string | null; }
-const initialState: EvaluationBlocksStateT = { evaluationBlocks: [], status: "idle", error: null };
-const slice = createSlice({ name: "evaluationBlocks", initialState, reducers: { loadPending(s) { s.status = "loading"; s.error = null; }, loadSuccess(s, a: PayloadAction<EvaluationBlockT[]>) { s.evaluationBlocks = a.payload; s.status = "succeeded"; }, loadError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, entityCreated(s, a: PayloadAction<EvaluationBlockT>) { s.evaluationBlocks.unshift(a.payload); s.status = "succeeded"; }, entityUpdated(s, a: PayloadAction<EvaluationBlockT>) { const idx = s.evaluationBlocks.findIndex((p) => p.id === a.payload.id); if (idx !== -1) s.evaluationBlocks[idx] = a.payload; s.status = "succeeded"; }, entityDeleted(s, a: PayloadAction<number>) { s.evaluationBlocks = s.evaluationBlocks.filter((p) => p.id !== a.payload); s.status = "succeeded"; }, mutationError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, clearError(s) { s.error = null; } } });
-export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearError } = slice.actions;
-export const selectEvaluationBlocks = (s: RootState): EvaluationBlockT[] => s.grading.evaluationBlocks.evaluationBlocks;
-export const selectEvaluationBlocksStatus = (s: RootState): RequestStatusT => s.grading.evaluationBlocks.status;
-export const selectEvaluationBlocksError = (s: RootState): string | null => s.grading.evaluationBlocks.error;
-export const evaluationBlocksReducer = slice.reducer; export default slice.reducer;
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { RootState } from "@shared/redux/store";
+import type { RequestStatusT } from "@shared/types/request.types";
+import type { EvaluationBlockT } from "./evaluation-blocks.types";
+
+export interface EvaluationBlocksStateT {
+  items: EvaluationBlockT[];
+  status: RequestStatusT;
+  error: string | null;
+}
+
+const initialState: EvaluationBlocksStateT = {
+  items: [],
+  status: "idle",
+  error: null,
+};
+
+const evaluationBlocksSlice = createSlice({
+  name: "evaluationBlocks",
+  initialState,
+  reducers: {
+    loadPending(state) { state.status = "loading"; state.error = null; },
+    loadSuccess(state, action: PayloadAction<EvaluationBlockT[]>) { state.items = action.payload; state.status = "succeeded"; },
+    loadError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
+    entityCreated(state, action: PayloadAction<EvaluationBlockT>) { state.items.unshift(action.payload); state.status = "succeeded"; },
+    entityUpdated(state, action: PayloadAction<EvaluationBlockT>) {
+      const idx = state.items.findIndex((p) => p.id === action.payload.id);
+      if (idx !== -1) state.items[idx] = action.payload;
+      state.status = "succeeded";
+    },
+    entityDeleted(state, action: PayloadAction<number>) {
+      state.items = state.items.filter((p) => p.id !== action.payload);
+      state.status = "succeeded";
+    },
+    mutationError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
+    clearEvaluationBlocksError(state) { state.error = null; },
+  },
+});
+
+export const {
+  loadPending, loadSuccess, loadError,
+  entityCreated, entityUpdated, entityDeleted,
+  mutationError, clearEvaluationBlocksError,
+} = evaluationBlocksSlice.actions;
+
+export const selectItems = (state: RootState): EvaluationBlockT[] => state.grading.evaluationBlocks.items;
+export const selectStatus = (state: RootState): RequestStatusT => state.grading.evaluationBlocks.status;
+export const selectError = (state: RootState): string | null => state.grading.evaluationBlocks.error;
+
+export const evaluationBlocksReducer = evaluationBlocksSlice.reducer;
+export default evaluationBlocksSlice.reducer;

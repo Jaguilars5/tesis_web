@@ -1,3 +1,4 @@
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import type { PermissionT } from "../permission/permission.types";
 
 export interface RolePermissionT {
@@ -28,23 +29,33 @@ export interface RoleListParamsT {
 
 export type RoleCreateDataT = Omit<RoleT, "id" | "is_active" | "created_at" | "role_permissions">;
 export type RoleCreateParamsT = RoleCreateDataT;
-export type RoleUpdateDataT = Partial<Omit<RoleT, "id">>;
-export interface RoleUpdateParamsT { id: number; data: RoleUpdateDataT; }
-export type RoleGetParamsT = number;
-export type RoleDeleteParamsT = number;
+export type RoleUpdateDataT = Partial<RoleCreateDataT>;
+
+export interface RoleUpdateParamsT {
+  id: number;
+  data: RoleUpdateDataT;
+}
+
+export interface RoleGetParamsT {
+  id: number;
+}
+
+export interface RoleDeleteParamsT {
+  id: number;
+  confirm?: boolean;
+}
 
 export interface RoleServiceT {
   list(params?: RoleListParamsT): Promise<RoleT[]>;
-  get(id: RoleGetParamsT): Promise<RoleT>;
+  get(params: RoleGetParamsT): Promise<RoleT>;
   create(data: RoleCreateDataT): Promise<RoleT>;
   update(params: RoleUpdateParamsT): Promise<RoleT>;
-  softDelete(id: RoleDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: RoleDeleteParamsT): Promise<SoftDeleteResponseT>;
 }
 
 export interface RoleFormValues {
   name: string;
   description: string;
-  is_active: boolean;
 }
 
 export interface RoleAssignPermissionsDataT {

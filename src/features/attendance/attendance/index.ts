@@ -1,10 +1,15 @@
 export * from "./attendance.types";
 export * from "./attendance.constants";
 export * from "./attendance.service";
-export * from "./attendance.controller";
+export * from "./hooks/useAttendanceController";
+export * from "./hooks/useAttendanceForm";
+export * from "./hooks/useEnrollmentOptions";
+export * from "./hooks/useTeacherSubjectSectionOptions";
+export * from "./hooks/useAcademicPeriodOptions";
+export * from "./hooks/useAttendanceStatusOptions";
+export * from "./hooks/useAbsenceTypeOptions";
 export * from "./attendance.slice";
 export * from "./attendance.utils";
-export * from "./attendance.options";
 export { default as attendanceReducer } from "./attendance.slice";
 export { default as AttendancesPage } from "./AttendancePage";
 export { default as AttendanceSummaryPage } from "./AttendanceSummaryPage";

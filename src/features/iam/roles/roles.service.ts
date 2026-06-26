@@ -1,6 +1,6 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
-
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { ROLE_ENDPOINTS } from "./roles.constants";
 import type {
   RoleAssignPermissionsDataT,
@@ -18,12 +18,8 @@ class RoleService implements RoleServiceT {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
-      const searchQuery = params?.search
-        ? `&search=${encodeURIComponent(params.search)}`
-        : "";
-      const orderingQuery = params?.ordering
-        ? `&ordering=${encodeURIComponent(params.ordering)}`
-        : "";
+      const searchQuery = params?.search ? `&search=${encodeURIComponent(params.search)}` : "";
+      const orderingQuery = params?.ordering ? `&ordering=${encodeURIComponent(params.ordering)}` : "";
       const filters = params?.filters ?? {};
       const filterQuery = Object.entries(filters)
         .filter(([, value]) => value !== undefined && value !== null)
@@ -38,10 +34,10 @@ class RoleService implements RoleServiceT {
     }
   }
 
-  async get(id: RoleGetParamsT): Promise<RoleT> {
+  async get(params: RoleGetParamsT): Promise<RoleT> {
     try {
       const { data } = await apiClient.get<ResponseApi<RoleT>>(
-        ROLE_ENDPOINTS.DETAIL(id),
+        ROLE_ENDPOINTS.GET(params.id),
       );
       return data.data;
     } catch (error) {
@@ -49,13 +45,13 @@ class RoleService implements RoleServiceT {
     }
   }
 
-  async create(payload: RoleCreateDataT): Promise<RoleT> {
+  async create(data: RoleCreateDataT): Promise<RoleT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<RoleT>>(
-        ROLE_ENDPOINTS.LIST,
-        payload,
+      const { data: response } = await apiClient.post<ResponseApi<RoleT>>(
+        ROLE_ENDPOINTS.CREATE,
+        data,
       );
-      return data.data;
+      return response.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
@@ -64,7 +60,7 @@ class RoleService implements RoleServiceT {
   async update(params: RoleUpdateParamsT): Promise<RoleT> {
     try {
       const { data } = await apiClient.patch<ResponseApi<RoleT>>(
-        ROLE_ENDPOINTS.DETAIL(params.id),
+        ROLE_ENDPOINTS.UPDATE(params.id),
         params.data,
       );
       return data.data;
@@ -73,10 +69,12 @@ class RoleService implements RoleServiceT {
     }
   }
 
-  async softDelete(id: RoleDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(params: RoleDeleteParamsT): Promise<SoftDeleteResponseT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
-        ROLE_ENDPOINTS.SOFT_DELETE(id),
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
+        ROLE_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
       return data.data;
     } catch (error) {

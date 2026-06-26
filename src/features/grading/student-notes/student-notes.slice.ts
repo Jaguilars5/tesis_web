@@ -1,9 +1,82 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit"; import type { RootState } from "@shared/redux/store"; import type { RequestStatusT } from "@shared/types/request.types"; import type { StudentNoteT } from "./student-notes.types";
-export interface StudentNotesStateT { studentNotes: StudentNoteT[]; status: RequestStatusT; error: string | null; }
-const initialState: StudentNotesStateT = { studentNotes: [], status: "idle", error: null };
-const slice = createSlice({ name: "studentNotes", initialState, reducers: { loadPending(s) { s.status = "loading"; s.error = null; }, loadSuccess(s, a: PayloadAction<StudentNoteT[]>) { s.studentNotes = a.payload; s.status = "succeeded"; }, loadError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, entityCreated(s, a: PayloadAction<StudentNoteT>) { s.studentNotes.unshift(a.payload); s.status = "succeeded"; }, entityUpdated(s, a: PayloadAction<StudentNoteT>) { const idx = s.studentNotes.findIndex((p) => p.id === a.payload.id); if (idx !== -1) s.studentNotes[idx] = a.payload; s.status = "succeeded"; }, entityDeleted(s, a: PayloadAction<number>) { s.studentNotes = s.studentNotes.filter((p) => p.id !== a.payload); s.status = "succeeded"; }, mutationError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, clearError(s) { s.error = null; } } });
-export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearError } = slice.actions;
-export const selectStudentNotes = (s: RootState): StudentNoteT[] => s.grading.studentNotes.studentNotes;
-export const selectStudentNotesStatus = (s: RootState): RequestStatusT => s.grading.studentNotes.status;
-export const selectStudentNotesError = (s: RootState): string | null => s.grading.studentNotes.error;
-export const studentNotesReducer = slice.reducer; export default slice.reducer;
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { RootState } from "@shared/redux/store";
+import type { RequestStatusT } from "@shared/types/request.types";
+import type { StudentNoteT } from "./student-notes.types";
+
+export interface StudentNotesStateT {
+  studentNotes: StudentNoteT[];
+  status: RequestStatusT;
+  error: string | null;
+}
+
+const initialState: StudentNotesStateT = {
+  studentNotes: [],
+  status: "idle",
+  error: null,
+};
+
+const studentNotesSlice = createSlice({
+  name: "studentNotes",
+  initialState,
+  reducers: {
+    loadPending(state) {
+      state.status = "loading";
+      state.error = null;
+    },
+    loadSuccess(state, action: PayloadAction<StudentNoteT[]>) {
+      state.studentNotes = action.payload;
+      state.status = "succeeded";
+    },
+    loadError(state, action: PayloadAction<string>) {
+      state.status = "failed";
+      state.error = action.payload;
+    },
+    entityCreated(state, action: PayloadAction<StudentNoteT>) {
+      state.studentNotes.unshift(action.payload);
+      state.status = "succeeded";
+    },
+    entityUpdated(state, action: PayloadAction<StudentNoteT>) {
+      const index = state.studentNotes.findIndex(
+        (item) => item.id === action.payload.id,
+      );
+      if (index !== -1) state.studentNotes[index] = action.payload;
+      state.status = "succeeded";
+    },
+    entityDeleted(state, action: PayloadAction<number>) {
+      state.studentNotes = state.studentNotes.filter(
+        (item) => item.id !== action.payload,
+      );
+      state.status = "succeeded";
+    },
+    mutationError(state, action: PayloadAction<string>) {
+      state.status = "failed";
+      state.error = action.payload;
+    },
+    clearStudentNotesError(state) {
+      state.error = null;
+    },
+  },
+});
+
+export const {
+  loadPending,
+  loadSuccess,
+  loadError,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
+  mutationError,
+  clearStudentNotesError,
+} = studentNotesSlice.actions;
+
+export const selectStudentNotes = (state: RootState): StudentNoteT[] =>
+  state.grading.studentNotes.studentNotes;
+
+export const selectStudentNotesStatus = (state: RootState): RequestStatusT =>
+  state.grading.studentNotes.status;
+
+export const selectStudentNotesError = (state: RootState): string | null =>
+  state.grading.studentNotes.error;
+
+export const studentNotesReducer = studentNotesSlice.reducer;
+export default studentNotesSlice.reducer;

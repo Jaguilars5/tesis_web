@@ -1,6 +1,6 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
-
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { USER_ENDPOINTS } from "./users.constants";
 import type {
   UserCreateDataT,
@@ -17,12 +17,8 @@ class UserService implements UserServiceT {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
-      const searchQuery = params?.search
-        ? `&search=${encodeURIComponent(params.search)}`
-        : "";
-      const orderingQuery = params?.ordering
-        ? `&ordering=${encodeURIComponent(params.ordering)}`
-        : "";
+      const searchQuery = params?.search ? `&search=${encodeURIComponent(params.search)}` : "";
+      const orderingQuery = params?.ordering ? `&ordering=${encodeURIComponent(params.ordering)}` : "";
       const filters = params?.filters ?? {};
       const filterQuery = Object.entries(filters)
         .filter(([, value]) => value !== undefined && value !== null)
@@ -37,10 +33,10 @@ class UserService implements UserServiceT {
     }
   }
 
-  async get(id: UserGetParamsT): Promise<UserT> {
+  async get(params: UserGetParamsT): Promise<UserT> {
     try {
       const { data } = await apiClient.get<ResponseApi<UserT>>(
-        USER_ENDPOINTS.DETAIL(id),
+        USER_ENDPOINTS.GET(params.id),
       );
       return data.data;
     } catch (error) {
@@ -48,13 +44,13 @@ class UserService implements UserServiceT {
     }
   }
 
-  async create(payload: UserCreateDataT): Promise<UserT> {
+  async create(data: UserCreateDataT): Promise<UserT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<UserT>>(
-        USER_ENDPOINTS.LIST,
-        payload,
+      const { data: response } = await apiClient.post<ResponseApi<UserT>>(
+        USER_ENDPOINTS.CREATE,
+        data,
       );
-      return data.data;
+      return response.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
@@ -63,7 +59,7 @@ class UserService implements UserServiceT {
   async update(params: UserUpdateParamsT): Promise<UserT> {
     try {
       const { data } = await apiClient.patch<ResponseApi<UserT>>(
-        USER_ENDPOINTS.DETAIL(params.id),
+        USER_ENDPOINTS.UPDATE(params.id),
         params.data,
       );
       return data.data;
@@ -72,12 +68,14 @@ class UserService implements UserServiceT {
     }
   }
 
-  async softDelete(id: UserDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(params: UserDeleteParamsT): Promise<SoftDeleteResponseT> {
     try {
-      await apiClient.delete<ResponseApi<{ id: number }>>(
-        USER_ENDPOINTS.DETAIL(id),
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
+        USER_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
-      return { id };
+      return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

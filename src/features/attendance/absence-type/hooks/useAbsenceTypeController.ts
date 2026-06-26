@@ -1,0 +1,109 @@
+import { useCallback } from "react";
+import { useAppDispatch, useAppSelector } from "@shared/redux/hooks";
+import { toRejectValue } from "@shared/utils/validationErrors";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+import { absenceTypeService } from "../absence-type.service";
+import {
+  loadPending,
+  loadSuccess,
+  loadError,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
+  mutationError,
+  selectItems,
+  selectStatus,
+  selectError,
+} from "../absence-type.slice";
+import type {
+  AbsenceTypeListParamsT,
+  AbsenceTypeCreateParamsT,
+  AbsenceTypeT,
+  AbsenceTypeUpdateParamsT,
+  AbsenceTypeDeleteParamsT,
+} from "../absence-type.types";
+
+export const useAbsenceTypeController = () => {
+  const dispatch = useAppDispatch();
+  const items = useAppSelector(selectItems);
+  const status = useAppSelector(selectStatus);
+  const error = useAppSelector(selectError);
+
+  const loadItems = useCallback(
+    async (params?: AbsenceTypeListParamsT) => {
+      dispatch(loadPending());
+      try {
+        const result = await absenceTypeService.list(
+          params ?? { page: 1, pageSize: 100 },
+        );
+        dispatch(loadSuccess(result));
+      } catch (err) {
+        dispatch(
+          loadError(
+            err instanceof Error ? err.message : "Error al cargar tipos de ausencia",
+          ),
+        );
+      }
+    },
+    [dispatch],
+  );
+
+  const createItem = useCallback(
+    async (params: AbsenceTypeCreateParamsT): Promise<AbsenceTypeT> => {
+      try {
+        const created = await absenceTypeService.create(params);
+        dispatch(entityCreated(created));
+        return created;
+      } catch (err) {
+        const rv = toRejectValue(err);
+        dispatch(mutationError(rv.msg));
+        throw rv;
+      }
+    },
+    [dispatch],
+  );
+
+  const updateItem = useCallback(
+    async (params: AbsenceTypeUpdateParamsT): Promise<AbsenceTypeT> => {
+      try {
+        const updated = await absenceTypeService.update(params);
+        dispatch(entityUpdated(updated));
+        return updated;
+      } catch (err) {
+        const rv = toRejectValue(err);
+        dispatch(mutationError(rv.msg));
+        throw rv;
+      }
+    },
+    [dispatch],
+  );
+
+  const deleteItem = useCallback(
+    async (params: AbsenceTypeDeleteParamsT): Promise<SoftDeleteResponseT> => {
+      try {
+        const response = await absenceTypeService.softDelete(params);
+        if (response.is_active === false) {
+          dispatch(entityDeleted(response.id));
+        }
+        return response;
+      } catch (err) {
+        const rv = toRejectValue(err);
+        dispatch(mutationError(rv.msg));
+        throw rv;
+      }
+    },
+    [dispatch],
+  );
+
+  return {
+    items,
+    isLoading: status === "loading",
+    error,
+    loadItems,
+    createItem,
+    updateItem,
+    deleteItem,
+  };
+};
+
+export type AbsenceTypeControllerT = ReturnType<typeof useAbsenceTypeController>;

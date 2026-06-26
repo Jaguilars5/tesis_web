@@ -1,19 +1,48 @@
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface IncidentTypeT {
-  id: number; code: string; name: string; description: string; is_active: boolean; created_at: string; updated_at: string;
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
+
 export type IncidentTypeOrderingT = "name" | "-name" | "code" | "-code";
-export interface IncidentTypeListParamsT { page?: number; pageSize?: number; search?: string; ordering?: IncidentTypeOrderingT; }
-export type IncidentTypeCreateDataT = Omit<IncidentTypeT, "id" | "is_active" | "created_at" | "updated_at">;
-export type IncidentTypeCreateParamsT = IncidentTypeCreateDataT;
-export type IncidentTypeUpdateDataT = Partial<Omit<IncidentTypeT, "id">>;
-export interface IncidentTypeUpdateParamsT { id: number; data: IncidentTypeUpdateDataT; }
-export type IncidentTypeGetParamsT = number;
-export type IncidentTypeDeleteParamsT = number;
+
+export interface IncidentTypeListParamsT {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  ordering?: IncidentTypeOrderingT;
+}
+
+export interface IncidentTypeFormValues {
+  code: string;
+  name: string;
+  description: string;
+}
+
+export type IncidentTypeCreateParamsT = IncidentTypeFormValues;
+export type IncidentTypeUpdateDataT = Partial<IncidentTypeFormValues>;
+export interface IncidentTypeUpdateParamsT {
+  id: number;
+  data: IncidentTypeUpdateDataT;
+}
+export interface IncidentTypeGetParamsT {
+  id: number;
+}
+export interface IncidentTypeDeleteParamsT {
+  id: number;
+  confirm?: boolean;
+}
+
 export interface IncidentTypeServiceT {
   list(params?: IncidentTypeListParamsT): Promise<IncidentTypeT[]>;
-  get(id: IncidentTypeGetParamsT): Promise<IncidentTypeT>;
-  create(data: IncidentTypeCreateDataT): Promise<IncidentTypeT>;
+  get(params: IncidentTypeGetParamsT): Promise<IncidentTypeT>;
+  create(params: IncidentTypeCreateParamsT): Promise<IncidentTypeT>;
   update(params: IncidentTypeUpdateParamsT): Promise<IncidentTypeT>;
-  softDelete(id: IncidentTypeDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: IncidentTypeDeleteParamsT): Promise<SoftDeleteResponseT>;
 }
-export interface IncidentTypeFormValues { code: string; name: string; description: string; is_active: boolean; }

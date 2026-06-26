@@ -1,8 +1,9 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { ABSENCE_TYPE_ENDPOINTS } from "./absence-type.constants";
 import type {
-  AbsenceTypeCreateDataT,
+  AbsenceTypeCreateParamsT,
   AbsenceTypeDeleteParamsT,
   AbsenceTypeGetParamsT,
   AbsenceTypeListParamsT,
@@ -14,32 +15,42 @@ import type {
 class AbsenceTypeService implements AbsenceTypeServiceT {
   async list(params?: AbsenceTypeListParamsT): Promise<AbsenceTypeT[]> {
     try {
-      const queryParams = new URLSearchParams();
-      if (params?.page) queryParams.set("page", String(params.page));
-      if (params?.pageSize) queryParams.set("page_size", String(params.pageSize));
-      if (params?.search) queryParams.set("search", params.search);
-      if (params?.ordering) queryParams.set("ordering", params.ordering);
-      const query = queryParams.toString();
-      const url = query ? `${ABSENCE_TYPE_ENDPOINTS.LIST}?${query}` : ABSENCE_TYPE_ENDPOINTS.LIST;
-      const { data } = await apiClient.get<ResponseApi<PaginatedData<AbsenceTypeT>>>(url);
+      const page = params?.page ?? 1;
+      const pageSize = params?.pageSize ?? 100;
+      const searchQuery = params?.search
+        ? `&search=${encodeURIComponent(params.search)}`
+        : "";
+      const orderingQuery = params?.ordering
+        ? `&ordering=${encodeURIComponent(params.ordering)}`
+        : "";
+      const { data } = await apiClient.get<
+        ResponseApi<PaginatedData<AbsenceTypeT>>
+      >(
+        `${ABSENCE_TYPE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+      );
       return data.data.results;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
   }
 
-  async get(id: AbsenceTypeGetParamsT): Promise<AbsenceTypeT> {
+  async get(params: AbsenceTypeGetParamsT): Promise<AbsenceTypeT> {
     try {
-      const { data } = await apiClient.get<ResponseApi<AbsenceTypeT>>(ABSENCE_TYPE_ENDPOINTS.DETAIL(id));
+      const { data } = await apiClient.get<ResponseApi<AbsenceTypeT>>(
+        ABSENCE_TYPE_ENDPOINTS.GET(params.id),
+      );
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
   }
 
-  async create(payload: AbsenceTypeCreateDataT): Promise<AbsenceTypeT> {
+  async create(payload: AbsenceTypeCreateParamsT): Promise<AbsenceTypeT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<AbsenceTypeT>>(ABSENCE_TYPE_ENDPOINTS.LIST, payload);
+      const { data } = await apiClient.post<ResponseApi<AbsenceTypeT>>(
+        ABSENCE_TYPE_ENDPOINTS.CREATE,
+        payload,
+      );
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
@@ -49,7 +60,7 @@ class AbsenceTypeService implements AbsenceTypeServiceT {
   async update(params: AbsenceTypeUpdateParamsT): Promise<AbsenceTypeT> {
     try {
       const { data } = await apiClient.patch<ResponseApi<AbsenceTypeT>>(
-        ABSENCE_TYPE_ENDPOINTS.DETAIL(params.id),
+        ABSENCE_TYPE_ENDPOINTS.UPDATE(params.id),
         params.data,
       );
       return data.data;
@@ -58,10 +69,15 @@ class AbsenceTypeService implements AbsenceTypeServiceT {
     }
   }
 
-  async delete(id: AbsenceTypeDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(
+    params: AbsenceTypeDeleteParamsT,
+  ): Promise<SoftDeleteResponseT> {
     try {
-      await apiClient.delete(ABSENCE_TYPE_ENDPOINTS.DETAIL(id));
-      return { id };
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<
+        ResponseApi<SoftDeleteResponseT>
+      >(ABSENCE_TYPE_ENDPOINTS.SOFT_DELETE(params.id), body);
+      return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

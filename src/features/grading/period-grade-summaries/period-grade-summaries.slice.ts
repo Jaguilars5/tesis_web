@@ -1,9 +1,82 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit"; import type { RootState } from "@shared/redux/store"; import type { RequestStatusT } from "@shared/types/request.types"; import type { PeriodGradeSummaryT } from "./period-grade-summaries.types";
-export interface PeriodGradeSummariesStateT { periodGradeSummaries: PeriodGradeSummaryT[]; status: RequestStatusT; error: string | null; }
-const initialState: PeriodGradeSummariesStateT = { periodGradeSummaries: [], status: "idle", error: null };
-const slice = createSlice({ name: "periodGradeSummaries", initialState, reducers: { loadPending(s) { s.status = "loading"; s.error = null; }, loadSuccess(s, a: PayloadAction<PeriodGradeSummaryT[]>) { s.periodGradeSummaries = a.payload; s.status = "succeeded"; }, loadError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, entityCreated(s, a: PayloadAction<PeriodGradeSummaryT>) { s.periodGradeSummaries.unshift(a.payload); s.status = "succeeded"; }, entityUpdated(s, a: PayloadAction<PeriodGradeSummaryT>) { const idx = s.periodGradeSummaries.findIndex((p) => p.id === a.payload.id); if (idx !== -1) s.periodGradeSummaries[idx] = a.payload; s.status = "succeeded"; }, entityDeleted(s, a: PayloadAction<number>) { s.periodGradeSummaries = s.periodGradeSummaries.filter((p) => p.id !== a.payload); s.status = "succeeded"; }, mutationError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; }, clearError(s) { s.error = null; } } });
-export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearError } = slice.actions;
-export const selectPeriodGradeSummaries = (s: RootState): PeriodGradeSummaryT[] => s.grading.periodGradeSummaries.periodGradeSummaries;
-export const selectPeriodGradeSummariesStatus = (s: RootState): RequestStatusT => s.grading.periodGradeSummaries.status;
-export const selectPeriodGradeSummariesError = (s: RootState): string | null => s.grading.periodGradeSummaries.error;
-export const periodGradeSummariesReducer = slice.reducer; export default slice.reducer;
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { RootState } from "@shared/redux/store";
+import type { RequestStatusT } from "@shared/types/request.types";
+import type { PeriodGradeSummaryT } from "./period-grade-summaries.types";
+
+export interface PeriodGradeSummariesStateT {
+  periodGradeSummaries: PeriodGradeSummaryT[];
+  status: RequestStatusT;
+  error: string | null;
+}
+
+const initialState: PeriodGradeSummariesStateT = {
+  periodGradeSummaries: [],
+  status: "idle",
+  error: null,
+};
+
+const periodGradeSummariesSlice = createSlice({
+  name: "periodGradeSummaries",
+  initialState,
+  reducers: {
+    loadPending(state) {
+      state.status = "loading";
+      state.error = null;
+    },
+    loadSuccess(state, action: PayloadAction<PeriodGradeSummaryT[]>) {
+      state.periodGradeSummaries = action.payload;
+      state.status = "succeeded";
+    },
+    loadError(state, action: PayloadAction<string>) {
+      state.status = "failed";
+      state.error = action.payload;
+    },
+    entityCreated(state, action: PayloadAction<PeriodGradeSummaryT>) {
+      state.periodGradeSummaries.unshift(action.payload);
+      state.status = "succeeded";
+    },
+    entityUpdated(state, action: PayloadAction<PeriodGradeSummaryT>) {
+      const index = state.periodGradeSummaries.findIndex(
+        (item) => item.id === action.payload.id,
+      );
+      if (index !== -1) state.periodGradeSummaries[index] = action.payload;
+      state.status = "succeeded";
+    },
+    entityDeleted(state, action: PayloadAction<number>) {
+      state.periodGradeSummaries = state.periodGradeSummaries.filter(
+        (item) => item.id !== action.payload,
+      );
+      state.status = "succeeded";
+    },
+    mutationError(state, action: PayloadAction<string>) {
+      state.status = "failed";
+      state.error = action.payload;
+    },
+    clearPeriodGradeSummariesError(state) {
+      state.error = null;
+    },
+  },
+});
+
+export const {
+  loadPending,
+  loadSuccess,
+  loadError,
+  entityCreated,
+  entityUpdated,
+  entityDeleted,
+  mutationError,
+  clearPeriodGradeSummariesError,
+} = periodGradeSummariesSlice.actions;
+
+export const selectPeriodGradeSummaries = (state: RootState): PeriodGradeSummaryT[] =>
+  state.grading.periodGradeSummaries.periodGradeSummaries;
+
+export const selectPeriodGradeSummariesStatus = (state: RootState): RequestStatusT =>
+  state.grading.periodGradeSummaries.status;
+
+export const selectPeriodGradeSummariesError = (state: RootState): string | null =>
+  state.grading.periodGradeSummaries.error;
+
+export const periodGradeSummariesReducer = periodGradeSummariesSlice.reducer;
+export default periodGradeSummariesSlice.reducer;

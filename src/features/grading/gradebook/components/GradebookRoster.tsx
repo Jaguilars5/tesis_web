@@ -15,12 +15,12 @@ interface GradebookRosterProps {
   updateObservation: (enrollmentId: number, observation: string) => void;
 }
 
-export const GradebookRoster = ({
+export const GradebookRoster: React.FC<GradebookRosterProps> = ({
   roster,
   maxScore,
   updateScore,
   updateObservation,
-}: GradebookRosterProps) => {
+}) => {
   const columns: TableColumnProps<GradeRosterEntryT>[] = [
     {
       key: "index",
@@ -50,12 +50,7 @@ export const GradebookRoster = ({
           max={maxScore ?? undefined}
           step={0.1}
           value={entry.numericScore ?? ""}
-          onChange={(e) =>
-            updateScore(
-              entry.enrollmentId,
-              e.target.value === "" ? null : Number(e.target.value),
-            )
-          }
+          onChange={(e) => updateScore(entry.enrollmentId, e.target.value === "" ? null : Number(e.target.value))}
           placeholder="—"
           className="block w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />

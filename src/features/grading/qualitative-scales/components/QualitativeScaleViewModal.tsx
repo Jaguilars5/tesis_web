@@ -1,11 +1,132 @@
-import { BookOpen, FileText, Percent } from "lucide-react"; import { useEffect, useReducer } from "react"; import { qualitativeScaleService } from "../qualitative-scales.service"; import type { QualitativeScaleT } from "../qualitative-scales.types";
-interface State { data: QualitativeScaleT | null; loading: boolean; error: string | null; } type Action = { type: "loading" } | { type: "success"; data: QualitativeScaleT } | { type: "error"; error: string };
-function reducer(_s: State, a: Action): State { switch (a.type) { case "loading": return { data: null, loading: true, error: null }; case "success": return { data: a.data, loading: false, error: null }; case "error": return { data: null, loading: false, error: a.error }; } }
-interface Props { isOpen: boolean; qualitativeScaleId: number | null; onClose: () => void; }
-export const QualitativeScaleViewModal = ({ isOpen, qualitativeScaleId, onClose }: Props) => {
-  const [state, sd] = useReducer(reducer, { data: null, loading: false, error: null });
-  useEffect(() => { if (isOpen && qualitativeScaleId !== null) { sd({ type: "loading" }); qualitativeScaleService.get(qualitativeScaleId).then((data) => sd({ type: "success", data })).catch((err: Error) => sd({ type: "error", error: err.message })); } }, [isOpen, qualitativeScaleId]);
+import { BookOpen, FileText, Percent, X } from "lucide-react";
+import { useEffect, useReducer } from "react";
+import { DetailRow } from "@shared/components/DetailRow";
+import { qualitativeScaleService } from "../qualitative-scales.service";
+import type { QualitativeScaleT } from "../qualitative-scales.types";
+
+interface State {
+  data: QualitativeScaleT | null;
+  loading: boolean;
+  error: string | null;
+}
+
+type Action =
+  | { type: "loading" }
+  | { type: "success"; data: QualitativeScaleT }
+  | { type: "error"; error: string };
+
+function viewReducer(_state: State, action: Action): State {
+  switch (action.type) {
+    case "loading":
+      return { data: null, loading: true, error: null };
+    case "success":
+      return { data: action.data, loading: false, error: null };
+    case "error":
+      return { data: null, loading: false, error: action.error };
+  }
+}
+
+interface Props {
+  isOpen: boolean;
+  qualitativeScaleId: number | null;
+  onClose: () => void;
+}
+
+export const QualitativeScaleViewModal: React.FC<Props> = ({
+  isOpen,
+  qualitativeScaleId,
+  onClose,
+}) => {
+  const [state, dispatch] = useReducer(viewReducer, {
+    data: null,
+    loading: false,
+    error: null,
+  });
+
+  useEffect(() => {
+    if (isOpen && qualitativeScaleId !== null) {
+      dispatch({ type: "loading" });
+      qualitativeScaleService
+        .get({ id: qualitativeScaleId })
+        .then((data) => dispatch({ type: "success", data }))
+        .catch((err: Error) =>
+          dispatch({ type: "error", error: err.message }),
+        );
+    }
+  }, [isOpen, qualitativeScaleId]);
+
   if (!isOpen) return null;
-  return (<div className="fixed inset-0 z-50 flex items-center justify-center p-4"><div className="absolute inset-0 bg-black/40" onClick={onClose} /><div className="relative w-full max-w-lg animate-slide-up overflow-hidden rounded-xl bg-white shadow-xl"><div className="flex items-center justify-between border-b border-slate-200 px-6 py-4"><div><h3 className="text-lg font-semibold text-slate-900">Detalle de Escala</h3><p className="mt-0.5 text-sm text-slate-500">Información de la escala cualitativa</p></div><button type="button" onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"><svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div><div className="space-y-5 p-6">{state.loading && (<div className="flex animate-pulse flex-col gap-4 py-4">{[1, 2, 3].map((i) => (<div key={i} className="flex items-start gap-3"><div className="size-9 rounded-lg bg-slate-100" /><div className="flex-1 space-y-2"><div className="h-3 w-20 rounded bg-slate-100" /><div className="h-4 w-48 rounded bg-slate-100" /></div></div>))}</div>)}{state.error && <div className="flex items-center gap-2.5 rounded-lg bg-red-50 p-4 text-sm text-red-600"><svg className="size-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>{state.error}</div>}{state.data && (<div className="space-y-5"><DetailRow icon={<FileText className="size-4" />} label="Código" value={state.data.code} /><DetailRow icon={<BookOpen className="size-4" />} label="Nombre" value={state.data.name} /><DetailRow icon={<FileText className="size-4" />} label="Descripción" value={state.data.description} /><DetailRow icon={<Percent className="size-4" />} label="Equivalencia" value={String(state.data.numeric_equivalence)} /><div className="flex items-start gap-3"><span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500"><span className="size-2 rounded-full bg-current" /></span><div className="min-w-0 flex-1"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Estado</p><span className={`mt-1 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium ${state.data.is_active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}><span className={`size-1.5 rounded-full ${state.data.is_active ? "bg-emerald-500" : "bg-slate-400"}`} />{state.data.is_active ? "Activo" : "Inactivo"}</span></div></div></div>)}</div><div className="flex items-center justify-end border-t border-slate-200 px-6 py-4"><button type="button" onClick={onClose} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cerrar</button></div></div></div>);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative w-full max-w-lg animate-slide-up overflow-hidden rounded-xl bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">
+              Detalle de Escala
+            </h3>
+            <p className="mt-0.5 text-sm text-slate-500">
+              Información de la escala cualitativa
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
+
+        <div className="space-y-5 p-6">
+          {state.loading && (
+            <div className="flex animate-pulse flex-col gap-4 py-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="size-9 rounded-lg bg-slate-100" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 w-20 rounded bg-slate-100" />
+                    <div className="h-4 w-48 rounded bg-slate-100" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {state.error && (
+            <div className="flex items-center gap-2.5 rounded-lg bg-red-50 p-4 text-sm text-red-600">
+              <X className="size-4 shrink-0" />
+              {state.error}
+            </div>
+          )}
+
+          {state.data && (
+            <div className="space-y-5">
+              <DetailRow
+                icon={<FileText className="size-4" />}
+                label="Código"
+                value={state.data.code}
+              />
+              <DetailRow
+                icon={<BookOpen className="size-4" />}
+                label="Nombre"
+                value={state.data.name}
+              />
+              <DetailRow
+                icon={<FileText className="size-4" />}
+                label="Descripción"
+                value={state.data.description}
+              />
+              <DetailRow
+                icon={<Percent className="size-4" />}
+                label="Equivalencia"
+                value={String(state.data.numeric_equivalence)}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 };
-function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) { return (<div className="flex items-start gap-3"><span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">{icon}</span><div className="min-w-0 flex-1"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</p><p className="mt-1 text-sm font-medium text-slate-900">{value}</p></div></div>); }

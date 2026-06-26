@@ -1,9 +1,85 @@
-import { apiClient, getApiErrorMessage } from "@shared/services/api.client"; import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types"; import { STUDENT_NOTES_ENDPOINTS } from "./student-notes.constants"; import type { StudentNoteCreateDataT, StudentNoteDeleteParamsT, StudentNoteGetParamsT, StudentNoteListParamsT, StudentNoteServiceT, StudentNoteT, StudentNoteUpdateParamsT } from "./student-notes.types";
+import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
+import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+import { STUDENT_NOTES_ENDPOINTS } from "./student-notes.constants";
+import type {
+  StudentNoteCreateDataT,
+  StudentNoteDeleteParamsT,
+  StudentNoteGetParamsT,
+  StudentNoteListParamsT,
+  StudentNoteServiceT,
+  StudentNoteT,
+  StudentNoteUpdateParamsT,
+} from "./student-notes.types";
+
 class StudentNoteService implements StudentNoteServiceT {
-  async list(p?: StudentNoteListParamsT): Promise<StudentNoteT[]> { try { const pg = p?.page ?? 1; const ps = p?.pageSize ?? 100; const sq = p?.search ? `&search=${encodeURIComponent(p.search)}` : ""; const oq = p?.ordering ? `&ordering=${encodeURIComponent(p.ordering)}` : ""; const filters = p?.filters ?? {}; const fq = Object.entries(filters).filter(([, v]) => v !== undefined && v !== null).map(([k, v]) => `&${k}=${encodeURIComponent(String(v))}`).join(""); const { data } = await apiClient.get<ResponseApi<PaginatedData<StudentNoteT>>>(`${STUDENT_NOTES_ENDPOINTS.LIST}?page=${pg}&page_size=${ps}${sq}${oq}${fq}`); return data.data.results; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async get(id: StudentNoteGetParamsT): Promise<StudentNoteT> { try { const { data } = await apiClient.get<ResponseApi<StudentNoteT>>(STUDENT_NOTES_ENDPOINTS.DETAIL(id)); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async create(d: StudentNoteCreateDataT): Promise<StudentNoteT> { try { const { data } = await apiClient.post<ResponseApi<StudentNoteT>>(STUDENT_NOTES_ENDPOINTS.LIST, d); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async update(p: StudentNoteUpdateParamsT): Promise<StudentNoteT> { try { const { data } = await apiClient.patch<ResponseApi<StudentNoteT>>(STUDENT_NOTES_ENDPOINTS.DETAIL(p.id), p.data); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
-  async softDelete(id: StudentNoteDeleteParamsT): Promise<{ id: number }> { try { const { data } = await apiClient.post<ResponseApi<{ id: number }>>(STUDENT_NOTES_ENDPOINTS.SOFT_DELETE(id)); return data.data; } catch (error) { throw new Error(getApiErrorMessage(error), { cause: error }); } }
+  async list(params?: StudentNoteListParamsT): Promise<StudentNoteT[]> {
+    try {
+      const page = params?.page ?? 1;
+      const pageSize = params?.pageSize ?? 100;
+      const searchQuery = params?.search ? `&search=${encodeURIComponent(params.search)}` : "";
+      const orderingQuery = params?.ordering ? `&ordering=${encodeURIComponent(params.ordering)}` : "";
+      const filters = params?.filters ?? {};
+      const filtersQuery = Object.entries(filters)
+        .filter(([, value]) => value !== undefined && value !== null)
+        .map(([key, value]) => `&${key}=${encodeURIComponent(String(value))}`)
+        .join("");
+      const { data } = await apiClient.get<ResponseApi<PaginatedData<StudentNoteT>>>(
+        `${STUDENT_NOTES_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
+      );
+      return data.data.results;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async get(params: StudentNoteGetParamsT): Promise<StudentNoteT> {
+    try {
+      const { data } = await apiClient.get<ResponseApi<StudentNoteT>>(
+        STUDENT_NOTES_ENDPOINTS.GET(params.id),
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async create(data: StudentNoteCreateDataT): Promise<StudentNoteT> {
+    try {
+      const { data: response } = await apiClient.post<ResponseApi<StudentNoteT>>(
+        STUDENT_NOTES_ENDPOINTS.CREATE,
+        data,
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async update(params: StudentNoteUpdateParamsT): Promise<StudentNoteT> {
+    try {
+      const { data } = await apiClient.patch<ResponseApi<StudentNoteT>>(
+        STUDENT_NOTES_ENDPOINTS.UPDATE(params.id),
+        params.data,
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async softDelete(params: StudentNoteDeleteParamsT): Promise<SoftDeleteResponseT> {
+    try {
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
+        STUDENT_NOTES_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
 }
+
 export const studentNoteService = new StudentNoteService();

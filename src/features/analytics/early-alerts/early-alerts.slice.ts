@@ -34,11 +34,11 @@ const earlyAlertSlice = createSlice({
       state.status = "succeeded";
     },
     mutationError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
-    clearError(state) { state.error = null; },
+    clearEarlyAlertError(state) { state.error = null; },
   },
 });
 
-export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearError } = earlyAlertSlice.actions;
+export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearEarlyAlertError } = earlyAlertSlice.actions;
 
 export const selectItems = (state: RootState): EarlyAlertT[] => state.analytics.earlyAlerts.items;
 export const selectStatus = (state: RootState): RequestStatusT => state.analytics.earlyAlerts.status;

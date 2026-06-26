@@ -1,26 +1,86 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
-import { useEffect } from "react";
+
 import { checkboxClassname, inputClassname, selectClassname } from "@app/styles/styles";
 import { CustomCheckbox, CustomInput, CustomSelect } from "@shared/components/Form";
+import { ErrrosInForm } from "@shared/components/ErrrosInForm";
+
 import { conductIncidentSchema } from "../conduct-incident.utils";
-import type { SubmitErrorState } from "../conduct-incident.controller";
+
+import type { SubmitErrorState } from "@shared/utils/validationErrors";
 import type { ConductIncidentFormValues, ConductIncidentT } from "../conduct-incident.types";
 
 const getFieldLabel = (field: string): string => {
-  const labels: Record<string, string> = { incident_type: "Tipo de incidente", severity: "Severidad", academic_period: "Período académico", enrollment: "Matrícula", incident_date: "Fecha", description: "Descripción", actions_taken: "Acciones tomadas", family_notified: "Familia notificada", non_field_errors: "Error general" };
+  const labels: Record<string, string> = {
+    incident_type: "Tipo de incidente",
+    severity: "Severidad",
+    academic_period: "Período académico",
+    enrollment: "Matrícula",
+    incident_date: "Fecha",
+    description: "Descripción",
+    actions_taken: "Acciones tomadas",
+    family_notified: "Familia notificada",
+    non_field_errors: "Error general",
+  };
   return labels[field] || field;
 };
 
-interface Props { isOpen: boolean; onClose: () => void; isEdit: boolean; editingIncident: ConductIncidentT | null; onSubmit: (values: ConductIncidentFormValues) => Promise<void>; submitErrors?: SubmitErrorState; incidentTypeOptions: { label: string; value: string }[]; severityOptions: { label: string; value: string }[]; academicPeriodOptions: { label: string; value: string }[]; enrollmentOptions: { label: string; value: string }[]; }
+interface ConductIncidentFormModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  isEdit: boolean;
+  editingIncident: ConductIncidentT | null;
+  onSubmit: (values: ConductIncidentFormValues) => Promise<void>;
+  submitErrors?: SubmitErrorState;
+  incidentTypeOptions: { label: string; value: string }[];
+  severityOptions: { label: string; value: string }[];
+  academicPeriodOptions: { label: string; value: string }[];
+  enrollmentOptions: { label: string; value: string }[];
+}
 
-export const ConductIncidentFormModal = ({ isOpen, onClose, isEdit, editingIncident, onSubmit, submitErrors = { general: [], validation: {} }, incidentTypeOptions, severityOptions, academicPeriodOptions, enrollmentOptions }: Props) => {
+export const ConductIncidentFormModal: React.FC<ConductIncidentFormModalProps> = ({
+  isOpen,
+  onClose,
+  isEdit,
+  editingIncident,
+  onSubmit,
+  submitErrors = { general: [], validation: {} },
+  incidentTypeOptions,
+  severityOptions,
+  academicPeriodOptions,
+  enrollmentOptions,
+}) => {
   const getInitialValues = (): ConductIncidentFormValues => {
-    if (editingIncident) return { incident_type: editingIncident.incident_type, severity: editingIncident.severity, academic_period: editingIncident.academic_period, enrollment: editingIncident.enrollment, incident_date: editingIncident.incident_date, description: editingIncident.description, actions_taken: editingIncident.actions_taken, family_notified: editingIncident.family_notified };
-    return { incident_type: null, severity: null, academic_period: null, enrollment: null, incident_date: "", description: "", actions_taken: "", family_notified: false };
+    if (editingIncident) {
+      return {
+        incident_type: editingIncident.incident_type,
+        severity: editingIncident.severity,
+        academic_period: editingIncident.academic_period,
+        enrollment: editingIncident.enrollment,
+        incident_date: editingIncident.incident_date,
+        description: editingIncident.description,
+        actions_taken: editingIncident.actions_taken,
+        family_notified: editingIncident.family_notified,
+      };
+    }
+    return {
+      incident_type: null,
+      severity: null,
+      academic_period: null,
+      enrollment: null,
+      incident_date: "",
+      description: "",
+      actions_taken: "",
+      family_notified: false,
+    };
   };
-  const formik = useFormik<ConductIncidentFormValues>({ initialValues: getInitialValues(), validationSchema: conductIncidentSchema, enableReinitialize: true, onSubmit });
-  useEffect(() => { if (isOpen && editingIncident) formik.setValues(getInitialValues()); }, [isOpen, editingIncident]);
+
+  const formik = useFormik<ConductIncidentFormValues>({
+    initialValues: getInitialValues(),
+    validationSchema: conductIncidentSchema,
+    onSubmit,
+  });
+
   if (!isOpen) return null;
 
   return (
@@ -28,16 +88,15 @@ export const ConductIncidentFormModal = ({ isOpen, onClose, isEdit, editingIncid
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative w-full max-w-lg animate-slide-up overflow-hidden rounded-xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-          <div><h3 className="text-lg font-semibold text-slate-900">{isEdit ? "Editar Incidente" : "Nuevo Incidente"}</h3><p className="mt-0.5 text-sm text-slate-500">{isEdit ? "Actualice los datos" : "Reporte un nuevo incidente de conducta"}</p></div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">{isEdit ? "Editar Incidente" : "Nuevo Incidente"}</h3>
+            <p className="mt-0.5 text-sm text-slate-500">{isEdit ? "Actualice los datos" : "Reporte un nuevo incidente de conducta"}</p>
+          </div>
           <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"><X className="size-5" /></button>
         </div>
 
         {(submitErrors.general.length > 0 || Object.keys(submitErrors.validation).length > 0) && (
-          <div className="mx-5 mt-3 rounded-lg border border-red-300 bg-red-50 p-4 shadow-sm">
-            <div className="flex items-start gap-2"><svg className="mt-0.5 size-5 flex-shrink-0 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
-              <div className="flex-1"><p className="mb-2 text-sm font-semibold text-red-800">Error al guardar</p>{submitErrors.general.length > 0 && (<ul className="mb-2 space-y-1">{submitErrors.general.map((err, i) => (<li key={i} className="text-sm text-red-700">• {err}</li>))}</ul>)}{Object.keys(submitErrors.validation).length > 0 && (<ul className="space-y-1">{Object.entries(submitErrors.validation).map(([f, m]) => (<li key={f} className="text-sm text-red-700"><span className="font-semibold">{getFieldLabel(f)}:</span> {m}</li>))}</ul>)}</div>
-            </div>
-          </div>
+          <ErrrosInForm submitErrors={submitErrors} getFieldLabel={getFieldLabel} />
         )}
 
         <form onSubmit={formik.handleSubmit} className="space-y-4 p-5">

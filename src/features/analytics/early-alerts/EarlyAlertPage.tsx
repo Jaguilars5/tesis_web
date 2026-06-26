@@ -1,10 +1,13 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import {
-  useEarlyAlertController,
-  useEarlyAlertForm,
-} from "./early-alerts.controller";
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+
+import { EARLY_ALERT_PERMISSIONS } from "./early-alerts.constants";
+import { useEarlyAlertController } from "./hooks/useEarlyAlertController";
+import { useEarlyAlertForm } from "./hooks/useEarlyAlertForm";
 import { EarlyAlertDeleteModal } from "./components/EarlyAlertDeleteModal";
 import { EarlyAlertFormModal } from "./components/EarlyAlertFormModal";
 import { EarlyAlertMarkAttendedModal } from "./components/EarlyAlertMarkAttendedModal";
@@ -26,13 +29,16 @@ export default function EarlyAlertPage() {
     handleSubmit,
   } = useEarlyAlertForm({ create, update });
 
+  const permissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(permissions, EARLY_ALERT_PERMISSIONS.CREATE);
+  const canEdit = hasPermission(permissions, EARLY_ALERT_PERMISSIONS.UPDATE);
+  const canDelete = hasPermission(permissions, EARLY_ALERT_PERMISSIONS.DELETE);
+
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [deleting, setDeleting] = useState<EarlyAlertT | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [markingAttended, setMarkingAttended] = useState<EarlyAlertT | null>(
-    null,
-  );
+  const [markingAttended, setMarkingAttended] = useState<EarlyAlertT | null>(null);
   const [isMarkAttendedOpen, setIsMarkAttendedOpen] = useState(false);
 
   const openViewModal = useCallback((entity: EarlyAlertT) => {
@@ -51,12 +57,6 @@ export default function EarlyAlertPage() {
     setIsDeleteOpen(false);
     setDeleting(null);
   }, []);
-  const handleDeleteConfirm = useCallback(
-    async (id: number) => {
-      await remove(id);
-    },
-    [remove],
-  );
   const openMarkAttended = useCallback((entity: EarlyAlertT) => {
     setMarkingAttended(entity);
     setIsMarkAttendedOpen(true);
@@ -77,11 +77,13 @@ export default function EarlyAlertPage() {
             Gestiona las alertas tempranas del sistema
           </p>
         </div>
-        {/* <button type="button" onClick={() => openModal()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover">
-          <Plus className="size-4" />
-          Nueva Alerta
-        </button> */}
+        {canCreate && (
+          <button type="button" onClick={() => openModal()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover">
+            <Plus className="size-4" />
+            Nueva Alerta
+          </button>
+        )}
       </div>
 
       <EarlyAlertTable
@@ -92,9 +94,12 @@ export default function EarlyAlertPage() {
         onView={openViewModal}
         onDelete={openDeleteModal}
         onMarkAttended={openMarkAttended}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       <EarlyAlertFormModal
+        key={editing?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
@@ -113,7 +118,7 @@ export default function EarlyAlertPage() {
         isOpen={isDeleteOpen}
         entity={deleting}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={remove}
       />
 
       <EarlyAlertMarkAttendedModal

@@ -1,8 +1,11 @@
+export const BEHAVIOR_EVALUATION_BASE_URL = "/api/behavior/behavior-evaluations/";
+
 export const BEHAVIOR_EVALUATION_ENDPOINTS = {
-  LIST: "/api/behavior/behavior-evaluations/",
-  DETAIL: (id: number) => `/api/behavior/behavior-evaluations/${id}/`,
-  CALCULATE: "/api/behavior/behavior-evaluations/calculate/",
-  RELATED_INCIDENTS: (id: number) => `/api/behavior/behavior-evaluations/${id}/related_incidents/`,
+  LIST: BEHAVIOR_EVALUATION_BASE_URL,
+  GET: (id: number) => `${BEHAVIOR_EVALUATION_BASE_URL}${id}/`,
+  UPDATE: (id: number) => `${BEHAVIOR_EVALUATION_BASE_URL}${id}/`,
+  CALCULATE: `${BEHAVIOR_EVALUATION_BASE_URL}calculate/`,
+  RELATED_INCIDENTS: (id: number) => `${BEHAVIOR_EVALUATION_BASE_URL}${id}/related_incidents/`,
 } as const;
 
 export const BEHAVIOR_EVALUATION_PERMISSIONS = {

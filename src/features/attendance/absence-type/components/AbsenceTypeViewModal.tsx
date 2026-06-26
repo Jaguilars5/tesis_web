@@ -1,6 +1,7 @@
 import { BookOpen, FileText, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
 
+import { DetailRow } from "@shared/components/DetailRow";
 import { absenceTypeService } from "../absence-type.service";
 
 import type { AbsenceTypeT } from "../absence-type.types";
@@ -18,15 +19,15 @@ function reducer(_state: State, action: Action): State {
 
 interface AbsenceTypeViewModalProps { isOpen: boolean; absenceTypeId: number | null; onClose: () => void; }
 
-export const AbsenceTypeViewModal = ({ isOpen, absenceTypeId, onClose }: AbsenceTypeViewModalProps) => {
-  const [state, stateDispatch] = useReducer(reducer, { data: null, loading: false, error: null });
+export const AbsenceTypeViewModal: React.FC<AbsenceTypeViewModalProps> = ({ isOpen, absenceTypeId, onClose }) => {
+  const [state, dispatch] = useReducer(reducer, { data: null, loading: false, error: null });
 
   useEffect(() => {
     if (isOpen && absenceTypeId !== null) {
-      stateDispatch({ type: "loading" });
-      absenceTypeService.get(absenceTypeId)
-        .then((data) => stateDispatch({ type: "success", data }))
-        .catch((err: Error) => stateDispatch({ type: "error", error: err.message }));
+      dispatch({ type: "loading" });
+      absenceTypeService.get({ id: absenceTypeId })
+        .then((data) => dispatch({ type: "success", data }))
+        .catch((err: Error) => dispatch({ type: "error", error: err.message }));
     }
   }, [isOpen, absenceTypeId]);
 
@@ -81,15 +82,3 @@ export const AbsenceTypeViewModal = ({ isOpen, absenceTypeId, onClose }: Absence
     </div>
   );
 };
-
-function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">{icon}</span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</p>
-        <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
-      </div>
-    </div>
-  );
-}

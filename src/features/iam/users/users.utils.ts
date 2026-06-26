@@ -30,7 +30,6 @@ export const userEditSchema = Yup.object({
   role_id: Yup.number()
     .min(1, "Debe seleccionar un rol")
     .required("El rol es obligatorio"),
-  is_active: Yup.boolean(),
 });
 
 export const changePasswordSchema = Yup.object({

@@ -1,3 +1,5 @@
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface UserT {
   id: number;
   username: string;
@@ -35,19 +37,28 @@ export type UserCreateParamsT = UserCreateDataT;
 export type UserUpdateDataT = Partial<{
   email: string;
   role_id: number;
-  is_active: boolean;
 }>;
 
-export interface UserUpdateParamsT { id: number; data: UserUpdateDataT; }
-export type UserGetParamsT = number;
-export type UserDeleteParamsT = number;
+export interface UserUpdateParamsT {
+  id: number;
+  data: UserUpdateDataT;
+}
+
+export interface UserGetParamsT {
+  id: number;
+}
+
+export interface UserDeleteParamsT {
+  id: number;
+  confirm?: boolean;
+}
 
 export interface UserServiceT {
   list(params?: UserListParamsT): Promise<UserT[]>;
-  get(id: UserGetParamsT): Promise<UserT>;
+  get(params: UserGetParamsT): Promise<UserT>;
   create(data: UserCreateDataT): Promise<UserT>;
   update(params: UserUpdateParamsT): Promise<UserT>;
-  softDelete(id: UserDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: UserDeleteParamsT): Promise<SoftDeleteResponseT>;
 }
 
 export interface UserCreateFormValues {
@@ -62,5 +73,4 @@ export interface UserCreateFormValues {
 export interface UserEditFormValues {
   email: string;
   role_id: number;
-  is_active: boolean;
 }

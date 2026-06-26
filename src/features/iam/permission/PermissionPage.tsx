@@ -1,42 +1,46 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
-
-import {
-  usePermissionController,
-  usePermissionForm,
-} from "./permission.controller";
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+import { usePermissionController } from "./hooks/usePermissionController";
+import { usePermissionForm } from "./hooks/usePermissionForm";
 import { PermissionDeleteModal } from "./components/PermissionDeleteModal";
 import { PermissionFormModal } from "./components/PermissionFormModal";
 import { PermissionTable } from "./components/PermissionTable";
 import { PermissionViewModal } from "./components/PermissionViewModal";
-
+import { PERMISSION_PERMISSIONS } from "./permission.constants";
 import type { PermissionT } from "./permission.types";
 
 export default function PermissionPage() {
   const {
-    items,
+    permissions,
     isLoading,
-    loadItems,
-    create,
-    update,
-    remove,
+    loadPermissions,
+    createPermission,
+    updatePermission,
+    deletePermission,
   } = usePermissionController();
 
   const {
     isOpen,
     isEdit,
-    editing,
+    editingItem,
     submitErrors,
     openModal,
     closeModal,
     handleSubmit,
-  } = usePermissionForm({ create, update });
+  } = usePermissionForm({ create: createPermission, update: updatePermission });
 
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
-
-  const [deleting, setDeleting] = useState<PermissionT | null>(null);
+  const [deletingItem, setDeletingItem] = useState<PermissionT | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const userPermissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(userPermissions, PERMISSION_PERMISSIONS.CREATE);
+  const canEdit = hasPermission(userPermissions, PERMISSION_PERMISSIONS.UPDATE);
+  const canDelete = hasPermission(userPermissions, PERMISSION_PERMISSIONS.DELETE);
 
   const openViewModal = useCallback((entity: PermissionT) => {
     setViewingId(entity.id);
@@ -49,57 +53,53 @@ export default function PermissionPage() {
   }, []);
 
   const openDeleteModal = useCallback((entity: PermissionT) => {
-    setDeleting(entity);
+    setDeletingItem(entity);
     setIsDeleteOpen(true);
   }, []);
 
   const closeDeleteModal = useCallback(() => {
     setIsDeleteOpen(false);
-    setDeleting(null);
+    setDeletingItem(null);
   }, []);
-
-  const handleDeleteConfirm = useCallback(
-    async (id: number) => {
-      await remove(id);
-    },
-    [remove],
-  );
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-800">
-            Permisos
-          </h1>
+          <h1 className="text-2xl font-extrabold text-slate-800">Permisos</h1>
           <p className="mt-1 text-sm text-slate-500">
             Gestiona los permisos del sistema
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus className="size-4" />
-          Nuevo Permiso
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => openModal()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Plus className="size-4" />
+            Nuevo Permiso
+          </button>
+        )}
       </div>
 
       <PermissionTable
-        data={items}
+        data={permissions}
         isLoading={isLoading}
-        loadData={loadItems}
+        loadData={loadPermissions}
         onEdit={openModal}
         onView={openViewModal}
         onDelete={openDeleteModal}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       <PermissionFormModal
+        key={editingItem?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
-        editing={editing}
+        editingItem={editingItem}
         onSubmit={handleSubmit}
         submitErrors={submitErrors}
       />
@@ -112,9 +112,9 @@ export default function PermissionPage() {
 
       <PermissionDeleteModal
         isOpen={isDeleteOpen}
-        entity={deleting}
+        entity={deletingItem}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deletePermission}
       />
     </div>
   );

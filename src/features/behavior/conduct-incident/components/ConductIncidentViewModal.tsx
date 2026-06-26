@@ -1,19 +1,36 @@
 import { AlertTriangle, Calendar, FileText, User, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
+
+import { DetailRow } from "@shared/components/DetailRow";
 import { conductIncidentService } from "../conduct-incident.service";
+
 import type { ConductIncidentT } from "../conduct-incident.types";
 
 interface State { data: ConductIncidentT | null; loading: boolean; error: string | null; }
 type Action = { type: "loading" } | { type: "success"; data: ConductIncidentT } | { type: "error"; error: string };
-function reducer(_s: State, a: Action): State { switch (a.type) { case "loading": return { data: null, loading: true, error: null }; case "success": return { data: a.data, loading: false, error: null }; case "error": return { data: null, loading: false, error: a.error }; } }
 
-interface Props { isOpen: boolean; incidentId: number | null; onClose: () => void; }
+function reducer(_state: State, action: Action): State {
+  switch (action.type) {
+    case "loading": return { data: null, loading: true, error: null };
+    case "success": return { data: action.data, loading: false, error: null };
+    case "error": return { data: null, loading: false, error: action.error };
+  }
+}
 
-export const ConductIncidentViewModal = ({ isOpen, incidentId, onClose }: Props) => {
-  const [state, stateDispatch] = useReducer(reducer, { data: null, loading: false, error: null });
+interface ConductIncidentViewModalProps { isOpen: boolean; incidentId: number | null; onClose: () => void; }
+
+export const ConductIncidentViewModal: React.FC<ConductIncidentViewModalProps> = ({ isOpen, incidentId, onClose }) => {
+  const [state, dispatch] = useReducer(reducer, { data: null, loading: false, error: null });
+
   useEffect(() => {
-    if (isOpen && incidentId !== null) { stateDispatch({ type: "loading" }); conductIncidentService.get(incidentId).then((data) => stateDispatch({ type: "success", data })).catch((err: Error) => stateDispatch({ type: "error", error: err.message })); }
+    if (isOpen && incidentId !== null) {
+      dispatch({ type: "loading" });
+      conductIncidentService.get({ id: incidentId })
+        .then((data) => dispatch({ type: "success", data }))
+        .catch((err: Error) => dispatch({ type: "error", error: err.message }));
+    }
   }, [isOpen, incidentId]);
+
   if (!isOpen) return null;
 
   return (
@@ -34,7 +51,7 @@ export const ConductIncidentViewModal = ({ isOpen, incidentId, onClose }: Props)
               <DetailRow icon={<AlertTriangle className="size-3.5" />} label="Severidad" value={state.data.severity_name} />
               <DetailRow icon={<Calendar className="size-3.5" />} label="Fecha" value={state.data.incident_date} />
               <DetailRow icon={<FileText className="size-3.5" />} label="Período" value={state.data.academic_period_name} />
-              <DetailRow icon={null} label="Familia Notificada" value={state.data.family_notified ? "Sí" : "No"} />
+              <DetailRow icon={<FileText className="size-3.5" />} label="Familia Notificada" value={state.data.family_notified ? "Sí" : "No"} />
             </div>
             {state.data.description && <p className="rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600"><span className="font-semibold text-slate-500">Descripción: </span>{state.data.description}</p>}
             {state.data.actions_taken && <p className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-700"><span className="font-semibold">Acciones tomadas: </span>{state.data.actions_taken}</p>}
@@ -47,7 +64,3 @@ export const ConductIncidentViewModal = ({ isOpen, incidentId, onClose }: Props)
     </div>
   );
 };
-
-function DetailRow({ icon, label, value }: { icon: React.ReactNode | null; label: string; value: string }) {
-  return (<div className="flex items-start gap-2">{icon !== null && <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500">{icon}</span>}{icon === null && <div className="size-7 shrink-0" />}<div className="min-w-0 flex-1 leading-tight"><p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</p><p className="truncate text-sm font-medium text-slate-900">{value}</p></div></div>);
-}

@@ -1,48 +1,51 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
-
-import {
-  useUserController,
-  useUserForm,
-} from "./users.controller";
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+import { useUserController } from "./hooks/useUserController";
+import { useUserForm } from "./hooks/useUserForm";
+import { ChangePasswordModal } from "./components/ChangePasswordModal";
 import { UsersDeleteModal } from "./components/UsersDeleteModal";
 import { UsersFormModal } from "./components/UsersFormModal";
 import { UsersTable } from "./components/UsersTable";
 import { UsersViewModal } from "./components/UsersViewModal";
-import { ChangePasswordModal } from "./components/ChangePasswordModal";
-
+import { USER_PERMISSIONS } from "./users.constants";
 import type { UserT } from "./users.types";
 
 export default function UsersPage() {
   const {
-    items,
+    users,
     isLoading,
-    loadItems,
-    create,
-    update,
-    remove,
+    loadUsers,
+    createUser,
+    updateUser,
+    deleteUser,
     changePassword,
   } = useUserController();
 
   const {
     isOpen,
     isEdit,
-    editing,
+    editingItem,
     submitErrors,
     openModal,
     closeModal,
     handleCreate,
     handleUpdate,
-  } = useUserForm({ create, update });
+  } = useUserForm({ create: createUser, update: updateUser });
 
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
-
-  const [deleting, setDeleting] = useState<UserT | null>(null);
+  const [deletingItem, setDeletingItem] = useState<UserT | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
   const [changingPassword, setChangingPassword] = useState<UserT | null>(null);
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+
+  const userPermissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(userPermissions, USER_PERMISSIONS.CREATE);
+  const canEdit = hasPermission(userPermissions, USER_PERMISSIONS.UPDATE);
+  const canDelete = hasPermission(userPermissions, USER_PERMISSIONS.DELETE);
 
   const openViewModal = useCallback((entity: UserT) => {
     setViewingId(entity.id);
@@ -55,13 +58,13 @@ export default function UsersPage() {
   }, []);
 
   const openDeleteModal = useCallback((entity: UserT) => {
-    setDeleting(entity);
+    setDeletingItem(entity);
     setIsDeleteOpen(true);
   }, []);
 
   const closeDeleteModal = useCallback(() => {
     setIsDeleteOpen(false);
-    setDeleting(null);
+    setDeletingItem(null);
   }, []);
 
   const openPasswordModal = useCallback((entity: UserT) => {
@@ -73,13 +76,6 @@ export default function UsersPage() {
     setIsPasswordOpen(false);
     setChangingPassword(null);
   }, []);
-
-  const handleDeleteConfirm = useCallback(
-    async (id: number) => {
-      await remove(id);
-    },
-    [remove],
-  );
 
   const handleChangePassword = useCallback(
     async (newPassword: string) => {
@@ -93,38 +89,35 @@ export default function UsersPage() {
     <div className="space-y-4">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-800">
-            Usuarios
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Gestiona los usuarios del sistema
-          </p>
+          <h1 className="text-2xl font-extrabold text-slate-800">Usuarios</h1>
+          <p className="mt-1 text-sm text-slate-500">Gestiona los usuarios del sistema</p>
         </div>
-        <button
-          type="button"
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus className="size-4" />
-          Nuevo Usuario
-        </button>
+        {canCreate && (
+          <button type="button" onClick={() => openModal()} className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60">
+            <Plus className="size-4" />
+            Nuevo Usuario
+          </button>
+        )}
       </div>
 
       <UsersTable
-        data={items}
+        data={users}
         isLoading={isLoading}
-        loadData={loadItems}
+        loadData={loadUsers}
         onEdit={openModal}
         onView={openViewModal}
         onDelete={openDeleteModal}
         onChangePassword={openPasswordModal}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       <UsersFormModal
+        key={editingItem?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
-        editing={editing}
+        editingItem={editingItem}
         submitErrors={submitErrors}
         onCreate={handleCreate}
         onUpdate={handleUpdate}
@@ -138,9 +131,9 @@ export default function UsersPage() {
 
       <UsersDeleteModal
         isOpen={isDeleteOpen}
-        entity={deleting}
+        entity={deletingItem}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteUser}
       />
 
       <ChangePasswordModal

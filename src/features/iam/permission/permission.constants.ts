@@ -1,6 +1,11 @@
+export const PERMISSION_BASE_URL = "/api/iam/permissions/";
+
 export const PERMISSION_ENDPOINTS = {
-  LIST: "/api/iam/permissions/",
-  DETAIL: (id: number) => `/api/iam/permissions/${id}/`,
+  LIST: PERMISSION_BASE_URL,
+  CREATE: PERMISSION_BASE_URL,
+  GET: (id: number) => `${PERMISSION_BASE_URL}${id}/`,
+  UPDATE: (id: number) => `${PERMISSION_BASE_URL}${id}/`,
+  SOFT_DELETE: (id: number) => `${PERMISSION_BASE_URL}${id}/soft-delete/`,
 } as const;
 
 export const PERMISSION_PERMISSIONS = {

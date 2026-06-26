@@ -1,3 +1,5 @@
+import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export type AlertTypeT = "low_attendance" | "failing_grades" | "behavioral" | "dropout_risk" | "socioemotional";
 export type UrgencyLevelT = "low" | "medium" | "high" | "critical";
 
@@ -45,8 +47,12 @@ export type EarlyAlertCreateDataT = Omit<EarlyAlertT, "id" | "enrollment_name" |
 export type EarlyAlertCreateParamsT = EarlyAlertCreateDataT;
 export type EarlyAlertUpdateDataT = Partial<Omit<EarlyAlertT, "id" | "enrollment_name" | "academic_period_name" | "attended_by_user_name" | "attended_at" | "detected_at" | "created_at" | "updated_at">>;
 export interface EarlyAlertUpdateParamsT { id: number; data: EarlyAlertUpdateDataT; }
-export type EarlyAlertGetParamsT = number;
-export type EarlyAlertDeleteParamsT = number;
+
+export interface EarlyAlertGetParamsT {
+  id: number;
+}
+
+export type EarlyAlertDeleteParamsT = SoftDeleteParamsT;
 
 export interface EarlyAlertMarkAttendedParamsT {
   id: number;
@@ -55,10 +61,10 @@ export interface EarlyAlertMarkAttendedParamsT {
 
 export interface EarlyAlertServiceT {
   list(params?: EarlyAlertListParamsT): Promise<EarlyAlertT[]>;
-  get(id: EarlyAlertGetParamsT): Promise<EarlyAlertT>;
+  get(params: EarlyAlertGetParamsT): Promise<EarlyAlertT>;
   create(data: EarlyAlertCreateDataT): Promise<EarlyAlertT>;
   update(params: EarlyAlertUpdateParamsT): Promise<EarlyAlertT>;
-  softDelete(id: EarlyAlertDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: EarlyAlertDeleteParamsT): Promise<SoftDeleteResponseT>;
   markAttended(params: EarlyAlertMarkAttendedParamsT): Promise<EarlyAlertT>;
 }
 

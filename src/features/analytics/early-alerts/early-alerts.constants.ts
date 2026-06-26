@@ -1,8 +1,12 @@
+export const EARLY_ALERT_BASE_URL = "/api/analytics/early-alerts/";
+
 export const EARLY_ALERT_ENDPOINTS = {
-  LIST: "/api/analytics/early-alerts/",
-  DETAIL: (id: number) => `/api/analytics/early-alerts/${id}/`,
-  SOFT_DELETE: (id: number) => `/api/analytics/early-alerts/${id}/soft-delete/`,
-  MARK_ATTENDED: (id: number) => `/api/analytics/early-alerts/${id}/mark-attended/`,
+  LIST: EARLY_ALERT_BASE_URL,
+  CREATE: EARLY_ALERT_BASE_URL,
+  GET: (id: number) => `${EARLY_ALERT_BASE_URL}${id}/`,
+  UPDATE: (id: number) => `${EARLY_ALERT_BASE_URL}${id}/`,
+  SOFT_DELETE: (id: number) => `${EARLY_ALERT_BASE_URL}${id}/soft-delete/`,
+  MARK_ATTENDED: (id: number) => `${EARLY_ALERT_BASE_URL}${id}/mark-attended/`,
 } as const;
 
 export const EARLY_ALERT_PERMISSIONS = {

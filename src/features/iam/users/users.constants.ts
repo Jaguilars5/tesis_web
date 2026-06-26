@@ -1,12 +1,17 @@
+export const USER_BASE_URL = "/api/iam/users/";
+
 export const USER_ENDPOINTS = {
-  LIST: "/api/iam/users/",
-  DETAIL: (id: number) => `/api/iam/users/${id}/`,
-  CHANGE_PASSWORD: (id: number) => `/api/iam/users/${id}/change-password/`,
-  PERMISSIONS: (id: number) => `/api/iam/users/${id}/permissions/`,
-  SEARCH: "/api/iam/users/search/",
-  TEACHERS: "/api/iam/users/teachers/",
-  STUDENTS: "/api/iam/users/students/",
-  REPRESENTATIVES: "/api/iam/users/representatives/",
+  LIST: USER_BASE_URL,
+  CREATE: USER_BASE_URL,
+  GET: (id: number) => `${USER_BASE_URL}${id}/`,
+  UPDATE: (id: number) => `${USER_BASE_URL}${id}/`,
+  SOFT_DELETE: (id: number) => `${USER_BASE_URL}${id}/soft-delete/`,
+  CHANGE_PASSWORD: (id: number) => `${USER_BASE_URL}${id}/change-password/`,
+  PERMISSIONS: (id: number) => `${USER_BASE_URL}${id}/permissions/`,
+  SEARCH: `${USER_BASE_URL}search/`,
+  TEACHERS: `${USER_BASE_URL}teachers/`,
+  STUDENTS: `${USER_BASE_URL}students/`,
+  REPRESENTATIVES: `${USER_BASE_URL}representatives/`,
 } as const;
 
 export const USER_PERMISSIONS = {

@@ -2,24 +2,50 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@shared/redux/store";
 import type { RequestStatusT } from "@shared/types/request.types";
 import type { IncidentTypeT } from "./incident-type.types";
-export interface IncidentTypeStateT { incidentTypes: IncidentTypeT[]; status: RequestStatusT; error: string | null; }
-const initialState: IncidentTypeStateT = { incidentTypes: [], status: "idle", error: null };
-const slice = createSlice({
-  name: "incidentTypes", initialState,
+
+export interface IncidentTypeStateT {
+  items: IncidentTypeT[];
+  status: RequestStatusT;
+  error: string | null;
+}
+
+const initialState: IncidentTypeStateT = {
+  items: [],
+  status: "idle",
+  error: null,
+};
+
+const incidentTypeSlice = createSlice({
+  name: "incidentTypes",
+  initialState,
   reducers: {
-    loadPending(s) { s.status = "loading"; s.error = null; },
-    loadSuccess(s, a: PayloadAction<IncidentTypeT[]>) { s.incidentTypes = a.payload; s.status = "succeeded"; },
-    loadError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; },
-    entityCreated(s, a: PayloadAction<IncidentTypeT>) { s.incidentTypes.unshift(a.payload); s.status = "succeeded"; },
-    entityUpdated(s, a: PayloadAction<IncidentTypeT>) { const idx = s.incidentTypes.findIndex((p) => p.id === a.payload.id); if (idx !== -1) s.incidentTypes[idx] = a.payload; s.status = "succeeded"; },
-    entityDeleted(s, a: PayloadAction<number>) { s.incidentTypes = s.incidentTypes.filter((p) => p.id !== a.payload); s.status = "succeeded"; },
-    mutationError(s, a: PayloadAction<string>) { s.status = "failed"; s.error = a.payload; },
-    clearError(s) { s.error = null; },
+    loadPending(state) { state.status = "loading"; state.error = null; },
+    loadSuccess(state, action: PayloadAction<IncidentTypeT[]>) { state.items = action.payload; state.status = "succeeded"; },
+    loadError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
+    entityCreated(state, action: PayloadAction<IncidentTypeT>) { state.items.unshift(action.payload); state.status = "succeeded"; },
+    entityUpdated(state, action: PayloadAction<IncidentTypeT>) {
+      const idx = state.items.findIndex((p) => p.id === action.payload.id);
+      if (idx !== -1) state.items[idx] = action.payload;
+      state.status = "succeeded";
+    },
+    entityDeleted(state, action: PayloadAction<number>) {
+      state.items = state.items.filter((p) => p.id !== action.payload);
+      state.status = "succeeded";
+    },
+    mutationError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
+    clearIncidentTypeError(state) { state.error = null; },
   },
 });
-export const { loadPending, loadSuccess, loadError, entityCreated, entityUpdated, entityDeleted, mutationError, clearError } = slice.actions;
-export const selectIncidentTypes = (s: RootState): IncidentTypeT[] => s.behavior.incidentTypes.incidentTypes;
-export const selectIncidentTypesStatus = (s: RootState): RequestStatusT => s.behavior.incidentTypes.status;
-export const selectIncidentTypesError = (s: RootState): string | null => s.behavior.incidentTypes.error;
-export const incidentTypeReducer = slice.reducer;
-export default slice.reducer;
+
+export const {
+  loadPending, loadSuccess, loadError,
+  entityCreated, entityUpdated, entityDeleted,
+  mutationError, clearIncidentTypeError,
+} = incidentTypeSlice.actions;
+
+export const selectItems = (state: RootState): IncidentTypeT[] => state.behavior.incidentTypes.items;
+export const selectStatus = (state: RootState): RequestStatusT => state.behavior.incidentTypes.status;
+export const selectError = (state: RootState): string | null => state.behavior.incidentTypes.error;
+
+export const incidentTypeReducer = incidentTypeSlice.reducer;
+export default incidentTypeSlice.reducer;

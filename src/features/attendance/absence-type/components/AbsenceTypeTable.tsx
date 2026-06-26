@@ -2,12 +2,13 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
 import { Badge } from "@shared/components/Badge";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
@@ -18,30 +19,34 @@ import type {
   AbsenceTypeT,
 } from "../absence-type.types";
 
-const ORDERING_OPTIONS: { label: string; value: AbsenceTypeOrderingT }[] = [
+const OrderingOptions: { label: string; value: AbsenceTypeOrderingT }[] = [
   { label: "Nombre (A-Z)", value: "name" },
   { label: "Nombre (Z-A)", value: "-name" },
   { label: "Código (A-Z)", value: "code" },
   { label: "Código (Z-A)", value: "-code" },
 ];
 
-type AbsenceTypeTableProps = {
+interface AbsenceTypeTableProps {
   absenceTypes: AbsenceTypeT[];
   isLoading: boolean;
   loadAbsenceTypes: (params?: AbsenceTypeListParamsT) => void;
   onEdit: (absenceType: AbsenceTypeT) => void;
   onView: (absenceType: AbsenceTypeT) => void;
   onDelete: (absenceType: AbsenceTypeT) => void;
-};
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
 
-export const AbsenceTypeTable = ({
+export const AbsenceTypeTable: React.FC<AbsenceTypeTableProps> = ({
   absenceTypes,
   isLoading,
   loadAbsenceTypes,
   onEdit,
   onView,
   onDelete,
-}: AbsenceTypeTableProps) => {
+  canEdit = true,
+  canDelete = true,
+}) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -51,30 +56,17 @@ export const AbsenceTypeTable = ({
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const fetchData = useCallback(
-    (overrides?: {
-      page?: number;
-      pageSize?: number;
-      search?: string;
-      ordering?: AbsenceTypeOrderingT;
-    }) => {
-      loadAbsenceTypes({
-        page: overrides?.page ?? page,
-        pageSize: overrides?.pageSize ?? pageSize,
-        search:
-          overrides?.search !== undefined
-            ? overrides.search
-            : search || undefined,
-        ordering: overrides?.ordering ?? ordering,
-      });
+    (params?: AbsenceTypeListParamsT) => {
+      loadAbsenceTypes(params);
     },
-    [loadAbsenceTypes, page, pageSize, search, ordering],
+    [loadAbsenceTypes],
   );
 
   useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleSearchChange = useCallback(
+  const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setSearch(value);
@@ -88,9 +80,8 @@ export const AbsenceTypeTable = ({
     [fetchData],
   );
 
-  const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as AbsenceTypeOrderingT;
+  const handleOrdering = useCallback(
+    (newOrdering: AbsenceTypeOrderingT) => {
       setOrdering(newOrdering);
       setPage(1);
       fetchData({ page: 1, ordering: newOrdering });
@@ -136,23 +127,22 @@ export const AbsenceTypeTable = ({
         <SearchInput
           name="search"
           type="text"
-          onChange={handleSearchChange}
+          onChange={handleSearch}
           value={search}
           className="relative min-w-50 flex-1"
           placeholder="Filtrar tipos de ausencia..."
         />
-        <select
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por"
           value={ordering}
-          onChange={handleOrderingChange}
-          className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Ordenar por"
-        >
-          {ORDERING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          options={OrderingOptions}
+          onChange={(option) =>
+            handleOrdering(option.value as AbsenceTypeOrderingT)
+          }
+          className={filterSelectClassname}
+        />
       </div>
 
       <CustomTable<AbsenceTypeT>
@@ -177,22 +167,26 @@ export const AbsenceTypeTable = ({
             >
               <Eye className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(s)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Editar"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(s)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-              title="Desactivar"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(s)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                title="Editar"
+              >
+                <Pencil className="size-4" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(s)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                title="Desactivar"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       />

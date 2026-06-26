@@ -1,34 +1,124 @@
 import { Eye, Pencil } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { filterSelectClassname, tableClassname, tableColumnsClassname, tableFirstColumnClassname } from "@app/styles/styles";
+
+import {
+  filterSelectClassname,
+  tableClassname,
+  tableColumnsClassname,
+  tableFirstColumnClassname,
+} from "@app/styles/styles";
 import { Badge } from "@shared/components/Badge";
-import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect"; import { SearchInput } from "@shared/components/Form";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
-import { useEnrollmentOptions, useAcademicPeriodOptions } from "../../conduct-incident/conduct-incident.options";
-import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps"; import type { TableColumnProps } from "@shared/components/Table";
-import type { BehaviorEvaluationListParamsT, BehaviorEvaluationOrderingT, BehaviorEvaluationT } from "../behavior-evaluation.types";
 
-const ORDERING_OPTIONS: { label: string; value: BehaviorEvaluationOrderingT }[] = [{ label: "Más reciente", value: "-id" }, { label: "Más antiguo", value: "id" }];
+import { useEnrollmentOptions, useAcademicPeriodOptions } from "../../conduct-incident/hooks/useConductIncidentOptions";
 
-type Props = { behaviorEvaluations: BehaviorEvaluationT[]; isLoading: boolean; loadBehaviorEvaluations: (params?: BehaviorEvaluationListParamsT) => void; onEdit: (e: BehaviorEvaluationT) => void; onView: (e: BehaviorEvaluationT) => void; };
+import type { TableColumnProps } from "@shared/components/Table";
+import type {
+  BehaviorEvaluationListParamsT,
+  BehaviorEvaluationOrderingT,
+  BehaviorEvaluationT,
+} from "../behavior-evaluation.types";
 
-export const BehaviorEvaluationTable = ({ behaviorEvaluations, isLoading, loadBehaviorEvaluations, onEdit, onView }: Props) => {
-  const [search, setSearch] = useState(""); const [page, setPage] = useState(1); const [pageSize, setPageSize] = useState(10);
-  const [ordering, setOrdering] = useState<BehaviorEvaluationOrderingT>("-id"); const [hasSearched, setHasSearched] = useState(false);
-  const [enrollmentFilter, setEnrollmentFilter] = useState<number | 0>(0); const [periodFilter, setPeriodFilter] = useState<number | 0>(0);
-  const { enrollmentOptions } = useEnrollmentOptions(); const { academicPeriodOptions } = useAcademicPeriodOptions();
+const OrderingOptions: { label: string; value: BehaviorEvaluationOrderingT }[] = [
+  { label: "Más reciente", value: "-id" },
+  { label: "Más antiguo", value: "id" },
+];
+
+interface BehaviorEvaluationTableProps {
+  behaviorEvaluations: BehaviorEvaluationT[];
+  isLoading: boolean;
+  loadBehaviorEvaluations: (params?: BehaviorEvaluationListParamsT) => void;
+  onEdit: (e: BehaviorEvaluationT) => void;
+  onView: (e: BehaviorEvaluationT) => void;
+  canEdit?: boolean;
+}
+
+export const BehaviorEvaluationTable: React.FC<BehaviorEvaluationTableProps> = ({
+  behaviorEvaluations,
+  isLoading,
+  loadBehaviorEvaluations,
+  onEdit,
+  onView,
+  canEdit = true,
+}) => {
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [ordering, setOrdering] = useState<BehaviorEvaluationOrderingT>("-id");
+  const [hasSearched, setHasSearched] = useState(false);
+  const [enrollmentFilter, setEnrollmentFilter] = useState<number | 0>(0);
+  const [periodFilter, setPeriodFilter] = useState<number | 0>(0);
+  const { enrollmentOptions } = useEnrollmentOptions();
+  const { academicPeriodOptions } = useAcademicPeriodOptions();
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const fetchData = useCallback((overrides?: { page?: number; pageSize?: number; search?: string; ordering?: BehaviorEvaluationOrderingT; enrollment?: number; academic_period?: number }) => {
-    loadBehaviorEvaluations({ page: overrides?.page ?? page, pageSize: overrides?.pageSize ?? pageSize, search: overrides?.search !== undefined ? overrides.search : search || undefined, ordering: overrides?.ordering ?? ordering, enrollment: overrides?.enrollment !== undefined ? overrides.enrollment : enrollmentFilter || undefined, academic_period: overrides?.academic_period !== undefined ? overrides.academic_period : periodFilter || undefined });
-  }, [loadBehaviorEvaluations, page, pageSize, search, ordering, enrollmentFilter, periodFilter]);
-  useEffect(() => { fetchData(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { const v = e.target.value; setSearch(v); setPage(1); setHasSearched(true); if (debounceRef.current) clearTimeout(debounceRef.current); debounceRef.current = setTimeout(() => { fetchData({ page: 1, search: v || undefined }); }, 400); }, [fetchData]);
-  const handleOrderingChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => { const newOrdering = e.target.value as BehaviorEvaluationOrderingT; setOrdering(newOrdering); setPage(1); fetchData({ page: 1, ordering: newOrdering }); }, [fetchData]);
-  const hEnrollment = useCallback((o: SelectOptionT) => { setEnrollmentFilter(Number(o.value) || 0); setPage(1); }, []);
-  const hPeriod = useCallback((o: SelectOptionT) => { setPeriodFilter(Number(o.value) || 0); setPage(1); }, []);
-  useEffect(() => { fetchData({ page: 1 }); }, [enrollmentFilter, periodFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const buildFilters = useCallback(() => {
+    const filters: { enrollment?: number; academic_period?: number } = {};
+    if (enrollmentFilter) filters.enrollment = enrollmentFilter;
+    if (periodFilter) filters.academic_period = periodFilter;
+    return filters;
+  }, [enrollmentFilter, periodFilter]);
+
+  const fetchData = useCallback(
+    (params?: BehaviorEvaluationListParamsT) => {
+      loadBehaviorEvaluations(params);
+    },
+    [loadBehaviorEvaluations],
+  );
+
+  useEffect(() => {
+    fetchData({
+      ordering,
+      search: search || undefined,
+      filters: buildFilters(),
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleSearch = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const v = e.target.value;
+      setSearch(v);
+      setPage(1);
+      setHasSearched(true);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        fetchData({ page: 1, search: v || undefined, ordering, filters: buildFilters() });
+      }, 400);
+    },
+    [fetchData, ordering, buildFilters],
+  );
+
+  const handleOrdering = useCallback(
+    (value: BehaviorEvaluationOrderingT) => {
+      setOrdering(value);
+      setPage(1);
+      fetchData({ page: 1, ordering: value, search: search || undefined, filters: buildFilters() });
+    },
+    [fetchData, search, buildFilters],
+  );
+
+  const handleEnrollmentFilterChange = useCallback(
+    (value: number) => {
+      setEnrollmentFilter(value);
+      setPage(1);
+      fetchData({ page: 1, ordering, search: search || undefined, filters: { enrollment: value || undefined, academic_period: periodFilter || undefined } });
+    },
+    [fetchData, ordering, search, periodFilter],
+  );
+
+  const handlePeriodFilterChange = useCallback(
+    (value: number) => {
+      setPeriodFilter(value);
+      setPage(1);
+      fetchData({ page: 1, ordering, search: search || undefined, filters: { enrollment: enrollmentFilter || undefined, academic_period: value || undefined } });
+    },
+    [fetchData, ordering, search, enrollmentFilter],
+  );
+
   const hasNextPage = behaviorEvaluations.length >= pageSize;
+
   const columns: TableColumnProps<BehaviorEvaluationT>[] = [
     { key: "enrollment_name", label: "Estudiante", className: tableFirstColumnClassname, render: (e) => <span>{e.enrollment_name}</span> },
     { key: "academic_period_name", label: "Período", className: tableColumnsClassname, render: (e) => <span>{e.academic_period_name}</span> },
@@ -37,21 +127,30 @@ export const BehaviorEvaluationTable = ({ behaviorEvaluations, isLoading, loadBe
     { key: "evaluation_date", label: "Fecha", className: tableColumnsClassname, render: (e) => <span>{e.evaluation_date}</span> },
     { key: "approval_date", label: "Aprobación", className: tableColumnsClassname, render: (e) => e.approval_date ? <Badge variant="secondary">Aprobado</Badge> : <Badge variant="outline">Pendiente</Badge> },
   ];
+
   return (
     <div className="overflow-visible rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-slate-50/50 px-4 py-3">
-        <SearchInput name="search" type="text" onChange={handleSearchChange} value={search} className="relative min-w-50 flex-1" placeholder="Filtrar evaluaciones..." />
-        <CustomSelect name="filter-enrollment" label="" placeholder="Todos los estudiantes" value={enrollmentFilter} options={enrollmentOptions} onChange={hEnrollment} className={filterSelectClassname} />
-        <CustomSelect name="filter-period" label="" placeholder="Todos los períodos" value={periodFilter} options={academicPeriodOptions} onChange={hPeriod} className={filterSelectClassname} />
-        <select value={ordering} onChange={handleOrderingChange} className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" aria-label="Ordenar por">{ORDERING_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+        <SearchInput name="search" type="text" onChange={handleSearch} value={search} className="relative min-w-50 flex-1" placeholder="Filtrar evaluaciones..." />
+        <CustomSelect name="filter-enrollment" label="" placeholder="Todos los estudiantes" value={enrollmentFilter} options={enrollmentOptions} onChange={(option) => handleEnrollmentFilterChange(option.value ? Number(option.value) : 0)} className={filterSelectClassname} />
+        <CustomSelect name="filter-period" label="" placeholder="Todos los períodos" value={periodFilter} options={academicPeriodOptions} onChange={(option) => handlePeriodFilterChange(option.value ? Number(option.value) : 0)} className={filterSelectClassname} />
+        <CustomSelect name="ordering" label="" placeholder="Ordenar por" value={ordering} options={OrderingOptions} onChange={(option) => handleOrdering(option.value as BehaviorEvaluationOrderingT)} className={filterSelectClassname} />
       </div>
       <CustomTable<BehaviorEvaluationT> data={behaviorEvaluations} columns={columns} isLoading={isLoading && behaviorEvaluations.length === 0}
         emptyMessage={hasSearched ? "No se encontraron evaluaciones con los filtros aplicados" : "No se encontraron evaluaciones de conducta"}
         actionsTitle="Acciones" className={tableClassname} loadingMessage="Cargando evaluaciones..."
-        rowActions={(e) => (<div className="flex items-center justify-end gap-1"><button type="button" onClick={() => onView(e)} className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" title="Ver detalle"><Eye className="size-4" /></button><button type="button" onClick={() => onEdit(e)} className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" title="Anular"><Pencil className="size-4" /></button></div>)}
+        rowActions={(e) => (
+          <div className="flex items-center justify-end gap-1">
+            <button type="button" onClick={() => onView(e)} className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" title="Ver detalle"><Eye className="size-4" /></button>
+            {canEdit && (
+              <button type="button" onClick={() => onEdit(e)} className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" title="Anular"><Pencil className="size-4" /></button>
+            )}
+          </div>
+        )}
       />
       <Pagination page={page} pageSize={pageSize} totalItems={behaviorEvaluations.length} isLoading={isLoading} hasNextPage={hasNextPage}
-        onPageChange={(np) => { setPage(np); fetchData({ page: np }); }} onPageSizeChange={(ns) => { setPageSize(ns); setPage(1); fetchData({ page: 1, pageSize: ns }); }} />
+        onPageChange={(np) => { setPage(np); fetchData({ page: np, ordering, search: search || undefined, filters: buildFilters() }); }}
+        onPageSizeChange={(ns) => { setPageSize(ns); setPage(1); fetchData({ page: 1, pageSize: ns, ordering, search: search || undefined, filters: buildFilters() }); }} />
     </div>
   );
 };

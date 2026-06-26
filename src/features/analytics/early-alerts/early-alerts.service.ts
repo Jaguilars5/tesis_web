@@ -1,5 +1,6 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 import { EARLY_ALERT_ENDPOINTS } from "./early-alerts.constants";
 import type {
@@ -38,10 +39,10 @@ class EarlyAlertService implements EarlyAlertServiceT {
     }
   }
 
-  async get(id: EarlyAlertGetParamsT): Promise<EarlyAlertT> {
+  async get(params: EarlyAlertGetParamsT): Promise<EarlyAlertT> {
     try {
       const { data } = await apiClient.get<ResponseApi<EarlyAlertT>>(
-        EARLY_ALERT_ENDPOINTS.DETAIL(id),
+        EARLY_ALERT_ENDPOINTS.GET(params.id),
       );
       return data.data;
     } catch (error) {
@@ -52,7 +53,7 @@ class EarlyAlertService implements EarlyAlertServiceT {
   async create(payload: EarlyAlertCreateDataT): Promise<EarlyAlertT> {
     try {
       const { data } = await apiClient.post<ResponseApi<EarlyAlertT>>(
-        EARLY_ALERT_ENDPOINTS.LIST,
+        EARLY_ALERT_ENDPOINTS.CREATE,
         payload,
       );
       return data.data;
@@ -64,7 +65,7 @@ class EarlyAlertService implements EarlyAlertServiceT {
   async update(params: EarlyAlertUpdateParamsT): Promise<EarlyAlertT> {
     try {
       const { data } = await apiClient.patch<ResponseApi<EarlyAlertT>>(
-        EARLY_ALERT_ENDPOINTS.DETAIL(params.id),
+        EARLY_ALERT_ENDPOINTS.UPDATE(params.id),
         params.data,
       );
       return data.data;
@@ -73,10 +74,12 @@ class EarlyAlertService implements EarlyAlertServiceT {
     }
   }
 
-  async softDelete(id: EarlyAlertDeleteParamsT): Promise<{ id: number }> {
+  async softDelete(params: EarlyAlertDeleteParamsT): Promise<SoftDeleteResponseT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<{ id: number }>>(
-        EARLY_ALERT_ENDPOINTS.SOFT_DELETE(id),
+      const body = params.confirm ? { confirm: true } : undefined;
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
+        EARLY_ALERT_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
       );
       return data.data;
     } catch (error) {

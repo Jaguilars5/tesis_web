@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-
 import type { RootState } from "@shared/redux/store";
 import type { RequestStatusT } from "@shared/types/request.types";
 import type { RoleT } from "./roles.types";
@@ -37,15 +36,15 @@ const roleSlice = createSlice({
       state.status = "succeeded";
     },
     entityUpdated(state, action: PayloadAction<RoleT>) {
-      const idx = state.roles.findIndex(
-        (p) => p.id === action.payload.id,
+      const index = state.roles.findIndex(
+        (item) => item.id === action.payload.id,
       );
-      if (idx !== -1) state.roles[idx] = action.payload;
+      if (index !== -1) state.roles[index] = action.payload;
       state.status = "succeeded";
     },
     entityDeleted(state, action: PayloadAction<number>) {
       state.roles = state.roles.filter(
-        (p) => p.id !== action.payload,
+        (item) => item.id !== action.payload,
       );
       state.status = "succeeded";
     },
@@ -53,7 +52,7 @@ const roleSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    clearError(state) {
+    clearRoleError(state) {
       state.error = null;
     },
   },
@@ -67,7 +66,7 @@ export const {
   entityUpdated,
   entityDeleted,
   mutationError,
-  clearError,
+  clearRoleError,
 } = roleSlice.actions;
 
 export const selectRoles = (state: RootState): RoleT[] =>
@@ -80,5 +79,4 @@ export const selectRolesError = (state: RootState): string | null =>
   state.iam.roles.error;
 
 export const roleReducer = roleSlice.reducer;
-
 export default roleSlice.reducer;

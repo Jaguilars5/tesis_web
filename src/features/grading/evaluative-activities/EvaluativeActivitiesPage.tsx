@@ -1,13 +1,61 @@
-import { Plus } from "lucide-react"; import { useCallback, useState } from "react";
-import { EvaluativeActivityDeleteModal } from "./components/EvaluativeActivityDeleteModal"; import { EvaluativeActivityFormModal } from "./components/EvaluativeActivityFormModal"; import { EvaluativeActivityTable } from "./components/EvaluativeActivityTable"; import { EvaluativeActivityViewModal } from "./components/EvaluativeActivityViewModal"; import { useEvaluativeActivityController, useEvaluativeActivityForm } from "./evaluative-activities.controller"; import { useEvaluativeActivityOptions } from "./evaluative-activities.options"; import type { EvaluativeActivityT } from "./evaluative-activities.types";
+import { Plus } from "lucide-react";
+import { useCallback, useState } from "react";
+
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+
+import { useEvaluativeActivityController } from "./hooks/useEvaluativeActivityController";
+import { useEvaluativeActivityForm } from "./hooks/useEvaluativeActivityForm";
+import { useEvaluativeActivityOptions } from "./hooks/useEvaluativeActivityOptions";
+import { EvaluativeActivityDeleteModal } from "./components/EvaluativeActivityDeleteModal";
+import { EvaluativeActivityFormModal } from "./components/EvaluativeActivityFormModal";
+import { EvaluativeActivityTable } from "./components/EvaluativeActivityTable";
+import { EvaluativeActivityViewModal } from "./components/EvaluativeActivityViewModal";
+
+import type { EvaluativeActivityT } from "./evaluative-activities.types";
+import { EVALUATIVE_ACTIVITY_PERMISSIONS } from "./evaluative-activities.constants";
+
 export default function EvaluativeActivitiesPage() {
-  const { evaluativeActivities, isLoading, loadEvaluativeActivities, createEvaluativeActivity, updateEvaluativeActivity, deleteEvaluativeActivity } = useEvaluativeActivityController();
-  const { isOpen, isEdit, editingEvaluativeActivity, submitErrors, openModal, closeModal, handleSubmit } = useEvaluativeActivityForm({ create: createEvaluativeActivity, update: updateEvaluativeActivity });
+  const permissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(permissions, EVALUATIVE_ACTIVITY_PERMISSIONS.CREATE);
+  const canEdit = hasPermission(permissions, EVALUATIVE_ACTIVITY_PERMISSIONS.UPDATE);
+  const canDelete = hasPermission(permissions, EVALUATIVE_ACTIVITY_PERMISSIONS.DELETE);
+
+  const { items, isLoading, loadItems, createItem, updateItem, deleteItem } =
+    useEvaluativeActivityController();
+
+  const { isOpen, isEdit, editingItem, submitErrors, openModal, closeModal, handleSubmit } =
+    useEvaluativeActivityForm({ create: createItem, update: updateItem });
+
   const { teacherSubjectSectionOptions, activityTypeOptions } = useEvaluativeActivityOptions();
-  const [viewing, setViewing] = useState<EvaluativeActivityT | null>(null); const [isViewOpen, setIsViewOpen] = useState(false);
-  const [deleting, setDeleting] = useState<EvaluativeActivityT | null>(null); const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const openV = useCallback((a: EvaluativeActivityT) => { setViewing(a); setIsViewOpen(true); }, []); const closeV = useCallback(() => { setViewing(null); setIsViewOpen(false); }, []);
-  const openD = useCallback((a: EvaluativeActivityT) => { setDeleting(a); setIsDeleteOpen(true); }, []); const closeD = useCallback(() => { setDeleting(null); setIsDeleteOpen(false); }, []);
-  const handleDel = useCallback(async (id: number) => { await deleteEvaluativeActivity(id); }, [deleteEvaluativeActivity]);
-  return (<div className="space-y-4"><div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center"><div><h1 className="text-2xl font-extrabold text-slate-800">Actividades Evaluativas</h1><p className="mt-1 text-sm text-slate-500">Gestiona las actividades evaluativas</p></div><button type="button" onClick={() => openModal()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary-hover"><Plus className="size-4" />Nueva Actividad</button></div><EvaluativeActivityTable evaluativeActivities={evaluativeActivities} isLoading={isLoading} loadEvaluativeActivities={loadEvaluativeActivities} onEdit={openModal} onView={openV} onDelete={openD} /><EvaluativeActivityFormModal isOpen={isOpen} onClose={closeModal} isEdit={isEdit} editingEvaluativeActivity={editingEvaluativeActivity} teacherSubjectSectionOptions={teacherSubjectSectionOptions} activityTypeOptions={activityTypeOptions} onSubmit={handleSubmit} submitErrors={submitErrors} /><EvaluativeActivityViewModal isOpen={isViewOpen} evaluativeActivityId={viewing?.id ?? null} onClose={closeV} /><EvaluativeActivityDeleteModal isOpen={isDeleteOpen} evaluativeActivity={deleting} onClose={closeD} onConfirm={handleDel} /></div>);
+
+  const [viewingItem, setViewingItem] = useState<EvaluativeActivityT | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<EvaluativeActivityT | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const openViewModal = useCallback((a: EvaluativeActivityT) => { setViewingItem(a); setIsViewOpen(true); }, []);
+  const closeViewModal = useCallback(() => { setViewingItem(null); setIsViewOpen(false); }, []);
+  const openDeleteModal = useCallback((a: EvaluativeActivityT) => { setDeletingItem(a); setIsDeleteOpen(true); }, []);
+  const closeDeleteModal = useCallback(() => { setDeletingItem(null); setIsDeleteOpen(false); }, []);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div><h1 className="text-2xl font-extrabold text-slate-800">Actividades Evaluativas</h1><p className="mt-1 text-sm text-slate-500">Gestiona las actividades evaluativas</p></div>
+        {canCreate && (
+          <button type="button" onClick={() => openModal()} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary-hover"><Plus className="size-4" />Nueva Actividad</button>
+        )}
+      </div>
+
+      <EvaluativeActivityTable evaluativeActivities={items} isLoading={isLoading} loadEvaluativeActivities={loadItems} onEdit={openModal} onView={openViewModal} onDelete={openDeleteModal} canEdit={canEdit} canDelete={canDelete} />
+
+      <EvaluativeActivityFormModal key={editingItem?.id ?? "create"} isOpen={isOpen} onClose={closeModal} isEdit={isEdit} editingEvaluativeActivity={editingItem} teacherSubjectSectionOptions={teacherSubjectSectionOptions} activityTypeOptions={activityTypeOptions} onSubmit={handleSubmit} submitErrors={submitErrors} />
+
+      <EvaluativeActivityViewModal isOpen={isViewOpen} evaluativeActivityId={viewingItem?.id ?? null} onClose={closeViewModal} />
+
+      <EvaluativeActivityDeleteModal isOpen={isDeleteOpen} evaluativeActivity={deletingItem} onClose={closeDeleteModal} onSoftDelete={deleteItem} />
+    </div>
+  );
 }

@@ -1,3 +1,5 @@
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface AttendanceStatusT {
   id: number;
   code: string;
@@ -9,20 +11,38 @@ export interface AttendanceStatusT {
 }
 
 export type AttendanceStatusOrderingT = "name" | "-name" | "code" | "-code";
-export interface AttendanceStatusListParamsT { page?: number; pageSize?: number; search?: string; ordering?: AttendanceStatusOrderingT; }
-export type AttendanceStatusCreateDataT = Omit<AttendanceStatusT, "id" | "is_active" | "created_at" | "updated_at">;
-export type AttendanceStatusCreateParamsT = AttendanceStatusCreateDataT;
-export type AttendanceStatusUpdateDataT = Partial<Omit<AttendanceStatusT, "id">>;
-export interface AttendanceStatusUpdateParamsT { id: number; data: AttendanceStatusUpdateDataT; }
-export type AttendanceStatusGetParamsT = number;
-export type AttendanceStatusDeleteParamsT = number;
+
+export interface AttendanceStatusListParamsT {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  ordering?: AttendanceStatusOrderingT;
+}
+
+export interface AttendanceStatusFormValues {
+  code: string;
+  name: string;
+  description: string;
+}
+
+export type AttendanceStatusCreateParamsT = AttendanceStatusFormValues;
+export type AttendanceStatusUpdateDataT = Partial<AttendanceStatusFormValues>;
+export interface AttendanceStatusUpdateParamsT {
+  id: number;
+  data: AttendanceStatusUpdateDataT;
+}
+export interface AttendanceStatusGetParamsT {
+  id: number;
+}
+export interface AttendanceStatusDeleteParamsT {
+  id: number;
+  confirm?: boolean;
+}
 
 export interface AttendanceStatusServiceT {
   list(params?: AttendanceStatusListParamsT): Promise<AttendanceStatusT[]>;
-  get(id: AttendanceStatusGetParamsT): Promise<AttendanceStatusT>;
-  create(data: AttendanceStatusCreateDataT): Promise<AttendanceStatusT>;
+  get(params: AttendanceStatusGetParamsT): Promise<AttendanceStatusT>;
+  create(params: AttendanceStatusCreateParamsT): Promise<AttendanceStatusT>;
   update(params: AttendanceStatusUpdateParamsT): Promise<AttendanceStatusT>;
-  delete(id: AttendanceStatusDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: AttendanceStatusDeleteParamsT): Promise<SoftDeleteResponseT>;
 }
-
-export interface AttendanceStatusFormValues { code: string; name: string; description: string; is_active: boolean; }

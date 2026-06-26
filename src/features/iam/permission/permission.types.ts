@@ -1,3 +1,5 @@
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface PermissionT {
   id: number;
   code: string;
@@ -19,17 +21,28 @@ export interface PermissionListParamsT {
 
 export type PermissionCreateDataT = Omit<PermissionT, "id" | "created_at" | "updated_at">;
 export type PermissionCreateParamsT = PermissionCreateDataT;
-export type PermissionUpdateDataT = Partial<Omit<PermissionT, "id">>;
-export interface PermissionUpdateParamsT { id: number; data: PermissionUpdateDataT; }
-export type PermissionGetParamsT = number;
-export type PermissionDeleteParamsT = number;
+export type PermissionUpdateDataT = Partial<PermissionCreateDataT>;
+
+export interface PermissionUpdateParamsT {
+  id: number;
+  data: PermissionUpdateDataT;
+}
+
+export interface PermissionGetParamsT {
+  id: number;
+}
+
+export interface PermissionDeleteParamsT {
+  id: number;
+  confirm?: boolean;
+}
 
 export interface PermissionServiceT {
   list(params?: PermissionListParamsT): Promise<PermissionT[]>;
-  get(id: PermissionGetParamsT): Promise<PermissionT>;
+  get(params: PermissionGetParamsT): Promise<PermissionT>;
   create(data: PermissionCreateDataT): Promise<PermissionT>;
   update(params: PermissionUpdateParamsT): Promise<PermissionT>;
-  softDelete(id: PermissionDeleteParamsT): Promise<{ id: number }>;
+  softDelete(params: PermissionDeleteParamsT): Promise<SoftDeleteResponseT>;
 }
 
 export interface PermissionFormValues {

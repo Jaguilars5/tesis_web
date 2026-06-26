@@ -1,6 +1,9 @@
 import { AlertTriangle, Calendar, FileText, User, UserCheck, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
+
+import { DetailRow } from "@shared/components/DetailRow";
 import { behaviorEvaluationService } from "../behavior-evaluation.service";
+
 import type { BehaviorEvaluationT, RelatedConductIncidentT } from "../behavior-evaluation.types";
 
 interface State { data: BehaviorEvaluationT | null; loading: boolean; error: string | null; }
@@ -8,23 +11,47 @@ interface IncState { incidents: RelatedConductIncidentT[]; loading: boolean; }
 type Action = { type: "loading" } | { type: "success"; data: BehaviorEvaluationT } | { type: "error"; error: string };
 type IncAction = { type: "loading" } | { type: "success"; incidents: RelatedConductIncidentT[] } | { type: "error" };
 
-function reducer(_s: State, a: Action): State { switch (a.type) { case "loading": return { data: null, loading: true, error: null }; case "success": return { data: a.data, loading: false, error: null }; case "error": return { data: null, loading: false, error: a.error }; } }
-function incReducer(_s: IncState, a: IncAction): IncState { switch (a.type) { case "loading": return { incidents: [], loading: true }; case "success": return { incidents: a.incidents, loading: false }; case "error": return { incidents: [], loading: false }; } }
+function reducer(_state: State, action: Action): State {
+  switch (action.type) {
+    case "loading": return { data: null, loading: true, error: null };
+    case "success": return { data: action.data, loading: false, error: null };
+    case "error": return { data: null, loading: false, error: action.error };
+  }
+}
+function incReducer(_state: IncState, action: IncAction): IncState {
+  switch (action.type) {
+    case "loading": return { incidents: [], loading: true };
+    case "success": return { incidents: action.incidents, loading: false };
+    case "error": return { incidents: [], loading: false };
+  }
+}
 
-interface Props { isOpen: boolean; evaluationId: number | null; onClose: () => void; onEdit: (evaluation: BehaviorEvaluationT) => void; }
+interface BehaviorEvaluationViewModalProps {
+  isOpen: boolean;
+  evaluationId: number | null;
+  onClose: () => void;
+  onEdit: (evaluation: BehaviorEvaluationT) => void;
+}
 
-export const BehaviorEvaluationViewModal = ({ isOpen, evaluationId, onClose, onEdit }: Props) => {
-  const [state, stateDispatch] = useReducer(reducer, { data: null, loading: false, error: null });
+export const BehaviorEvaluationViewModal: React.FC<BehaviorEvaluationViewModalProps> = ({
+  isOpen,
+  evaluationId,
+  onClose,
+  onEdit,
+}) => {
+  const [state, dispatch] = useReducer(reducer, { data: null, loading: false, error: null });
   const [inc, incDispatch] = useReducer(incReducer, { incidents: [], loading: false });
 
   useEffect(() => {
     if (isOpen && evaluationId !== null) {
-      stateDispatch({ type: "loading" });
-      behaviorEvaluationService.get(evaluationId).then((data) => {
-        stateDispatch({ type: "success", data });
+      dispatch({ type: "loading" });
+      behaviorEvaluationService.get({ id: evaluationId }).then((data) => {
+        dispatch({ type: "success", data });
         incDispatch({ type: "loading" });
-        behaviorEvaluationService.getRelatedIncidents(evaluationId).then((incidents) => incDispatch({ type: "success", incidents })).catch(() => incDispatch({ type: "error" }));
-      }).catch((err: Error) => stateDispatch({ type: "error", error: err.message }));
+        behaviorEvaluationService.getRelatedIncidents({ id: evaluationId })
+          .then((incidents) => incDispatch({ type: "success", incidents }))
+          .catch(() => incDispatch({ type: "error" }));
+      }).catch((err: Error) => dispatch({ type: "error", error: err.message }));
     }
   }, [isOpen, evaluationId]);
 
@@ -68,7 +95,3 @@ export const BehaviorEvaluationViewModal = ({ isOpen, evaluationId, onClose, onE
     </div>
   );
 };
-
-function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (<div className="flex items-start gap-2"><span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500">{icon}</span><div className="min-w-0 flex-1 leading-tight"><p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{label}</p><p className="truncate text-sm font-medium text-slate-900">{value}</p></div></div>);
-}

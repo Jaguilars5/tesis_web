@@ -1,8 +1,7 @@
 import { FileText, Hash, Mail, User, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
-
+import { DetailRow } from "@shared/components/DetailRow";
 import { userService } from "../users.service";
-
 import type { UserT } from "../users.types";
 
 interface State {
@@ -16,39 +15,34 @@ type Action =
   | { type: "success"; data: UserT }
   | { type: "error"; error: string };
 
-const reducer = (_state: State, action: Action): State => {
+function viewReducer(_state: State, action: Action): State {
   switch (action.type) {
-    case "loading":
-      return { data: null, loading: true, error: null };
-    case "success":
-      return { data: action.data, loading: false, error: null };
-    case "error":
-      return { data: null, loading: false, error: action.error };
+    case "loading": return { data: null, loading: true, error: null };
+    case "success": return { data: action.data, loading: false, error: null };
+    case "error": return { data: null, loading: false, error: action.error };
   }
-};
+}
 
-interface UsersViewModalProps {
+interface Props {
   isOpen: boolean;
   entityId: number | null;
   onClose: () => void;
 }
 
-export const UsersViewModal = ({
+export const UsersViewModal: React.FC<Props> = ({
   isOpen,
   entityId,
   onClose,
-}: UsersViewModalProps) => {
-  const [state, dispatch] = useReducer(reducer, {
-    data: null,
-    loading: false,
-    error: null,
+}) => {
+  const [state, dispatch] = useReducer(viewReducer, {
+    data: null, loading: false, error: null,
   });
 
   useEffect(() => {
     if (isOpen && entityId !== null) {
       dispatch({ type: "loading" });
       userService
-        .get(entityId)
+        .get({ id: entityId })
         .then((data) => dispatch({ type: "success", data }))
         .catch((err: Error) => dispatch({ type: "error", error: err.message }));
     }
@@ -62,18 +56,10 @@ export const UsersViewModal = ({
       <div className="relative w-full max-w-lg animate-slide-up overflow-hidden rounded-xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900">
-              Detalle de Usuario
-            </h3>
-            <p className="mt-0.5 text-sm text-slate-500">
-              Información del usuario
-            </p>
+            <h3 className="text-lg font-semibold text-slate-900">Detalle de Usuario</h3>
+            <p className="mt-0.5 text-sm text-slate-500">Información del usuario</p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-          >
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600">
             <X className="size-5" />
           </button>
         </div>
@@ -102,51 +88,19 @@ export const UsersViewModal = ({
 
           {state.data && (
             <div className="space-y-5">
-              <DetailRow
-                icon={<User className="size-4" />}
-                label="Usuario"
-                value={state.data.username}
-              />
-              <DetailRow
-                icon={<FileText className="size-4" />}
-                label="Nombre Completo"
-                value={`${state.data.names} ${state.data.last_names}`}
-              />
-              <DetailRow
-                icon={<Hash className="size-4" />}
-                label="Documento"
-                value={state.data.dni}
-              />
-              <DetailRow
-                icon={<Mail className="size-4" />}
-                label="Email"
-                value={state.data.email}
-              />
-              <DetailRow
-                icon={<FileText className="size-4" />}
-                label="Rol"
-                value={state.data.role_name ?? String(state.data.role)}
-              />
+              <DetailRow icon={<User className="size-4" />} label="Usuario" value={state.data.username} />
+              <DetailRow icon={<FileText className="size-4" />} label="Nombre Completo" value={`${state.data.names} ${state.data.last_names}`} />
+              <DetailRow icon={<Hash className="size-4" />} label="Documento" value={state.data.dni} />
+              <DetailRow icon={<Mail className="size-4" />} label="Email" value={state.data.email} />
+              <DetailRow icon={<FileText className="size-4" />} label="Rol" value={state.data.role_name ?? String(state.data.role)} />
               <div className="flex items-start gap-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                   <span className="size-2 rounded-full bg-current" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Estado
-                  </p>
-                  <span
-                    className={`mt-1 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium ${
-                      state.data.is_active
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    <span
-                      className={`size-1.5 rounded-full ${
-                        state.data.is_active ? "bg-emerald-500" : "bg-slate-400"
-                      }`}
-                    />
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Estado</p>
+                  <span className={`mt-1 inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium ${state.data.is_active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
+                    <span className={`size-1.5 rounded-full ${state.data.is_active ? "bg-emerald-500" : "bg-slate-400"}`} />
                     {state.data.is_active ? "Activo" : "Inactivo"}
                   </span>
                 </div>
@@ -156,38 +110,10 @@ export const UsersViewModal = ({
         </div>
 
         <div className="flex items-center justify-end border-t border-slate-200 px-6 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
-          >
+          <button type="button" onClick={onClose} className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
             Cerrar
           </button>
         </div>
-      </div>
-    </div>
-  );
-};
-
-const DetailRow = ({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) => {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
       </div>
     </div>
   );

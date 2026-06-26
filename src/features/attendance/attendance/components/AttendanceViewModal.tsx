@@ -2,6 +2,7 @@ import { BookOpen, Calendar, FileText, User, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
 import { format as fechaFormat } from "fecha";
 
+import { DetailRow } from "@shared/components/DetailRow";
 import { attendanceService } from "../attendance.service";
 
 import type { AttendanceT } from "../attendance.types";
@@ -19,15 +20,15 @@ function reducer(_state: State, action: Action): State {
 
 interface AttendanceViewModalProps { isOpen: boolean; attendanceId: number | null; onClose: () => void; }
 
-export const AttendanceViewModal = ({ isOpen, attendanceId, onClose }: AttendanceViewModalProps) => {
-  const [state, stateDispatch] = useReducer(reducer, { data: null, loading: false, error: null });
+export const AttendanceViewModal: React.FC<AttendanceViewModalProps> = ({ isOpen, attendanceId, onClose }) => {
+  const [state, dispatch] = useReducer(reducer, { data: null, loading: false, error: null });
 
   useEffect(() => {
     if (isOpen && attendanceId !== null) {
-      stateDispatch({ type: "loading" });
-      attendanceService.get(attendanceId)
-        .then((data) => stateDispatch({ type: "success", data }))
-        .catch((err: Error) => stateDispatch({ type: "error", error: err.message }));
+      dispatch({ type: "loading" });
+      attendanceService.get({ id: attendanceId })
+        .then((data) => dispatch({ type: "success", data }))
+        .catch((err: Error) => dispatch({ type: "error", error: err.message }));
     }
   }, [isOpen, attendanceId]);
 
@@ -74,12 +75,3 @@ export const AttendanceViewModal = ({ isOpen, attendanceId, onClose }: Attendanc
     </div>
   );
 };
-
-function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">{icon}</span>
-      <div className="min-w-0 flex-1"><p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</p><p className="mt-1 text-sm font-medium text-slate-900">{value}</p></div>
-    </div>
-  );
-}

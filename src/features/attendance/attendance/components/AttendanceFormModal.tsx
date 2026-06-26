@@ -1,21 +1,33 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
-import { useEffect } from "react";
 
 import { inputClassname, selectClassname } from "@app/styles/styles";
 import { CustomInput, CustomSelect } from "@shared/components/Form";
+import { ErrrosInForm } from "@shared/components/ErrrosInForm";
 
 import { attendanceSchema } from "../attendance.utils";
-import {
-  useAttendanceStatusOptions,
-  useAbsenceTypeOptions,
-  useEnrollmentOptions,
-  useAcademicPeriodOptions,
-  useTeacherSubjectSectionOptions,
-} from "../attendance.options";
+import { useEnrollmentOptions } from "../hooks/useEnrollmentOptions";
+import { useTeacherSubjectSectionOptions } from "../hooks/useTeacherSubjectSectionOptions";
+import { useAcademicPeriodOptions } from "../hooks/useAcademicPeriodOptions";
+import { useAttendanceStatusOptions } from "../hooks/useAttendanceStatusOptions";
+import { useAbsenceTypeOptions } from "../hooks/useAbsenceTypeOptions";
 
-import type { SubmitErrorState } from "../attendance.controller";
+import type { SubmitErrorState } from "@shared/utils/validationErrors";
 import type { AttendanceFormValues, AttendanceT } from "../attendance.types";
+
+const getFieldLabel = (field: string): string => {
+  const labels: Record<string, string> = {
+    enrollment: "Matrícula",
+    teacher_subject_section: "Clase",
+    academic_period: "Período Académico",
+    attendance_status: "Estado",
+    absence_type: "Tipo de Ausencia",
+    attendance_date: "Fecha",
+    observation: "Observaciones",
+    non_field_errors: "Error general",
+  };
+  return labels[field] || field;
+};
 
 interface AttendanceFormModalProps {
   isOpen: boolean;
@@ -26,7 +38,14 @@ interface AttendanceFormModalProps {
   submitErrors: SubmitErrorState;
 }
 
-export const AttendanceFormModal = ({ isOpen, onClose, isEdit, editingAttendance, onSubmit, submitErrors }: AttendanceFormModalProps) => {
+export const AttendanceFormModal: React.FC<AttendanceFormModalProps> = ({
+  isOpen,
+  onClose,
+  isEdit,
+  editingAttendance,
+  onSubmit,
+  submitErrors,
+}) => {
   const { enrollmentOptions, loading: loadingEnrollments } = useEnrollmentOptions();
   const { teacherSubjectSectionOptions, loading: loadingTSS } = useTeacherSubjectSectionOptions();
   const { academicPeriodOptions, loading: loadingPeriods } = useAcademicPeriodOptions();
@@ -51,11 +70,8 @@ export const AttendanceFormModal = ({ isOpen, onClose, isEdit, editingAttendance
   const formik = useFormik<AttendanceFormValues>({
     initialValues: getInitialValues(),
     validationSchema: attendanceSchema,
-    enableReinitialize: true,
     onSubmit,
   });
-
-  useEffect(() => { if (isOpen && editingAttendance) formik.setValues(getInitialValues()); }, [isOpen, editingAttendance]);
 
   const isLoading = loadingEnrollments || loadingTSS || loadingPeriods || loadingStatuses || loadingAbsenceTypes;
 
@@ -74,16 +90,7 @@ export const AttendanceFormModal = ({ isOpen, onClose, isEdit, editingAttendance
         </div>
 
         {(submitErrors.general.length > 0 || Object.keys(submitErrors.validation).length > 0) && (
-          <div className="mx-5 mt-3 rounded-lg border border-red-300 bg-red-50 p-4 shadow-sm">
-            <div className="flex items-start gap-2">
-              <svg className="mt-0.5 size-5 flex-shrink-0 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
-              <div className="flex-1">
-                <p className="mb-2 text-sm font-semibold text-red-800">Error al guardar la asistencia</p>
-                {submitErrors.general.length > 0 && (<ul className="mb-2 space-y-1">{submitErrors.general.map((err, i) => (<li key={i} className="text-sm text-red-700">• {err}</li>))}</ul>)}
-                {Object.keys(submitErrors.validation).length > 0 && (<ul className="space-y-1">{Object.entries(submitErrors.validation).map(([field, message]) => (<li key={field} className="text-sm text-red-700"><span className="font-semibold">{field}:</span> {message}</li>))}</ul>)}
-              </div>
-            </div>
-          </div>
+          <ErrrosInForm submitErrors={submitErrors} getFieldLabel={getFieldLabel} />
         )}
 
         <form onSubmit={formik.handleSubmit} className="space-y-4 p-5">

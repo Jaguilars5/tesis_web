@@ -1,6 +1,5 @@
 import { Eye, KeyRound, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-
 import {
   filterSelectClassname,
   tableClassname,
@@ -13,20 +12,19 @@ import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 import { useRoleOptions } from "@shared/hooks/useRoleOptions";
 import { STATUS_OPTIONS } from "@shared/hooks/useStatusOptions";
-
+import { Badge } from "@shared/components/Badge";
 import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps";
 import type { TableColumnProps } from "@shared/components/Table";
 import type { UserListParamsT, UserOrderingT, UserT } from "../users.types";
-import { Badge } from "@shared/components/Badge";
 
-const ORDERING_OPTIONS: { label: string; value: UserOrderingT }[] = [
+const OrderingOptions: { label: string; value: UserOrderingT }[] = [
   { label: "Usuario (A-Z)", value: "username" },
   { label: "Usuario (Z-A)", value: "-username" },
   { label: "Creado (asc)", value: "created_at" },
   { label: "Creado (desc)", value: "-created_at" },
 ];
 
-type UsersTableProps = {
+interface Props {
   data: UserT[];
   isLoading: boolean;
   loadData: (params?: UserListParamsT) => void;
@@ -34,9 +32,11 @@ type UsersTableProps = {
   onView: (entity: UserT) => void;
   onDelete: (entity: UserT) => void;
   onChangePassword: (entity: UserT) => void;
-};
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
 
-export const UsersTable = ({
+export const UsersTable: React.FC<Props> = ({
   data,
   isLoading,
   loadData,
@@ -44,7 +44,9 @@ export const UsersTable = ({
   onView,
   onDelete,
   onChangePassword,
-}: UsersTableProps) => {
+  canEdit = true,
+  canDelete = true,
+}) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -57,10 +59,10 @@ export const UsersTable = ({
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const buildFilters = useCallback(() => {
-    const f: Record<string, string | number | boolean> = {};
-    if (roleFilter) f.role_id = roleFilter;
-    if (isActiveFilter) f.is_active = isActiveFilter === "active";
-    return Object.keys(f).length > 0 ? f : undefined;
+    const filters: Record<string, string | number | boolean> = {};
+    if (roleFilter) filters.role_id = roleFilter;
+    if (isActiveFilter) filters.is_active = isActiveFilter === "active";
+    return Object.keys(filters).length > 0 ? filters : undefined;
   }, [roleFilter, isActiveFilter]);
 
   const fetchData = useCallback(
@@ -74,10 +76,7 @@ export const UsersTable = ({
       loadData({
         page: overrides?.page ?? page,
         pageSize: overrides?.pageSize ?? pageSize,
-        search:
-          overrides?.search !== undefined
-            ? overrides.search
-            : search || undefined,
+        search: overrides?.search !== undefined ? overrides.search : search || undefined,
         ordering: overrides?.ordering ?? ordering,
         filters: overrides?.filters ?? buildFilters(),
       });
@@ -90,12 +89,11 @@ export const UsersTable = ({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
       setSearch(value);
       setPage(1);
       setHasSearched(true);
-
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         fetchData({ page: 1, search: value || undefined });
@@ -105,8 +103,8 @@ export const UsersTable = ({
   );
 
   const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as UserOrderingT;
+    (option: SelectOptionT) => {
+      const newOrdering = option.value as UserOrderingT;
       setOrdering(newOrdering);
       setPage(1);
       fetchData({ page: 1, ordering: newOrdering });
@@ -114,14 +112,22 @@ export const UsersTable = ({
     [fetchData],
   );
 
-  const hRole = useCallback((o: SelectOptionT) => {
-    setRoleFilter(Number(o.value) || 0);
-    setPage(1);
-  }, []);
-  const hIsActive = useCallback((o: SelectOptionT) => {
-    setIsActiveFilter(o.value as string);
-    setPage(1);
-  }, []);
+  const handleRoleChange = useCallback(
+    (option: SelectOptionT) => {
+      setRoleFilter(Number(option.value) || 0);
+      setPage(1);
+    },
+    [],
+  );
+
+  const handleIsActiveChange = useCallback(
+    (option: SelectOptionT) => {
+      setIsActiveFilter(option.value as string);
+      setPage(1);
+    },
+    [],
+  );
+
   useEffect(() => {
     fetchData({ page: 1 });
   }, [roleFilter, isActiveFilter]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -129,37 +135,21 @@ export const UsersTable = ({
   const hasNextPage = data.length >= pageSize;
 
   const columns: TableColumnProps<UserT>[] = [
-    {
-      key: "username",
-      label: "Usuario",
-      className: tableFirstColumnClassname,
-    },
+    { key: "username", label: "Usuario", className: tableFirstColumnClassname },
     {
       key: "names",
       label: "Nombres",
       className: tableColumnsClassname,
-      render: (p) => (
-        <span>
-          {p.names} {p.last_names}
-        </span>
-      ),
+      render: (entity) => <span>{entity.names} {entity.last_names}</span>,
     },
-    {
-      key: "email",
-      label: "Email",
-      className: tableColumnsClassname,
-    },
-    {
-      key: "role_name",
-      label: "Rol",
-      className: tableColumnsClassname,
-    },
+    { key: "email", label: "Email", className: tableColumnsClassname },
+    { key: "role_name", label: "Rol", className: tableColumnsClassname },
     {
       key: "is_active",
       label: "Estado",
       className: tableColumnsClassname,
-      render: (s) =>
-        s.is_active ? (
+      render: (entity) =>
+        entity.is_active ? (
           <Badge variant="default">Activo</Badge>
         ) : (
           <Badge variant="outline">Inactivo</Badge>
@@ -185,7 +175,7 @@ export const UsersTable = ({
           placeholder="Todos los roles"
           value={roleFilter}
           options={roleOptions}
-          onChange={hRole}
+          onChange={handleRoleChange}
           className={filterSelectClassname}
         />
         <CustomSelect
@@ -194,22 +184,22 @@ export const UsersTable = ({
           placeholder="Todos"
           value={isActiveFilter}
           options={STATUS_OPTIONS}
-          onChange={hIsActive}
+          onChange={handleIsActiveChange}
           className={filterSelectClassname}
         />
 
-        <select
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por..."
           value={ordering}
+          options={OrderingOptions.map((option) => ({
+            label: option.label,
+            value: option.value,
+          }))}
           onChange={handleOrderingChange}
-          className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Ordenar por"
-        >
-          {ORDERING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          className={filterSelectClassname}
+        />
       </div>
 
       <CustomTable<UserT>
@@ -224,40 +214,24 @@ export const UsersTable = ({
         actionsTitle="Acciones"
         className={tableClassname}
         loadingMessage="Cargando usuarios..."
-        rowActions={(p) => (
+        rowActions={(entity) => (
           <div className="flex items-center justify-end gap-1">
-            <button
-              type="button"
-              onClick={() => onView(p)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Ver detalle"
-            >
+            <button type="button" onClick={() => onView(entity)} className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" title="Ver detalle">
               <Eye className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(p)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Editar"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onChangePassword(p)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-amber-400 transition-colors hover:bg-amber-50 hover:text-amber-600"
-              title="Cambiar contraseña"
-            >
+            {canEdit && (
+              <button type="button" onClick={() => onEdit(entity)} className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" title="Editar">
+                <Pencil className="size-4" />
+              </button>
+            )}
+            <button type="button" onClick={() => onChangePassword(entity)} className="inline-flex items-center justify-center rounded-md p-2 text-amber-400 transition-colors hover:bg-amber-50 hover:text-amber-600" title="Cambiar contraseña">
               <KeyRound className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onDelete(p)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-              title="Eliminar"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            {canDelete && (
+              <button type="button" onClick={() => onDelete(entity)} className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600" title="Eliminar">
+                <Trash2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       />
@@ -268,15 +242,8 @@ export const UsersTable = ({
         totalItems={data.length}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
-        onPageChange={(newPage) => {
-          setPage(newPage);
-          fetchData({ page: newPage });
-        }}
-        onPageSizeChange={(newSize) => {
-          setPageSize(newSize);
-          setPage(1);
-          fetchData({ page: 1, pageSize: newSize });
-        }}
+        onPageChange={(newPage) => { setPage(newPage); fetchData({ page: newPage }); }}
+        onPageSizeChange={(newSize) => { setPageSize(newSize); setPage(1); fetchData({ page: 1, pageSize: newSize }); }}
       />
     </div>
   );

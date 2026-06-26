@@ -26,19 +26,6 @@ export interface AttendanceListParamsT {
   ordering?: AttendanceOrderingT;
 }
 
-export type AttendanceCreateDataT = Omit<AttendanceT, "id" | "enrollment_name" | "teacher_subject_section_name" | "academic_period_name" | "attendance_status_name" | "uuid" | "sync_version" | "created_at" | "updated_at">;
-export type AttendanceCreateParamsT = AttendanceCreateDataT;
-export type AttendanceUpdateDataT = Partial<Omit<AttendanceT, "id" | "uuid" | "sync_version" | "created_at" | "updated_at">>;
-export interface AttendanceUpdateParamsT { id: number; data: AttendanceUpdateDataT; }
-export type AttendanceGetParamsT = number;
-
-export interface AttendanceServiceT {
-  list(params?: AttendanceListParamsT): Promise<AttendanceT[]>;
-  get(id: AttendanceGetParamsT): Promise<AttendanceT>;
-  create(data: AttendanceCreateDataT): Promise<AttendanceT>;
-  update(params: AttendanceUpdateParamsT): Promise<AttendanceT>;
-}
-
 export interface AttendanceFormValues {
   enrollment: number | null;
   teacher_subject_section: number | null;
@@ -47,4 +34,16 @@ export interface AttendanceFormValues {
   absence_type: number | null;
   attendance_date: string;
   observation: string;
+}
+
+export type AttendanceCreateParamsT = Omit<AttendanceT, "id" | "enrollment_name" | "teacher_subject_section_name" | "academic_period_name" | "attendance_status_name" | "uuid" | "sync_version" | "created_at" | "updated_at">;
+export type AttendanceUpdateDataT = Partial<Omit<AttendanceT, "id" | "uuid" | "sync_version" | "created_at" | "updated_at">>;
+export interface AttendanceUpdateParamsT { id: number; data: AttendanceUpdateDataT; }
+export interface AttendanceGetParamsT { id: number; }
+
+export interface AttendanceServiceT {
+  list(params?: AttendanceListParamsT): Promise<AttendanceT[]>;
+  get(params: AttendanceGetParamsT): Promise<AttendanceT>;
+  create(params: AttendanceCreateParamsT): Promise<AttendanceT>;
+  update(params: AttendanceUpdateParamsT): Promise<AttendanceT>;
 }

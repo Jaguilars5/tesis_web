@@ -1,8 +1,7 @@
 import { FileText, Hash, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
-
+import { DetailRow } from "@shared/components/DetailRow";
 import { permissionService } from "../permission.service";
-
 import type { PermissionT } from "../permission.types";
 
 interface State {
@@ -16,7 +15,7 @@ type Action =
   | { type: "success"; data: PermissionT }
   | { type: "error"; error: string };
 
-const reducer = (_state: State, action: Action): State => {
+function viewReducer(_state: State, action: Action): State {
   switch (action.type) {
     case "loading":
       return { data: null, loading: true, error: null };
@@ -25,20 +24,20 @@ const reducer = (_state: State, action: Action): State => {
     case "error":
       return { data: null, loading: false, error: action.error };
   }
-};
+}
 
-interface PermissionViewModalProps {
+interface Props {
   isOpen: boolean;
   entityId: number | null;
   onClose: () => void;
 }
 
-export const PermissionViewModal = ({
+export const PermissionViewModal: React.FC<Props> = ({
   isOpen,
   entityId,
   onClose,
-}: PermissionViewModalProps) => {
-  const [state, dispatch] = useReducer(reducer, {
+}) => {
+  const [state, dispatch] = useReducer(viewReducer, {
     data: null,
     loading: false,
     error: null,
@@ -48,9 +47,11 @@ export const PermissionViewModal = ({
     if (isOpen && entityId !== null) {
       dispatch({ type: "loading" });
       permissionService
-        .get(entityId)
+        .get({ id: entityId })
         .then((data) => dispatch({ type: "success", data }))
-        .catch((err: Error) => dispatch({ type: "error", error: err.message }));
+        .catch((err: Error) =>
+          dispatch({ type: "error", error: err.message }),
+        );
     }
   }, [isOpen, entityId]);
 
@@ -130,30 +131,6 @@ export const PermissionViewModal = ({
             Cerrar
           </button>
         </div>
-      </div>
-    </div>
-  );
-};
-
-const DetailRow = ({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) => {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-        {icon}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
       </div>
     </div>
   );

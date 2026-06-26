@@ -1,3 +1,5 @@
+import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+
 export interface AbsenceTypeT {
   id: number;
   code: string;
@@ -17,24 +19,30 @@ export interface AbsenceTypeListParamsT {
   ordering?: AbsenceTypeOrderingT;
 }
 
-export type AbsenceTypeCreateDataT = Omit<AbsenceTypeT, "id" | "is_active" | "created_at" | "updated_at">;
-export type AbsenceTypeCreateParamsT = AbsenceTypeCreateDataT;
-export type AbsenceTypeUpdateDataT = Partial<Omit<AbsenceTypeT, "id">>;
-export interface AbsenceTypeUpdateParamsT { id: number; data: AbsenceTypeUpdateDataT; }
-export type AbsenceTypeGetParamsT = number;
-export type AbsenceTypeDeleteParamsT = number;
-
-export interface AbsenceTypeServiceT {
-  list(params?: AbsenceTypeListParamsT): Promise<AbsenceTypeT[]>;
-  get(id: AbsenceTypeGetParamsT): Promise<AbsenceTypeT>;
-  create(data: AbsenceTypeCreateDataT): Promise<AbsenceTypeT>;
-  update(params: AbsenceTypeUpdateParamsT): Promise<AbsenceTypeT>;
-  delete(id: AbsenceTypeDeleteParamsT): Promise<{ id: number }>;
-}
-
 export interface AbsenceTypeFormValues {
   code: string;
   name: string;
   description: string;
-  is_active: boolean;
+}
+
+export type AbsenceTypeCreateParamsT = AbsenceTypeFormValues;
+export type AbsenceTypeUpdateDataT = Partial<AbsenceTypeFormValues>;
+export interface AbsenceTypeUpdateParamsT {
+  id: number;
+  data: AbsenceTypeUpdateDataT;
+}
+export interface AbsenceTypeGetParamsT {
+  id: number;
+}
+export interface AbsenceTypeDeleteParamsT {
+  id: number;
+  confirm?: boolean;
+}
+
+export interface AbsenceTypeServiceT {
+  list(params?: AbsenceTypeListParamsT): Promise<AbsenceTypeT[]>;
+  get(params: AbsenceTypeGetParamsT): Promise<AbsenceTypeT>;
+  create(params: AbsenceTypeCreateParamsT): Promise<AbsenceTypeT>;
+  update(params: AbsenceTypeUpdateParamsT): Promise<AbsenceTypeT>;
+  softDelete(params: AbsenceTypeDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

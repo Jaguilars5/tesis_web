@@ -1,4 +1,3 @@
-import { CheckCircle, Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -29,7 +28,7 @@ import type {
   UrgencyLevelT,
 } from "../early-alerts.types";
 
-const ORDERING_OPTIONS: { label: string; value: EarlyAlertOrderingT }[] = [
+const OrderingOptions: { label: string; value: EarlyAlertOrderingT }[] = [
   { label: "Detectado (reciente)", value: "-detected_at" },
   { label: "Detectado (antiguo)", value: "detected_at" },
   { label: "Urgencia (asc)", value: "urgency_level" },
@@ -51,6 +50,8 @@ type EarlyAlertTableProps = {
   onView: (entity: EarlyAlertT) => void;
   onDelete: (entity: EarlyAlertT) => void;
   onMarkAttended: (entity: EarlyAlertT) => void;
+  canEdit?: boolean;
+  canDelete?: boolean;
 };
 
 const urgencyColor = (level: string | null): string => {
@@ -67,10 +68,12 @@ export const EarlyAlertTable = ({
   data,
   isLoading,
   loadData,
-  onEdit,
-  onView,
-  onDelete,
-  onMarkAttended,
+  onEdit: _onEdit,
+  onView: _onView,
+  onDelete: _onDelete,
+  onMarkAttended: _onMarkAttended,
+  canEdit: _canEdit,
+  canDelete: _canDelete,
 }: EarlyAlertTableProps) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -260,7 +263,7 @@ export const EarlyAlertTable = ({
           className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           aria-label="Ordenar por"
         >
-          {ORDERING_OPTIONS.map((opt) => (
+          {OrderingOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>

@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-
 import type { RootState } from "@shared/redux/store";
 import type { RequestStatusT } from "@shared/types/request.types";
 import type { UserT } from "./users.types";
@@ -37,15 +36,15 @@ const userSlice = createSlice({
       state.status = "succeeded";
     },
     entityUpdated(state, action: PayloadAction<UserT>) {
-      const idx = state.users.findIndex(
-        (p) => p.id === action.payload.id,
+      const index = state.users.findIndex(
+        (item) => item.id === action.payload.id,
       );
-      if (idx !== -1) state.users[idx] = action.payload;
+      if (index !== -1) state.users[index] = action.payload;
       state.status = "succeeded";
     },
     entityDeleted(state, action: PayloadAction<number>) {
       state.users = state.users.filter(
-        (p) => p.id !== action.payload,
+        (item) => item.id !== action.payload,
       );
       state.status = "succeeded";
     },
@@ -53,7 +52,7 @@ const userSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    clearError(state) {
+    clearUserError(state) {
       state.error = null;
     },
   },
@@ -67,7 +66,7 @@ export const {
   entityUpdated,
   entityDeleted,
   mutationError,
-  clearError,
+  clearUserError,
 } = userSlice.actions;
 
 export const selectUsers = (state: RootState): UserT[] =>
@@ -80,5 +79,4 @@ export const selectUsersError = (state: RootState): string | null =>
   state.iam.users.error;
 
 export const userReducer = userSlice.reducer;
-
 export default userSlice.reducer;

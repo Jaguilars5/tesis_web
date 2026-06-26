@@ -7,5 +7,4 @@ export const roleSchema = Yup.object({
   description: Yup.string()
     .required("La descripción es obligatoria")
     .max(255, "La descripción no debe exceder 255 caracteres"),
-  is_active: Yup.boolean(),
 });

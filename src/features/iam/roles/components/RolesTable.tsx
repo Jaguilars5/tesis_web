@@ -1,6 +1,5 @@
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-
 import {
   filterSelectClassname,
   tableClassname,
@@ -12,36 +11,39 @@ import { SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 import { STATUS_OPTIONS } from "@shared/hooks/useStatusOptions";
-
+import { Badge } from "@shared/components/Badge";
 import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps";
 import type { TableColumnProps } from "@shared/components/Table";
 import type { RoleListParamsT, RoleOrderingT, RoleT } from "../roles.types";
-import { Badge } from "@shared/components/Badge";
 
-const ORDERING_OPTIONS: { label: string; value: RoleOrderingT }[] = [
+const OrderingOptions: { label: string; value: RoleOrderingT }[] = [
   { label: "Nombre (A-Z)", value: "name" },
   { label: "Nombre (Z-A)", value: "-name" },
   { label: "Creado (asc)", value: "created_at" },
   { label: "Creado (desc)", value: "-created_at" },
 ];
 
-type RolesTableProps = {
+interface Props {
   data: RoleT[];
   isLoading: boolean;
   loadData: (params?: RoleListParamsT) => void;
   onEdit: (entity: RoleT) => void;
   onView: (entity: RoleT) => void;
   onDelete: (entity: RoleT) => void;
-};
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
 
-export const RolesTable = ({
+export const RolesTable: React.FC<Props> = ({
   data,
   isLoading,
   loadData,
   onEdit,
   onView,
   onDelete,
-}: RolesTableProps) => {
+  canEdit = true,
+  canDelete = true,
+}) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -52,9 +54,9 @@ export const RolesTable = ({
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const buildFilters = useCallback(() => {
-    const f: Record<string, string | number | boolean> = {};
-    if (isActiveFilter) f.is_active = isActiveFilter === "active";
-    return Object.keys(f).length > 0 ? f : undefined;
+    const filters: Record<string, string | number | boolean> = {};
+    if (isActiveFilter) filters.is_active = isActiveFilter === "active";
+    return Object.keys(filters).length > 0 ? filters : undefined;
   }, [isActiveFilter]);
 
   const fetchData = useCallback(
@@ -68,10 +70,7 @@ export const RolesTable = ({
       loadData({
         page: overrides?.page ?? page,
         pageSize: overrides?.pageSize ?? pageSize,
-        search:
-          overrides?.search !== undefined
-            ? overrides.search
-            : search || undefined,
+        search: overrides?.search !== undefined ? overrides.search : search || undefined,
         ordering: overrides?.ordering ?? ordering,
         filters: overrides?.filters ?? buildFilters(),
       });
@@ -84,12 +83,11 @@ export const RolesTable = ({
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
       setSearch(value);
       setPage(1);
       setHasSearched(true);
-
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
         fetchData({ page: 1, search: value || undefined });
@@ -99,8 +97,8 @@ export const RolesTable = ({
   );
 
   const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as RoleOrderingT;
+    (option: SelectOptionT) => {
+      const newOrdering = option.value as RoleOrderingT;
       setOrdering(newOrdering);
       setPage(1);
       fetchData({ page: 1, ordering: newOrdering });
@@ -108,10 +106,14 @@ export const RolesTable = ({
     [fetchData],
   );
 
-  const hIsActive = useCallback((o: SelectOptionT) => {
-    setIsActiveFilter(o.value as string);
-    setPage(1);
-  }, []);
+  const handleIsActiveChange = useCallback(
+    (option: SelectOptionT) => {
+      setIsActiveFilter(option.value as string);
+      setPage(1);
+    },
+    [],
+  );
+
   useEffect(() => {
     fetchData({ page: 1 });
   }, [isActiveFilter]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -119,22 +121,14 @@ export const RolesTable = ({
   const hasNextPage = data.length >= pageSize;
 
   const columns: TableColumnProps<RoleT>[] = [
-    {
-      key: "name",
-      label: "Nombre",
-      className: tableFirstColumnClassname,
-    },
-    {
-      key: "description",
-      label: "Descripción",
-      className: tableColumnsClassname,
-    },
+    { key: "name", label: "Nombre", className: tableFirstColumnClassname },
+    { key: "description", label: "Descripción", className: tableColumnsClassname },
     {
       key: "is_active",
       label: "Estado",
       className: tableColumnsClassname,
-      render: (s) =>
-        s.is_active ? (
+      render: (entity) =>
+        entity.is_active ? (
           <Badge variant="default">Activo</Badge>
         ) : (
           <Badge variant="outline">Inactivo</Badge>
@@ -160,22 +154,22 @@ export const RolesTable = ({
           placeholder="Todos"
           value={isActiveFilter}
           options={STATUS_OPTIONS}
-          onChange={hIsActive}
+          onChange={handleIsActiveChange}
           className={filterSelectClassname}
         />
 
-        <select
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por..."
           value={ordering}
+          options={OrderingOptions.map((option) => ({
+            label: option.label,
+            value: option.value,
+          }))}
           onChange={handleOrderingChange}
-          className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Ordenar por"
-        >
-          {ORDERING_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          className={filterSelectClassname}
+        />
       </div>
 
       <CustomTable<RoleT>
@@ -190,32 +184,36 @@ export const RolesTable = ({
         actionsTitle="Acciones"
         className={tableClassname}
         loadingMessage="Cargando roles..."
-        rowActions={(p) => (
+        rowActions={(entity) => (
           <div className="flex items-center justify-end gap-1">
             <button
               type="button"
-              onClick={() => onView(p)}
+              onClick={() => onView(entity)}
               className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
               title="Ver detalle"
             >
               <Eye className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(p)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Editar"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(p)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-              title="Desactivar"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(entity)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                title="Editar"
+              >
+                <Pencil className="size-4" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(entity)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                title="Desactivar"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       />

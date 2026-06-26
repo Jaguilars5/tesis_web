@@ -1,14 +1,17 @@
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
 import { Badge } from "@shared/components/Badge";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
+
 import type { TableColumnProps } from "@shared/components/Table";
 import type {
   IncidentTypeListParamsT,
@@ -16,59 +19,53 @@ import type {
   IncidentTypeT,
 } from "../incident-type.types";
 
-const ORDERING_OPTIONS: { label: string; value: IncidentTypeOrderingT }[] = [
+const OrderingOptions: { label: string; value: IncidentTypeOrderingT }[] = [
   { label: "Nombre (A-Z)", value: "name" },
   { label: "Nombre (Z-A)", value: "-name" },
   { label: "Código (A-Z)", value: "code" },
   { label: "Código (Z-A)", value: "-code" },
 ];
 
-type Props = {
+interface IncidentTypeTableProps {
   incidentTypes: IncidentTypeT[];
   isLoading: boolean;
   loadIncidentTypes: (params?: IncidentTypeListParamsT) => void;
   onEdit: (s: IncidentTypeT) => void;
   onView: (s: IncidentTypeT) => void;
   onDelete: (s: IncidentTypeT) => void;
-};
+  canEdit?: boolean;
+  canDelete?: boolean;
+}
 
-export const IncidentTypeTable = ({
+export const IncidentTypeTable: React.FC<IncidentTypeTableProps> = ({
   incidentTypes,
   isLoading,
   loadIncidentTypes,
   onEdit,
   onView,
   onDelete,
-}: Props) => {
+  canEdit = true,
+  canDelete = true,
+}) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] = useState<IncidentTypeOrderingT>("name");
   const [hasSearched, setHasSearched] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
   const fetchData = useCallback(
-    (overrides?: {
-      page?: number;
-      pageSize?: number;
-      search?: string;
-      ordering?: IncidentTypeOrderingT;
-    }) => {
-      loadIncidentTypes({
-        page: overrides?.page ?? page,
-        pageSize: overrides?.pageSize ?? pageSize,
-        search:
-          overrides?.search !== undefined
-            ? overrides.search
-            : search || undefined,
-        ordering: overrides?.ordering ?? ordering,
-      });
+    (params?: IncidentTypeListParamsT) => {
+      loadIncidentTypes(params);
     },
-    [loadIncidentTypes, page, pageSize, search, ordering],
+    [loadIncidentTypes],
   );
+
   useEffect(() => {
     fetchData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const handleSearchChange = useCallback(
+
+  const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const v = e.target.value;
       setSearch(v);
@@ -81,16 +78,18 @@ export const IncidentTypeTable = ({
     },
     [fetchData],
   );
-  const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as IncidentTypeOrderingT;
-      setOrdering(newOrdering);
+
+  const handleOrdering = useCallback(
+    (value: IncidentTypeOrderingT) => {
+      setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: newOrdering });
+      fetchData({ page: 1, ordering: value });
     },
     [fetchData],
   );
+
   const hasNextPage = incidentTypes.length >= pageSize;
+
   const columns: TableColumnProps<IncidentTypeT>[] = [
     {
       key: "name",
@@ -120,30 +119,31 @@ export const IncidentTypeTable = ({
         ),
     },
   ];
+
   return (
     <div className="overflow-visible rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-slate-50/50 px-4 py-3">
         <SearchInput
           name="search"
           type="text"
-          onChange={handleSearchChange}
+          onChange={handleSearch}
           value={search}
           className="relative min-w-50 flex-1"
           placeholder="Filtrar tipos..."
         />
-        <select
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por"
           value={ordering}
-          onChange={handleOrderingChange}
-          className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Ordenar por"
-        >
-          {ORDERING_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+          options={OrderingOptions}
+          onChange={(option) =>
+            handleOrdering(option.value as IncidentTypeOrderingT)
+          }
+          className={filterSelectClassname}
+        />
       </div>
+
       <CustomTable<IncidentTypeT>
         data={incidentTypes}
         columns={columns}
@@ -166,25 +166,30 @@ export const IncidentTypeTable = ({
             >
               <Eye className="size-4" />
             </button>
-            <button
-              type="button"
-              onClick={() => onEdit(s)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              title="Editar"
-            >
-              <Pencil className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onDelete(s)}
-              className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-              title="Desactivar"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(s)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                title="Editar"
+              >
+                <Pencil className="size-4" />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(s)}
+                className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                title="Desactivar"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            )}
           </div>
         )}
       />
+
       <Pagination
         page={page}
         pageSize={pageSize}

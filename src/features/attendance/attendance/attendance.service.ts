@@ -2,7 +2,7 @@ import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
 import { ATTENDANCE_ENDPOINTS } from "./attendance.constants";
 import type {
-  AttendanceCreateDataT,
+  AttendanceCreateParamsT,
   AttendanceGetParamsT,
   AttendanceListParamsT,
   AttendanceServiceT,
@@ -13,32 +13,42 @@ import type {
 class AttendanceService implements AttendanceServiceT {
   async list(params?: AttendanceListParamsT): Promise<AttendanceT[]> {
     try {
-      const queryParams = new URLSearchParams();
-      if (params?.page) queryParams.set("page", String(params.page));
-      if (params?.pageSize) queryParams.set("page_size", String(params.pageSize));
-      if (params?.search) queryParams.set("search", params.search);
-      if (params?.ordering) queryParams.set("ordering", params.ordering);
-      const query = queryParams.toString();
-      const url = query ? `${ATTENDANCE_ENDPOINTS.LIST}?${query}` : ATTENDANCE_ENDPOINTS.LIST;
-      const { data } = await apiClient.get<ResponseApi<PaginatedData<AttendanceT>>>(url);
+      const page = params?.page ?? 1;
+      const pageSize = params?.pageSize ?? 100;
+      const searchQuery = params?.search
+        ? `&search=${encodeURIComponent(params.search)}`
+        : "";
+      const orderingQuery = params?.ordering
+        ? `&ordering=${encodeURIComponent(params.ordering)}`
+        : "";
+      const { data } = await apiClient.get<
+        ResponseApi<PaginatedData<AttendanceT>>
+      >(
+        `${ATTENDANCE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+      );
       return data.data.results;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
   }
 
-  async get(id: AttendanceGetParamsT): Promise<AttendanceT> {
+  async get(params: AttendanceGetParamsT): Promise<AttendanceT> {
     try {
-      const { data } = await apiClient.get<ResponseApi<AttendanceT>>(ATTENDANCE_ENDPOINTS.DETAIL(id));
+      const { data } = await apiClient.get<ResponseApi<AttendanceT>>(
+        ATTENDANCE_ENDPOINTS.GET(params.id),
+      );
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
   }
 
-  async create(payload: AttendanceCreateDataT): Promise<AttendanceT> {
+  async create(payload: AttendanceCreateParamsT): Promise<AttendanceT> {
     try {
-      const { data } = await apiClient.post<ResponseApi<AttendanceT>>(ATTENDANCE_ENDPOINTS.LIST, payload);
+      const { data } = await apiClient.post<ResponseApi<AttendanceT>>(
+        ATTENDANCE_ENDPOINTS.CREATE,
+        payload,
+      );
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
@@ -47,7 +57,10 @@ class AttendanceService implements AttendanceServiceT {
 
   async update(params: AttendanceUpdateParamsT): Promise<AttendanceT> {
     try {
-      const { data } = await apiClient.patch<ResponseApi<AttendanceT>>(ATTENDANCE_ENDPOINTS.DETAIL(params.id), params.data);
+      const { data } = await apiClient.patch<ResponseApi<AttendanceT>>(
+        ATTENDANCE_ENDPOINTS.UPDATE(params.id),
+        params.data,
+      );
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });

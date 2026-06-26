@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-
 import type { RootState } from "@shared/redux/store";
 import type { RequestStatusT } from "@shared/types/request.types";
 import type { PermissionT } from "./permission.types";
@@ -37,15 +36,15 @@ const permissionSlice = createSlice({
       state.status = "succeeded";
     },
     entityUpdated(state, action: PayloadAction<PermissionT>) {
-      const idx = state.permissions.findIndex(
-        (p) => p.id === action.payload.id,
+      const index = state.permissions.findIndex(
+        (item) => item.id === action.payload.id,
       );
-      if (idx !== -1) state.permissions[idx] = action.payload;
+      if (index !== -1) state.permissions[index] = action.payload;
       state.status = "succeeded";
     },
     entityDeleted(state, action: PayloadAction<number>) {
       state.permissions = state.permissions.filter(
-        (p) => p.id !== action.payload,
+        (item) => item.id !== action.payload,
       );
       state.status = "succeeded";
     },
@@ -53,7 +52,7 @@ const permissionSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
-    clearError(state) {
+    clearPermissionError(state) {
       state.error = null;
     },
   },
@@ -67,7 +66,7 @@ export const {
   entityUpdated,
   entityDeleted,
   mutationError,
-  clearError,
+  clearPermissionError,
 } = permissionSlice.actions;
 
 export const selectPermissions = (state: RootState): PermissionT[] =>
@@ -80,5 +79,4 @@ export const selectPermissionsError = (state: RootState): string | null =>
   state.iam.permissions.error;
 
 export const permissionReducer = permissionSlice.reducer;
-
 export default permissionSlice.reducer;

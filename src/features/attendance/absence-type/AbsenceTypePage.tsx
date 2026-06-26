@@ -1,41 +1,43 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState } from "react";
 
-import {
-  useAbsenceTypeController,
-  useAbsenceTypeForm,
-} from "./absence-type.controller";
+import { selectUserPermissions } from "@features/auth/auth.slice";
+import { useAppSelector } from "@shared/redux/hooks";
+import { hasPermission } from "@shared/utils/permissions";
+
+import { useAbsenceTypeController } from "./hooks/useAbsenceTypeController";
+import { useAbsenceTypeForm } from "./hooks/useAbsenceTypeForm";
 import { AbsenceTypeDeleteModal } from "./components/AbsenceTypeDeleteModal";
 import { AbsenceTypeFormModal } from "./components/AbsenceTypeFormModal";
 import { AbsenceTypeTable } from "./components/AbsenceTypeTable";
 import { AbsenceTypeViewModal } from "./components/AbsenceTypeViewModal";
 
 import type { AbsenceTypeT } from "./absence-type.types";
+import { ABSENCE_TYPE_PERMISSIONS } from "./absence-type.constants";
 
 export default function AbsenceTypesPage() {
-  const {
-    absenceTypes,
-    isLoading,
-    loadAbsenceTypes,
-    createAbsenceType,
-    updateAbsenceType,
-    deleteAbsenceType,
-  } = useAbsenceTypeController();
+  const permissions = useAppSelector(selectUserPermissions);
+  const canCreate = hasPermission(permissions, ABSENCE_TYPE_PERMISSIONS.CREATE);
+  const canEdit = hasPermission(permissions, ABSENCE_TYPE_PERMISSIONS.UPDATE);
+  const canDelete = hasPermission(permissions, ABSENCE_TYPE_PERMISSIONS.DELETE);
+
+  const { items, isLoading, loadItems, createItem, updateItem, deleteItem } =
+    useAbsenceTypeController();
 
   const {
     isOpen,
     isEdit,
-    editingAbsenceType,
+    editingItem,
     submitErrors,
     openModal,
     closeModal,
     handleSubmit,
-  } = useAbsenceTypeForm({ create: createAbsenceType, update: updateAbsenceType });
+  } = useAbsenceTypeForm({ create: createItem, update: updateItem });
 
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
 
-  const [deletingAbsenceType, setDeletingAbsenceType] = useState<AbsenceTypeT | null>(null);
+  const [deletingItem, setDeletingItem] = useState<AbsenceTypeT | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const openViewModal = useCallback((absenceType: AbsenceTypeT) => {
@@ -49,21 +51,14 @@ export default function AbsenceTypesPage() {
   }, []);
 
   const openDeleteModal = useCallback((absenceType: AbsenceTypeT) => {
-    setDeletingAbsenceType(absenceType);
+    setDeletingItem(absenceType);
     setIsDeleteOpen(true);
   }, []);
 
   const closeDeleteModal = useCallback(() => {
     setIsDeleteOpen(false);
-    setDeletingAbsenceType(null);
+    setDeletingItem(null);
   }, []);
-
-  const handleDeleteConfirm = useCallback(
-    async (id: number) => {
-      await deleteAbsenceType(id);
-    },
-    [deleteAbsenceType],
-  );
 
   return (
     <div className="space-y-4">
@@ -74,30 +69,35 @@ export default function AbsenceTypesPage() {
             Gestiona los tipos de ausencia
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => openModal()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <Plus className="size-4" />
-          Nuevo Tipo de Ausencia
-        </button>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => openModal()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Plus className="size-4" />
+            Nuevo Tipo de Ausencia
+          </button>
+        )}
       </div>
 
       <AbsenceTypeTable
-        absenceTypes={absenceTypes}
+        absenceTypes={items}
         isLoading={isLoading}
-        loadAbsenceTypes={loadAbsenceTypes}
+        loadAbsenceTypes={loadItems}
         onEdit={openModal}
         onView={openViewModal}
         onDelete={openDeleteModal}
+        canEdit={canEdit}
+        canDelete={canDelete}
       />
 
       <AbsenceTypeFormModal
+        key={editingItem?.id ?? "create"}
         isOpen={isOpen}
         onClose={closeModal}
         isEdit={isEdit}
-        editingAbsenceType={editingAbsenceType}
+        editingAbsenceType={editingItem}
         onSubmit={handleSubmit}
         submitErrors={submitErrors}
       />
@@ -110,9 +110,9 @@ export default function AbsenceTypesPage() {
 
       <AbsenceTypeDeleteModal
         isOpen={isDeleteOpen}
-        absenceType={deletingAbsenceType}
+        absenceType={deletingItem}
         onClose={closeDeleteModal}
-        onConfirm={handleDeleteConfirm}
+        onSoftDelete={deleteItem}
       />
     </div>
   );

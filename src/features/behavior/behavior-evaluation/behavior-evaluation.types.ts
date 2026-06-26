@@ -30,19 +30,50 @@ export interface BehaviorEvaluationT {
 }
 
 export type BehaviorEvaluationOrderingT = "id" | "-id";
-export interface BehaviorEvaluationListParamsT { page?: number; pageSize?: number; search?: string; ordering?: BehaviorEvaluationOrderingT; enrollment?: number; academic_period?: number; }
-export type BehaviorEvaluationUpdateDataT = Partial<Omit<BehaviorEvaluationT, "id">>;
-export interface BehaviorEvaluationUpdateParamsT { id: number; data: BehaviorEvaluationUpdateDataT; }
-export type BehaviorEvaluationGetParamsT = number;
-export interface BehaviorEvaluationCalculateDataT { enrollment_id: number; academic_period_id: number; }
+
+export interface BehaviorEvaluationListParamsT {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  ordering?: BehaviorEvaluationOrderingT;
+  filters?: {
+    enrollment?: number;
+    academic_period?: number;
+  };
+}
+
+export interface BehaviorEvaluationFormValues {
+  final_scale: number | null;
+  override_reason: string;
+  general_observation: string;
+}
+
+export type BehaviorEvaluationCreateParamsT = BehaviorEvaluationFormValues;
+export type BehaviorEvaluationUpdateDataT = Partial<BehaviorEvaluationFormValues>;
+export interface BehaviorEvaluationUpdateParamsT {
+  id: number;
+  data: BehaviorEvaluationUpdateDataT;
+}
+export interface BehaviorEvaluationGetParamsT {
+  id: number;
+}
+export interface BehaviorEvaluationGetRelatedIncidentsParamsT {
+  id: number;
+}
+export interface BehaviorEvaluationCalculateDataT {
+  enrollment_id: number;
+  academic_period_id: number;
+}
 
 export interface BehaviorEvaluationServiceT {
   list(params?: BehaviorEvaluationListParamsT): Promise<BehaviorEvaluationT[]>;
-  get(id: BehaviorEvaluationGetParamsT): Promise<BehaviorEvaluationT>;
+  get(params: BehaviorEvaluationGetParamsT): Promise<BehaviorEvaluationT>;
   update(params: BehaviorEvaluationUpdateParamsT): Promise<BehaviorEvaluationT>;
   calculate(data: BehaviorEvaluationCalculateDataT): Promise<BehaviorEvaluationT>;
-  getRelatedIncidents(id: number): Promise<RelatedConductIncidentT[]>;
+  getRelatedIncidents(params: BehaviorEvaluationGetRelatedIncidentsParamsT): Promise<RelatedConductIncidentT[]>;
 }
 
-export interface BehaviorEvaluationFormValues { final_scale: number | null; override_reason: string; general_observation: string; }
-export interface BehaviorEvaluationCalculateFormValues { enrollment_id: number | null; academic_period_id: number | null; }
+export interface BehaviorEvaluationCalculateFormValues {
+  enrollment_id: number | null;
+  academic_period_id: number | null;
+}
