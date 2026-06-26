@@ -72,4 +72,10 @@ export {
   useAbsenceTypeController,
   useAbsenceTypeForm,
 } from "./absence-type";
-export { TakeAttendancePage } from "./take-attendance";
+export {
+  takeAttendanceService,
+  TAKE_ATTENDANCE_ENDPOINTS,
+  TAKE_ATTENDANCE_PERMISSIONS,
+  TakeAttendancePage,
+  useTakeAttendanceController,
+} from "./take-attendance";

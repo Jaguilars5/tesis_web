@@ -1,5 +1,7 @@
-import { tableClassname, tableColumnsClassname, tableFirstColumnClassname } from "@app/styles/styles";
+import React from "react";
+import { tableClassname, tableColumnsClassname, tableFirstColumnClassname, inputClassname, selectClassname } from "@app/styles/styles";
 import { CustomTable } from "@shared/components/Table";
+import { CustomInput, CustomSelect } from "@shared/components/Form";
 import type { TableColumnProps } from "@shared/components/Table";
 import type { RosterEntryT } from "../take-attendance.types";
 
@@ -10,7 +12,12 @@ interface AttendanceRosterProps {
   updateRosterEntry: (enrollmentId: number, updates: Partial<Omit<RosterEntryT, "enrollmentId" | "studentName">>) => void;
 }
 
-export const AttendanceRoster = ({ roster, attendanceStatusOptions, absenceTypeOptions, updateRosterEntry }: AttendanceRosterProps) => {
+export const AttendanceRoster: React.FC<AttendanceRosterProps> = ({
+  roster,
+  attendanceStatusOptions,
+  absenceTypeOptions,
+  updateRosterEntry,
+}) => {
   const presentValue = attendanceStatusOptions.find((o) => o.label === "Presente")?.value;
 
   const columns: TableColumnProps<RosterEntryT>[] = [
@@ -40,22 +47,33 @@ export const AttendanceRoster = ({ roster, attendanceStatusOptions, absenceTypeO
       render: (entry) => {
         const showAbsenceType = entry.attendanceStatusId !== null && entry.attendanceStatusId !== Number(presentValue);
         return showAbsenceType ? (
-          <select value={entry.absenceTypeId ?? ""}
-            onChange={(e) => updateRosterEntry(entry.enrollmentId, { absenceTypeId: e.target.value ? Number(e.target.value) : null })}
-            className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary">
-            <option value="">Sin tipo</option>
-            {absenceTypeOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
+          <CustomSelect
+            name={`absence-type-${entry.enrollmentId}`}
+            label=""
+            value={entry.absenceTypeId ?? ""}
+            options={absenceTypeOptions}
+            onChange={(option) =>
+              updateRosterEntry(entry.enrollmentId, {
+                absenceTypeId: option.value ? Number(option.value) : null,
+              })
+            }
+            placeholder="Sin tipo"
+            className={selectClassname}
+          />
         ) : <span className="text-sm text-slate-400">—</span>;
       },
     },
     {
       key: "observation", label: "Observaciones", className: { th: `w-48 ${tableColumnsClassname.th}`, td: "w-48 px-3 py-2" },
       render: (entry) => (
-        <input type="text" value={entry.observation ?? ""}
+        <CustomInput
+          name={`observation-${entry.enrollmentId}`}
+          type="text"
+          value={entry.observation ?? ""}
           onChange={(e) => updateRosterEntry(entry.enrollmentId, { observation: e.target.value })}
           placeholder="Opcional"
-          className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition focus:border-primary focus:ring-1 focus:ring-primary" />
+          className={inputClassname}
+        />
       ),
     },
   ];

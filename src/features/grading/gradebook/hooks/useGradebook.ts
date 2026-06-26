@@ -76,11 +76,22 @@ export const useGradebook = () => {
     const tss = Number(searchParams.get("tss"));
     const activity = Number(searchParams.get("activity"));
     if (!tss || !activity) return;
+    // Para docentes, esperar a que carguen sus clases y validar que la clase
+    // pertenezca al docente. Evita calificar clases ajenas vía URL manipulada.
+    if (user?.role === UserRoleEnum.TEACHER) {
+      if (loadingSections) return;
+      const isOwnSection = sectionOptions.some((o) => Number(o.value) === tss);
+      if (!isOwnSection) {
+        didInitFromParams.current = true;
+        setState((prev) => ({ ...prev, error: "No tiene acceso a esta clase." }));
+        return;
+      }
+    }
     didInitFromParams.current = true;
     autoLoadPending.current = true;
     setState((prev) => ({ ...prev, teacherSubjectSectionId: tss, evaluativeActivityId: activity }));
     setLoadingActivities(true);
-  }, [searchParams]);
+  }, [searchParams, user, loadingSections, sectionOptions]);
 
   const setTeacherSubjectSectionId = useCallback((id: number | null) => {
     setState((prev) => ({ ...prev, teacherSubjectSectionId: id, evaluativeActivityId: null, roster: [], loaded: false, success: false }));

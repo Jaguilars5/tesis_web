@@ -1,7 +1,8 @@
 import { Plus } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import { selectUserPermissions } from "@features/auth/auth.slice";
+import { selectAuthUser, selectUserPermissions } from "@features/auth/auth.slice";
+import { UserRoleEnum } from "@features/auth";
 import { useAppSelector } from "@shared/redux/hooks";
 import { hasPermission } from "@shared/utils/permissions";
 
@@ -18,6 +19,8 @@ import { EVALUATIVE_ACTIVITY_PERMISSIONS } from "./evaluative-activities.constan
 
 export default function EvaluativeActivitiesPage() {
   const permissions = useAppSelector(selectUserPermissions);
+  const user = useAppSelector(selectAuthUser);
+  const isTeacher = user?.role === UserRoleEnum.TEACHER;
   const canCreate = hasPermission(permissions, EVALUATIVE_ACTIVITY_PERMISSIONS.CREATE);
   const canEdit = hasPermission(permissions, EVALUATIVE_ACTIVITY_PERMISSIONS.UPDATE);
   const canDelete = hasPermission(permissions, EVALUATIVE_ACTIVITY_PERMISSIONS.DELETE);
@@ -29,6 +32,20 @@ export default function EvaluativeActivitiesPage() {
     useEvaluativeActivityForm({ create: createItem, update: updateItem });
 
   const { teacherSubjectSectionOptions, activityTypeOptions } = useEvaluativeActivityOptions();
+
+  // Un docente solo debe ver/calificar las actividades de sus propias clases.
+  // Reforzamos en el cliente filtrando por las teacher-subject-sections del docente.
+  const allowedTssIds = useMemo(
+    () => new Set(teacherSubjectSectionOptions.map((o) => Number(o.value))),
+    [teacherSubjectSectionOptions],
+  );
+  const visibleItems = useMemo(
+    () =>
+      isTeacher
+        ? items.filter((a) => allowedTssIds.has(a.teacher_subject_section))
+        : items,
+    [isTeacher, items, allowedTssIds],
+  );
 
   const [viewingItem, setViewingItem] = useState<EvaluativeActivityT | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
@@ -49,7 +66,7 @@ export default function EvaluativeActivitiesPage() {
         )}
       </div>
 
-      <EvaluativeActivityTable evaluativeActivities={items} isLoading={isLoading} loadEvaluativeActivities={loadItems} onEdit={openModal} onView={openViewModal} onDelete={openDeleteModal} canEdit={canEdit} canDelete={canDelete} />
+      <EvaluativeActivityTable evaluativeActivities={visibleItems} isLoading={isLoading} loadEvaluativeActivities={loadItems} onEdit={openModal} onView={openViewModal} onDelete={openDeleteModal} canEdit={canEdit} canDelete={canDelete} />
 
       <EvaluativeActivityFormModal key={editingItem?.id ?? "create"} isOpen={isOpen} onClose={closeModal} isEdit={isEdit} editingEvaluativeActivity={editingItem} teacherSubjectSectionOptions={teacherSubjectSectionOptions} activityTypeOptions={activityTypeOptions} onSubmit={handleSubmit} submitErrors={submitErrors} />
 

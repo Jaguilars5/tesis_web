@@ -11,7 +11,8 @@ import {
 import { CustomSelect } from "@shared/components/Form";
 
 import { AttendanceRoster } from "./components/AttendanceRoster";
-import { useTakeAttendance } from "./hooks/useTakeAttendance";
+import { filterSelectClassname } from "@app/styles/styles";
+import { useTakeAttendanceController } from "./hooks/useTakeAttendanceController";
 
 export default function TakeAttendancePage() {
   const {
@@ -24,20 +25,26 @@ export default function TakeAttendancePage() {
     teacherSubjectSectionId,
     academicPeriodId,
     attendanceDate,
+    selectedScheduleId,
     teacherSubjectSectionOptions,
     academicPeriodOptions,
     attendanceStatusOptions,
     absenceTypeOptions,
+    dateOptions,
+    scheduleOptions,
     isLoading,
     canLoad,
     canSave,
+    dateError,
+    allowedDaysLabel,
     setTeacherSubjectSectionId,
     setAcademicPeriodId,
     setAttendanceDate,
+    setSelectedScheduleId,
     updateRosterEntry,
     loadRoster,
     saveAttendance,
-  } = useTakeAttendance();
+  } = useTakeAttendanceController();
 
   return (
     <div className="space-y-4">
@@ -120,13 +127,7 @@ export default function TakeAttendancePage() {
               )
             }
             options={teacherSubjectSectionOptions}
-            className={{
-              container: "relative min-w-48 flex-1",
-              label: "sr-only",
-              select:
-                "block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
-              error: "mt-1 text-xs text-red-500",
-            }}
+            className={filterSelectClassname}
             disabled={isLoading}
             value={
               teacherSubjectSectionId ? String(teacherSubjectSectionId) : ""
@@ -140,25 +141,40 @@ export default function TakeAttendancePage() {
               setAcademicPeriodId(option.value ? Number(option.value) : null)
             }
             options={academicPeriodOptions}
-            className={{
-              container: "relative min-w-48 flex-1",
-              label: "sr-only",
-              select:
-                "block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
-              error: "mt-1 text-xs text-red-500",
-            }}
+            className={filterSelectClassname}
             disabled={isLoading}
             value={academicPeriodId ? String(academicPeriodId) : ""}
           />
-          <div className="relative min-w-40 flex-1 max-w-[12rem]">
-            <Calendar className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-            <input
-              type="date"
-              value={attendanceDate}
-              onChange={(e) => setAttendanceDate(e.target.value)}
-              className="block w-full rounded-lg border border-slate-300 bg-white py-1.5 pl-10 pr-3 text-sm text-slate-900 shadow-sm transition focus:border-primary focus:ring-1 focus:ring-primary"
+          <CustomSelect
+            label=""
+            name="attendance_date"
+            placeholder={
+              dateOptions.length > 0
+                ? "Seleccionar Fecha..."
+                : "Sin fechas disponibles"
+            }
+            onChange={(option) => setAttendanceDate(String(option.value))}
+            options={dateOptions}
+            className={filterSelectClassname}
+            disabled={isLoading || dateOptions.length === 0}
+            value={attendanceDate}
+          />
+          {scheduleOptions.length > 1 && (
+            <CustomSelect
+              label=""
+              name="class_schedule"
+              placeholder="Seleccionar Bloque..."
+              onChange={(option) =>
+                setSelectedScheduleId(
+                  option.value ? Number(option.value) : null,
+                )
+              }
+              options={scheduleOptions}
+              className={filterSelectClassname}
+              disabled={isLoading}
+              value={selectedScheduleId ? String(selectedScheduleId) : ""}
             />
-          </div>
+          )}
           <button
             type="button"
             onClick={loadRoster}
@@ -173,6 +189,19 @@ export default function TakeAttendancePage() {
             {loadingRoster ? "Cargando..." : "Cargar"}
           </button>
         </div>
+
+        {dateError && (
+          <div className="flex items-center gap-2.5 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-700">
+            <Calendar className="size-4 shrink-0" />
+            {dateError}
+          </div>
+        )}
+        {!dateError && allowedDaysLabel && (
+          <div className="border-b border-slate-200 bg-slate-50/50 px-4 py-2 text-xs text-slate-500">
+            Días con clase para esta sección:{" "}
+            <span className="font-semibold text-slate-700">{allowedDaysLabel}</span>
+          </div>
+        )}
 
         {loaded ? (
           <AttendanceRoster

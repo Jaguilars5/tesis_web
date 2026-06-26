@@ -13,6 +13,7 @@ import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps";
 import type { TableColumnProps } from "@shared/components/Table";
+import { useStudentNoteFilterOptions } from "../hooks/useStudentNoteFilterOptions";
 import type {
   StudentNoteListParamsT,
   StudentNoteOrderingT,
@@ -56,8 +57,28 @@ export const StudentNotesTable: React.FC<Props> = ({
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] = useState<StudentNoteOrderingT>("created_at");
   const [hasSearched, setHasSearched] = useState(false);
+  const [courseFilter, setCourseFilter] = useState<number | 0>(0);
+  const [activityFilter, setActivityFilter] = useState<number | 0>(0);
+
+  const { courseOptions, loadingCourses, activityOptions, loadingActivities } =
+    useStudentNoteFilterOptions(courseFilter);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const buildFilters = useCallback(
+    (overrides?: { course?: number; activity?: number }) => {
+      const course = overrides?.course ?? courseFilter;
+      const activity = overrides?.activity ?? activityFilter;
+      const filters: Record<string, string | number | boolean> = {};
+      if (activity) {
+        filters.evaluative_activity = activity;
+      } else if (course) {
+        filters.evaluative_activity__teacher_subject_section = course;
+      }
+      return filters;
+    },
+    [courseFilter, activityFilter],
+  );
 
   const fetchData = useCallback(
     (options?: {
@@ -65,15 +86,17 @@ export const StudentNotesTable: React.FC<Props> = ({
       pageSize?: number;
       search?: string;
       ordering?: StudentNoteOrderingT;
+      filters?: Record<string, string | number | boolean>;
     }) => {
       loadStudentNotes({
         page: options?.page ?? page,
         pageSize: options?.pageSize ?? pageSize,
         search: options?.search !== undefined ? options.search : search || undefined,
         ordering: options?.ordering ?? ordering,
+        filters: options?.filters ?? buildFilters(),
       });
     },
-    [loadStudentNotes, page, pageSize, search, ordering],
+    [loadStudentNotes, page, pageSize, search, ordering, buildFilters],
   );
 
   useEffect(() => {
@@ -102,6 +125,29 @@ export const StudentNotesTable: React.FC<Props> = ({
       fetchData({ page: 1, ordering: newOrdering });
     },
     [fetchData],
+  );
+
+  const handleCourseFilterChange = useCallback(
+    (option: SelectOptionT) => {
+      const course = option.value ? Number(option.value) : 0;
+      setCourseFilter(course);
+      setActivityFilter(0);
+      setPage(1);
+      setHasSearched(true);
+      fetchData({ page: 1, filters: buildFilters({ course, activity: 0 }) });
+    },
+    [fetchData, buildFilters],
+  );
+
+  const handleActivityFilterChange = useCallback(
+    (option: SelectOptionT) => {
+      const activity = option.value ? Number(option.value) : 0;
+      setActivityFilter(activity);
+      setPage(1);
+      setHasSearched(true);
+      fetchData({ page: 1, filters: buildFilters({ activity }) });
+    },
+    [fetchData, buildFilters],
   );
 
   const hasNextPage = studentNotes.length >= pageSize;
@@ -137,6 +183,32 @@ export const StudentNotesTable: React.FC<Props> = ({
           value={search}
           className="relative min-w-50 flex-1"
           placeholder="Filtrar notas..."
+        />
+        <CustomSelect
+          name="filter-course"
+          label=""
+          placeholder={loadingCourses ? "Cargando..." : "Todos los cursos"}
+          value={courseFilter}
+          options={courseOptions}
+          onChange={handleCourseFilterChange}
+          disabled={loadingCourses}
+          className={filterSelectClassname}
+        />
+        <CustomSelect
+          name="filter-activity"
+          label=""
+          placeholder={
+            loadingActivities
+              ? "Cargando..."
+              : courseFilter
+                ? "Todas las actividades"
+                : "Seleccione un curso"
+          }
+          value={activityFilter}
+          options={activityOptions}
+          onChange={handleActivityFilterChange}
+          disabled={!courseFilter || loadingActivities}
+          className={filterSelectClassname}
         />
         <CustomSelect
           name="ordering"
