@@ -53,7 +53,7 @@ export const useGradebook = () => {
     }
     teacherSubjectSectionService
       .list(params)
-      .then((items) => {
+      .then(({ items }) => {
         if (cancelled) return;
         setSectionOptions(
           items.map((i) => ({

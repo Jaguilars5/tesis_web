@@ -36,10 +36,10 @@ export const useSubjectForm = ({ create, update }: UseSubjectFormArgs) => {
   const handleSubmit = useCallback(
     async (values: SubjectFormValues) => {
       setSubmitErrors({ general: [], validation: {} });
-      const { name, code } = values;
+      const { name, code, is_active } = values;
       if (editing) {
         const response = await unwrapMutation(
-          { id: editing.id, data: { name, code } },
+          { id: editing.id, data: { name, code, is_active } },
           update,
         );
         if (response.ok) {
@@ -48,7 +48,7 @@ export const useSubjectForm = ({ create, update }: UseSubjectFormArgs) => {
         }
         setSubmitErrors(response.errors);
       } else {
-        const response = await unwrapMutation({ name, code }, create);
+        const response = await unwrapMutation({ name, code, is_active: true }, create);
         if (response.ok) {
           closeModal();
           return;

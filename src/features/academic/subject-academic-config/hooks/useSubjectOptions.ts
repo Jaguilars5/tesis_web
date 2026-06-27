@@ -35,11 +35,11 @@ export const useSubjectOptions = () => {
     setLoading({ type: "loading" });
     subjectService
       .list({ page: 1, pageSize: 100 })
-      .then((subjects) => {
+      .then((result) => {
         if (!cancelled) {
           dispatch({
             type: "success",
-            options: subjects.map((subject) => ({
+            options: result.items.map((subject) => ({
               label: subject.name,
               value: String(subject.id),
             })),

@@ -14,6 +14,7 @@ export interface PeriodTypeFormValues {
   name: string;
   description: string;
   divisions_per_year: number;
+  is_active: boolean;
 }
 
 export type PeriodTypeOrderingT = "name" | "-name" | "code" | "-code";
@@ -39,11 +40,12 @@ export interface PeriodTypeGetParamsT {
 }
 
 import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+import type { PaginatedResult } from "@shared/types/api.response.types";
 
 export type PeriodTypeDeleteParamsT = SoftDeleteParamsT;
 
 export interface PeriodTypeServiceT {
-  list(params?: PeriodTypeListParamsT): Promise<PeriodTypeT[]>;
+  list(params?: PeriodTypeListParamsT): Promise<PaginatedResult<PeriodTypeT>>;
   get(params: PeriodTypeGetParamsT): Promise<PeriodTypeT>;
   create(params: PeriodTypeCreateParamsT): Promise<PeriodTypeT>;
   update(params: PeriodTypeUpdateParamsT): Promise<PeriodTypeT>;

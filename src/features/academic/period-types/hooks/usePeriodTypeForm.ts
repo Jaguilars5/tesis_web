@@ -42,12 +42,12 @@ export const usePeriodTypeForm = ({
   const handleSubmit = useCallback(
     async (values: PeriodTypeFormValues) => {
       setSubmitErrors({ general: [], validation: {} });
-      const { code, name, description, divisions_per_year } = values;
+      const { code, name, description, divisions_per_year, is_active } = values;
       if (editing) {
         const response = await unwrapMutation(
           {
             id: editing.id,
-            data: { code, name, description, divisions_per_year },
+            data: { code, name, description, divisions_per_year, is_active },
           },
           update,
         );
@@ -58,7 +58,7 @@ export const usePeriodTypeForm = ({
         setSubmitErrors(response.errors);
       } else {
         const response = await unwrapMutation(
-          { code, name, description, divisions_per_year },
+          { code, name, description, divisions_per_year, is_active: true },
           create,
         );
         if (response.ok) {

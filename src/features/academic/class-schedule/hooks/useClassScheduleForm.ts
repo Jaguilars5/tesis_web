@@ -42,14 +42,14 @@ export const useClassScheduleForm = ({
   const handleSubmit = useCallback(
     async (values: ClassScheduleFormValues) => {
       setSubmitErrors({ general: [], validation: {} });
-      const { teacher_subject_section, day_of_week, start_time, end_time } =
+      const { teacher_subject_section, day_of_week, start_time, end_time, is_active } =
         values;
 
       if (editing) {
         const response = await unwrapMutation(
           {
             id: editing.id,
-            data: { teacher_subject_section, day_of_week, start_time, end_time },
+            data: { teacher_subject_section, day_of_week, start_time, end_time, is_active },
           },
           update,
         );
@@ -62,7 +62,7 @@ export const useClassScheduleForm = ({
       }
 
       const response = await unwrapMutation(
-        { teacher_subject_section, day_of_week, start_time, end_time },
+        { teacher_subject_section, day_of_week, start_time, end_time, is_active: true },
         create,
       );
       if (response.ok) {

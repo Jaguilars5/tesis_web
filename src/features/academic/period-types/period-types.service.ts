@@ -1,6 +1,7 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type {
   PaginatedData,
+  PaginatedResult,
   ResponseApi,
 } from "@shared/types/api.response.types";
 
@@ -18,7 +19,7 @@ import type {
 } from "./period-types.types";
 
 class PeriodTypeService implements PeriodTypeServiceT {
-  async list(params?: PeriodTypeListParamsT): Promise<PeriodTypeT[]> {
+  async list(params?: PeriodTypeListParamsT): Promise<PaginatedResult<PeriodTypeT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -28,12 +29,10 @@ class PeriodTypeService implements PeriodTypeServiceT {
       const orderingQuery = params?.ordering
         ? `&ordering=${encodeURIComponent(params.ordering)}`
         : "";
-      const { data } = await apiClient.get<
-        ResponseApi<PaginatedData<PeriodTypeT>>
-      >(
+      const { data } = await apiClient.get<ResponseApi<PaginatedData<PeriodTypeT>>>(
         `${PERIOD_TYPE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

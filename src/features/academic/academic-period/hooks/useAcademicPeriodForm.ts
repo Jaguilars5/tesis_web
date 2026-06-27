@@ -8,16 +8,17 @@ import type {
   AcademicPeriodCreateParamsT,
   AcademicPeriodFormValues,
   AcademicPeriodT,
+  BulkCreateResponseT,
 } from "../academic-period.types";
 
 interface UseAcademicPeriodFormArgs {
-  create: AcademicPeriodControllerT["createAcademicPeriod"];
   update: AcademicPeriodControllerT["updateAcademicPeriod"];
+  bulkCreate: AcademicPeriodControllerT["bulkCreateAcademicPeriods"];
 }
 
 export const useAcademicPeriodForm = ({
-  create,
   update,
+  bulkCreate,
 }: UseAcademicPeriodFormArgs) => {
   const [isOpen, setIsOpen] = useState(false);
   const [editing, setEditing] = useState<AcademicPeriodT | null>(null);
@@ -48,27 +49,33 @@ export const useAcademicPeriodForm = ({
         return;
       }
 
-      const settled = await Promise.all(
-        items.map((data) => unwrapMutation(data, create)),
-      );
+      let result: BulkCreateResponseT;
+      try {
+        result = await bulkCreate(items);
+      } catch (err) {
+        const msg =
+          err && typeof err === "object" && "msg" in err
+            ? (err as { msg: string }).msg
+            : "Error al crear los periodos";
+        setSubmitErrors({ general: [msg], validation: {} });
+        return;
+      }
 
-      if (settled.every((response) => response.ok)) {
+      if (result.errors.length === 0) {
         closeModal();
         return;
       }
 
       const general: string[] = [];
-      const validation: Record<string, string> = {};
-      for (const response of settled) {
-        if (!response.ok) {
-          general.push(...response.errors.general);
-          Object.assign(validation, response.errors.validation);
+      for (const errorItem of result.errors) {
+        for (const [, msg] of Object.entries(errorItem.errors)) {
+          general.push(`Periodo ${errorItem.index + 1}: ${msg}`);
         }
       }
 
-      setSubmitErrors({ general, validation });
+      setSubmitErrors({ general, validation: {} });
     },
-    [create, closeModal],
+    [bulkCreate, closeModal],
   );
 
   const handleUpdate = useCallback(

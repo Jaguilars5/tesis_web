@@ -26,6 +26,7 @@ const OrderingOptions: { label: string; value: SubjectOfferingOrderingT }[] = [
 
 interface SubjectOfferingTableProps {
   subjectOfferings: SubjectOfferingT[];
+  totalCount: number;
   isLoading: boolean;
   loadSubjectOfferings: (params?: SubjectOfferingListParamsT) => void;
   schoolYearOptions: { label: string; value: string }[];
@@ -40,6 +41,7 @@ interface SubjectOfferingTableProps {
 
 export const SubjectOfferingTable: React.FC<SubjectOfferingTableProps> = ({
   subjectOfferings,
+  totalCount,
   isLoading,
   loadSubjectOfferings,
   schoolYearOptions,
@@ -181,7 +183,7 @@ export const SubjectOfferingTable: React.FC<SubjectOfferingTableProps> = ({
     [fetchData, pageSize, search, ordering, buildFilters],
   );
 
-  const hasNextPage = subjectOfferings.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<SubjectOfferingT>[] = [
     {
@@ -326,7 +328,7 @@ export const SubjectOfferingTable: React.FC<SubjectOfferingTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={subjectOfferings.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {

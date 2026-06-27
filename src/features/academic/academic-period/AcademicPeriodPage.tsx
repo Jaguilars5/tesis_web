@@ -23,10 +23,11 @@ export default function AcademicPeriodsPage() {
 
   const {
     academicPeriods,
+    totalCount,
     isLoading,
     loadAcademicPeriods,
-    createAcademicPeriod,
     updateAcademicPeriod,
+    bulkCreateAcademicPeriods,
     deleteAcademicPeriod,
   } = useAcademicPeriodController();
 
@@ -40,8 +41,8 @@ export default function AcademicPeriodsPage() {
     handleCreateMany,
     handleUpdate,
   } = useAcademicPeriodForm({
-    create: createAcademicPeriod,
     update: updateAcademicPeriod,
+    bulkCreate: bulkCreateAcademicPeriods,
   });
 
   const permissions = useAppSelector(selectUserPermissions);
@@ -102,6 +103,7 @@ export default function AcademicPeriodsPage() {
 
       <AcademicPeriodTable
         academicPeriods={academicPeriods}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadAcademicPeriods={loadAcademicPeriods}
         schoolYearOptions={schoolYearOptions}

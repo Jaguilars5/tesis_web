@@ -14,6 +14,7 @@ import {
   loadSuccess,
   mutationError,
   selectTeacherSubjectSectionError,
+  selectTeacherSubjectSectionTotalCount,
   selectTeacherSubjectSections,
   selectTeacherSubjectSectionsStatus,
 } from "../teacher-subject-section.slice";
@@ -28,6 +29,7 @@ import type {
 export const useTeacherSubjectSectionController = () => {
   const dispatch = useAppDispatch();
   const teacherSubjectSections = useAppSelector(selectTeacherSubjectSections);
+  const totalCount = useAppSelector(selectTeacherSubjectSectionTotalCount);
   const status = useAppSelector(selectTeacherSubjectSectionsStatus);
   const error = useAppSelector(selectTeacherSubjectSectionError);
 
@@ -35,10 +37,10 @@ export const useTeacherSubjectSectionController = () => {
     async (params?: TeacherSubjectSectionListParamsT) => {
       dispatch(loadPending());
       try {
-        const items = await teacherSubjectSectionService.list(
+        const result = await teacherSubjectSectionService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(items));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(
           loadError(err instanceof Error ? err.message : "Error al cargar asignaciones"),
@@ -97,6 +99,7 @@ export const useTeacherSubjectSectionController = () => {
 
   return {
     teacherSubjectSections,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadTeacherSubjectSections,

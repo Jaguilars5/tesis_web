@@ -23,6 +23,7 @@ export default function TeacherSubjectSectionsPage() {
 
   const {
     teacherSubjectSections,
+    totalCount,
     isLoading,
     loadTeacherSubjectSections,
     createTeacherSubjectSection,
@@ -100,6 +101,7 @@ export default function TeacherSubjectSectionsPage() {
 
       <TeacherSubjectSectionTable
         teacherSubjectSections={teacherSubjectSections}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadTeacherSubjectSections={loadTeacherSubjectSections}
         onEdit={openModal}

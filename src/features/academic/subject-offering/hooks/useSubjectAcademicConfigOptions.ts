@@ -35,11 +35,11 @@ export const useSubjectAcademicConfigOptions = () => {
     setLoading({ type: "loading" });
     subjectAcademicConfigService
       .list({ page: 1, pageSize: 100 })
-      .then((configs) => {
+      .then(({ items }) => {
         if (!cancelled) {
           dispatch({
             type: "success",
-            options: configs.map((config) => ({
+            options: items.map((config) => ({
               label: `${config.subject_name} - ${config.academic_grade_name}`,
               value: String(config.id),
             })),

@@ -29,7 +29,7 @@ export const useAcademicPeriodOptions = () => {
     let cancelled = false;
     dispatch({ type: "loading" });
     academicPeriodService.list({ page: 1, pageSize: 100 })
-      .then((items) => {
+      .then(({ items }) => {
         let filtered = items;
         if (user?.role === UserRoleEnum.TEACHER) filtered = items.filter((i) => i.is_active);
         if (!cancelled) dispatch({ type: "success", options: filtered.map((i) => ({ label: i.name, value: String(i.id), startDate: i.start_date, endDate: i.end_date })) });

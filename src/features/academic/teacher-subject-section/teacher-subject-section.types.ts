@@ -73,6 +73,7 @@ export interface TeacherSubjectSectionUpdateParamsT {
   data: TeacherSubjectSectionUpdateDataT;
 }
 
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface TeacherSubjectSectionGetParamsT {
@@ -82,7 +83,7 @@ export interface TeacherSubjectSectionGetParamsT {
 export type TeacherSubjectSectionDeleteParamsT = SoftDeleteParamsT;
 
 export interface TeacherSubjectSectionServiceT {
-  list(params?: TeacherSubjectSectionListParamsT): Promise<TeacherSubjectSectionT[]>;
+  list(params?: TeacherSubjectSectionListParamsT): Promise<PaginatedResult<TeacherSubjectSectionT>>;
   get(params: TeacherSubjectSectionGetParamsT): Promise<TeacherSubjectSectionT>;
   create(data: TeacherSubjectSectionCreateDataT): Promise<TeacherSubjectSectionT>;
   update(params: TeacherSubjectSectionUpdateParamsT): Promise<TeacherSubjectSectionT>;
@@ -92,4 +93,5 @@ export interface TeacherSubjectSectionServiceT {
 export interface TeacherSubjectSectionFormValues {
   user: number;
   subject_offering: number;
+  is_active: boolean;
 }

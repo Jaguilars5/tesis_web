@@ -1,8 +1,8 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
 
-import { selectClassname } from "@app/styles/styles";
-import { CustomSelect } from "@shared/components/Form";
+import { checkboxClassname, selectClassname } from "@app/styles/styles";
+import { CustomCheckbox, CustomSelect } from "@shared/components/Form";
 import { ErrrosInForm } from "@shared/components/ErrrosInForm";
 import type { SubmitErrorState } from "@shared/utils/validationErrors";
 
@@ -50,11 +50,13 @@ export const TeacherSubjectSectionFormModal: React.FC<
       return {
         user: editingTeacherSubjectSection.user,
         subject_offering: editingTeacherSubjectSection.subject_offering,
+        is_active: editingTeacherSubjectSection.is_active,
       };
     }
     return {
       user: 0,
       subject_offering: 0,
+      is_active: true,
     };
   };
 
@@ -127,6 +129,20 @@ export const TeacherSubjectSectionFormModal: React.FC<
             options={subjectOfferingOptions}
             className={selectClassname}
           />
+
+          {isEdit && (
+            <div className="flex items-end pb-1">
+              <CustomCheckbox
+                name="is_active"
+                checked={formik.values.is_active}
+                onChange={(e) =>
+                  formik.setFieldValue("is_active", e.target.checked)
+                }
+                label="Activo"
+                className={checkboxClassname}
+              />
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <button

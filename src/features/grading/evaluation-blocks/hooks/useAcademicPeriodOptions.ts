@@ -17,7 +17,7 @@ export const useAcademicPeriodOptions = () => {
     let cancelled = false;
     setLoading({ type: "loading" });
     academicPeriodService.list({ page: 1, pageSize: 100 })
-      .then((items) => {
+      .then(({ items }) => {
         if (!cancelled) {
           setOptions({ type: "success", options: items.map((i) => ({ label: i.name, value: String(i.id) })) });
           setLoading({ type: "done" });

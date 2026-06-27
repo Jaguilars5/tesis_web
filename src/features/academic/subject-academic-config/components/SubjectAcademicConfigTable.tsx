@@ -29,6 +29,7 @@ const OrderingOptions: {
 
 interface SubjectAcademicConfigTableProps {
   subjectAcademicConfigs: SubjectAcademicConfigT[];
+  totalCount: number;
   isLoading: boolean;
   loadSubjectAcademicConfigs: (
     params?: SubjectAcademicConfigListParamsT,
@@ -46,6 +47,7 @@ export const SubjectAcademicConfigTable: React.FC<
   SubjectAcademicConfigTableProps
 > = ({
   subjectAcademicConfigs,
+  totalCount,
   isLoading,
   loadSubjectAcademicConfigs,
   subjectOptions,
@@ -165,7 +167,7 @@ export const SubjectAcademicConfigTable: React.FC<
     [fetchData, pageSize, search, ordering, buildFilters],
   );
 
-  const hasNextPage = subjectAcademicConfigs.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<SubjectAcademicConfigT>[] = [
     {
@@ -307,7 +309,7 @@ export const SubjectAcademicConfigTable: React.FC<
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={subjectAcademicConfigs.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {

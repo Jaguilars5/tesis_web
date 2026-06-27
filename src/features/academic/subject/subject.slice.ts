@@ -6,12 +6,14 @@ import type { SubjectT } from "./subject.types";
 
 export interface SubjectStateT {
   subjects: SubjectT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: SubjectStateT = {
   subjects: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -24,8 +26,9 @@ const subjectSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<SubjectT[]>) {
-      state.subjects = action.payload;
+    loadSuccess(state, action: PayloadAction<{ items: SubjectT[]; count: number }>) {
+      state.subjects = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -52,6 +55,9 @@ const subjectSlice = createSlice({
     clearSubjectError(state) {
       state.error = null;
     },
+    setTotalCount(state, action: PayloadAction<number>) {
+      state.totalCount = action.payload;
+    },
   },
 });
 
@@ -64,6 +70,7 @@ export const {
   entityDeleted,
   mutationError,
   clearSubjectError,
+  setTotalCount,
 } = subjectSlice.actions;
 
 export const selectSubjects = (state: RootState): SubjectT[] =>
@@ -74,6 +81,9 @@ export const selectSubjectsStatus = (state: RootState): RequestStatusT =>
 
 export const selectSubjectError = (state: RootState): string | null =>
   state.academic.subjects.error;
+
+export const selectSubjectTotalCount = (state: RootState): number =>
+  state.academic.subjects.totalCount;
 
 export const subjectsReducer = subjectSlice.reducer;
 

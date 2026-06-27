@@ -16,3 +16,8 @@ export interface PaginatedResponseApi<T> {
   msg: string;
   data: PaginatedData<T>;
 }
+
+export interface PaginatedResult<T> {
+  items: T[];
+  count: number;
+}

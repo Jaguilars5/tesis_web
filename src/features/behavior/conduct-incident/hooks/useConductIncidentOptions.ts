@@ -43,6 +43,6 @@ export const useSeverityOptions = () => {
 };
 
 export const useAcademicPeriodOptions = () => {
-  const { options, loading } = useOptions(() => academicPeriodService.list({ page: 1, pageSize: 100 }).then((items) => items.map((i) => ({ label: i.name, value: String(i.id) }))));
+  const { options, loading } = useOptions(() => academicPeriodService.list({ page: 1, pageSize: 100 }).then((result) => result.items.map((i) => ({ label: i.name, value: String(i.id) }))));
   return { academicPeriodOptions: options, loading };
 };

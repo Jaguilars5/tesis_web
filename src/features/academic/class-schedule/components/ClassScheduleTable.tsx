@@ -39,6 +39,7 @@ const dayFilterOptions = DAY_OF_WEEK_OPTIONS.map((opt) => ({
 
 interface ClassScheduleTableProps {
   classSchedules: ClassScheduleT[];
+  totalCount: number;
   isLoading: boolean;
   loadClassSchedules: (params?: ClassScheduleListParamsT) => void;
   teacherSubjectSectionOptions: { label: string; value: string }[];
@@ -51,6 +52,7 @@ interface ClassScheduleTableProps {
 
 export const ClassScheduleTable: React.FC<ClassScheduleTableProps> = ({
   classSchedules,
+  totalCount,
   isLoading,
   loadClassSchedules,
   teacherSubjectSectionOptions,
@@ -90,7 +92,7 @@ export const ClassScheduleTable: React.FC<ClassScheduleTableProps> = ({
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ page: 1, pageSize });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = useCallback(
@@ -103,13 +105,14 @@ export const ClassScheduleTable: React.FC<ClassScheduleTableProps> = ({
       debounceRef.current = setTimeout(() => {
         fetchData({
           page: 1,
+          pageSize,
           search: value || undefined,
           ordering,
           filters: buildFilters(),
         });
       }, 400);
     },
-    [fetchData, ordering, buildFilters],
+    [fetchData, pageSize, ordering, buildFilters],
   );
 
   const handleOrdering = useCallback(
@@ -118,12 +121,13 @@ export const ClassScheduleTable: React.FC<ClassScheduleTableProps> = ({
       setPage(1);
       fetchData({
         page: 1,
+        pageSize,
         search: search || undefined,
         ordering: value,
         filters: buildFilters(),
       });
     },
-    [fetchData, search, buildFilters],
+    [fetchData, pageSize, search, buildFilters],
   );
 
   const handleTeacherSubjectSectionChange = useCallback(
@@ -132,12 +136,13 @@ export const ClassScheduleTable: React.FC<ClassScheduleTableProps> = ({
       setPage(1);
       fetchData({
         page: 1,
+        pageSize,
         search: search || undefined,
         ordering,
         filters: buildFilters({ teacher_subject_section: value }),
       });
     },
-    [fetchData, search, ordering, buildFilters],
+    [fetchData, pageSize, search, ordering, buildFilters],
   );
 
   const handleDayOfWeekChange = useCallback(
@@ -146,15 +151,16 @@ export const ClassScheduleTable: React.FC<ClassScheduleTableProps> = ({
       setPage(1);
       fetchData({
         page: 1,
+        pageSize,
         search: search || undefined,
         ordering,
         filters: buildFilters({ day_of_week: value }),
       });
     },
-    [fetchData, search, ordering, buildFilters],
+    [fetchData, pageSize, search, ordering, buildFilters],
   );
 
-  const hasNextPage = classSchedules.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<ClassScheduleT>[] = [
     {
@@ -295,13 +301,14 @@ export const ClassScheduleTable: React.FC<ClassScheduleTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={classSchedules.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {
           setPage(newPage);
           fetchData({
             page: newPage,
+            pageSize,
             search: search || undefined,
             ordering,
             filters: buildFilters(),

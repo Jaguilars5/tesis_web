@@ -70,7 +70,7 @@ export const useStudentDashboard = () => {
       try {
         const enrollment =
           await studentApiService.getActiveEnrollment(studentId);
-        const [periods, attendance, conductResults] = await Promise.all([
+        const [{ items: periods }, attendance, conductResults] = await Promise.all([
           academicPeriodService.list({ page: 1, pageSize: 100 }),
           studentApiService.getAttendances(enrollment.id),
           studentApiService.getBehaviorEvaluations(enrollment.id),

@@ -38,7 +38,7 @@ export const useSubjectOfferingOptions = () => {
     dispatch({ type: "loading" });
     subjectOfferingService
       .list({ page: 1, pageSize: 100 })
-      .then((items) => {
+      .then(({ items }) => {
         if (!cancelled) {
           dispatch({
             type: "success",

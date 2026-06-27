@@ -61,6 +61,7 @@ export const SubjectAcademicConfigFormModal: React.FC<
         academic_grade: editingSubjectAcademicConfig.academic_grade,
         weekly_hours: editingSubjectAcademicConfig.weekly_hours,
         is_required: editingSubjectAcademicConfig.is_required,
+        is_active: editingSubjectAcademicConfig.is_active,
       };
     }
     return {
@@ -68,6 +69,7 @@ export const SubjectAcademicConfigFormModal: React.FC<
       academic_grade: 0,
       weekly_hours: 1,
       is_required: true,
+      is_active: true,
     };
   };
 
@@ -160,7 +162,7 @@ export const SubjectAcademicConfigFormModal: React.FC<
             className={inputClassname}
           />
 
-          <div className="flex items-end gap-4 pb-1">
+          <div className="flex items-center gap-6 pb-1">
             <CustomCheckbox
               name="is_required"
               checked={formik.values.is_required}
@@ -169,6 +171,17 @@ export const SubjectAcademicConfigFormModal: React.FC<
               label="Obligatorio"
               className={checkboxClassname}
             />
+            {isEdit && (
+              <CustomCheckbox
+                name="is_active"
+                checked={formik.values.is_active}
+                onChange={(e) =>
+                  formik.setFieldValue("is_active", e.target.checked)
+                }
+                label="Activo"
+                className={checkboxClassname}
+              />
+            )}
           </div>
 
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">

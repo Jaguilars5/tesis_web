@@ -81,7 +81,7 @@ export const useTakeAttendanceController = () => {
 
     classScheduleService
       .list({ pageSize: 100, filters: { teacher_subject_section: tssId } })
-      .then((schedules) => {
+      .then(({ items: schedules }) => {
         if (cancelled) return;
         const classSchedules = schedules.filter(
           (s) => s.teacher_subject_section === tssId,

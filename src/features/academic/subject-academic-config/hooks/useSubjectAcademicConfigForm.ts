@@ -42,12 +42,12 @@ export const useSubjectAcademicConfigForm = ({
   const handleSubmit = useCallback(
     async (values: SubjectAcademicConfigFormValues) => {
       setSubmitErrors({ general: [], validation: {} });
-      const { subject, academic_grade, weekly_hours, is_required } = values;
+      const { subject, academic_grade, weekly_hours, is_required, is_active } = values;
       if (editing) {
         const response = await unwrapMutation(
           {
             id: editing.id,
-            data: { subject, academic_grade, weekly_hours, is_required },
+            data: { subject, academic_grade, weekly_hours, is_required, is_active },
           },
           update,
         );
@@ -58,7 +58,7 @@ export const useSubjectAcademicConfigForm = ({
         setSubmitErrors(response.errors);
       } else {
         const response = await unwrapMutation(
-          { subject, academic_grade, weekly_hours, is_required },
+          { subject, academic_grade, weekly_hours, is_required, is_active: true },
           create,
         );
         if (response.ok) {

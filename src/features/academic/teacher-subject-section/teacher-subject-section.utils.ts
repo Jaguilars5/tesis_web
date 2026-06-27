@@ -7,4 +7,5 @@ export const teacherSubjectSectionSchema = Yup.object({
   subject_offering: Yup.number()
     .min(1, "La oferta de materia es obligatoria")
     .required("La oferta de materia es obligatoria"),
+  is_active: Yup.boolean(),
 });

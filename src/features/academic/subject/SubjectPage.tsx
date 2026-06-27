@@ -18,6 +18,7 @@ import type { SubjectT } from "./subject.types";
 export default function SubjectsPage() {
   const {
     subjects,
+    totalCount,
     isLoading,
     loadSubjects,
     createSubject,
@@ -89,6 +90,7 @@ export default function SubjectsPage() {
 
       <SubjectTable
         subjects={subjects}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadSubjects={loadSubjects}
         onEdit={openModal}

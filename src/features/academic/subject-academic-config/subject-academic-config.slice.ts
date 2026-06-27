@@ -6,12 +6,14 @@ import type { SubjectAcademicConfigT } from "./subject-academic-config.types";
 
 export interface SubjectAcademicConfigStateT {
   subjectAcademicConfigs: SubjectAcademicConfigT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: SubjectAcademicConfigStateT = {
   subjectAcademicConfigs: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -24,8 +26,9 @@ const subjectAcademicConfigSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<SubjectAcademicConfigT[]>) {
-      state.subjectAcademicConfigs = action.payload;
+    loadSuccess(state, action: PayloadAction<{ items: SubjectAcademicConfigT[]; count: number }>) {
+      state.subjectAcademicConfigs = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -56,6 +59,9 @@ const subjectAcademicConfigSlice = createSlice({
     clearSubjectAcademicConfigError(state) {
       state.error = null;
     },
+    setTotalCount(state, action: PayloadAction<number>) {
+      state.totalCount = action.payload;
+    },
   },
 });
 
@@ -68,6 +74,7 @@ export const {
   entityDeleted,
   mutationError,
   clearSubjectAcademicConfigError,
+  setTotalCount,
 } = subjectAcademicConfigSlice.actions;
 
 export const selectSubjectAcademicConfigs = (
@@ -78,6 +85,8 @@ export const selectSubjectAcademicConfigs = (
 export const selectSubjectAcademicConfigsStatus = (
   state: RootState,
 ): RequestStatusT => state.academic.subjectAcademicConfigs.status;
+
+export const selectSubjectAcademicConfigTotalCount = (state: RootState): number => state.academic.subjectAcademicConfigs.totalCount;
 
 export const selectSubjectAcademicConfigError = (
   state: RootState,

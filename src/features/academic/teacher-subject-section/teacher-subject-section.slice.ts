@@ -6,12 +6,14 @@ import type { TeacherSubjectSectionT } from "./teacher-subject-section.types";
 
 export interface TeacherSubjectSectionStateT {
   teacherSubjectSections: TeacherSubjectSectionT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: TeacherSubjectSectionStateT = {
   teacherSubjectSections: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -24,8 +26,12 @@ const teacherSubjectSectionSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<TeacherSubjectSectionT[]>) {
-      state.teacherSubjectSections = action.payload;
+    loadSuccess(
+      state,
+      action: PayloadAction<{ items: TeacherSubjectSectionT[]; count: number }>,
+    ) {
+      state.teacherSubjectSections = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -53,6 +59,9 @@ const teacherSubjectSectionSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
+    setTotalCount(state, action: PayloadAction<number>) {
+      state.totalCount = action.payload;
+    },
     clearTeacherSubjectSectionError(state) {
       state.error = null;
     },
@@ -67,6 +76,7 @@ export const {
   entityUpdated,
   entityDeleted,
   mutationError,
+  setTotalCount,
   clearTeacherSubjectSectionError,
 } = teacherSubjectSectionSlice.actions;
 
@@ -78,6 +88,9 @@ export const selectTeacherSubjectSectionsStatus = (state: RootState): RequestSta
 
 export const selectTeacherSubjectSectionError = (state: RootState): string | null =>
   state.academic.teacherSubjectSections.error;
+
+export const selectTeacherSubjectSectionTotalCount = (state: RootState): number =>
+  state.academic.teacherSubjectSections.totalCount;
 
 export const teacherSubjectSectionReducer = teacherSubjectSectionSlice.reducer;
 

@@ -6,12 +6,14 @@ import type { SubjectOfferingT } from "./subject-offering.types";
 
 export interface SubjectOfferingStateT {
   subjectOfferings: SubjectOfferingT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: SubjectOfferingStateT = {
   subjectOfferings: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -24,8 +26,12 @@ const subjectOfferingSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<SubjectOfferingT[]>) {
-      state.subjectOfferings = action.payload;
+    loadSuccess(
+      state,
+      action: PayloadAction<{ items: SubjectOfferingT[]; count: number }>,
+    ) {
+      state.subjectOfferings = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -53,6 +59,9 @@ const subjectOfferingSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
+    setTotalCount(state, action: PayloadAction<number>) {
+      state.totalCount = action.payload;
+    },
     clearSubjectOfferingError(state) {
       state.error = null;
     },
@@ -67,6 +76,7 @@ export const {
   entityUpdated,
   entityDeleted,
   mutationError,
+  setTotalCount,
   clearSubjectOfferingError,
 } = subjectOfferingSlice.actions;
 
@@ -78,6 +88,9 @@ export const selectSubjectOfferingsStatus = (state: RootState): RequestStatusT =
 
 export const selectSubjectOfferingError = (state: RootState): string | null =>
   state.academic.subjectOfferings.error;
+
+export const selectSubjectOfferingTotalCount = (state: RootState): number =>
+  state.academic.subjectOfferings.totalCount;
 
 export const subjectOfferingReducer = subjectOfferingSlice.reducer;
 

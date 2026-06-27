@@ -26,7 +26,7 @@ export const useTeacherSubjectSectionOptions = () => {
     const params: Record<string, unknown> = { page: 1, pageSize: 100 };
     if (user?.role === UserRoleEnum.TEACHER) params.filters = { user: user.id, is_active: true };
     teacherSubjectSectionService.list(params as TeacherSubjectSectionListParamsT)
-      .then((items) => {
+      .then(({ items }) => {
         if (!cancelled) dispatch({ type: "success", options: items.map((i) => ({ label: `${i.subject_offering_name} - ${i.subject_offering_section_name ?? ""}`, value: String(i.id) })) });
       })
       .catch(() => { if (!cancelled) dispatch({ type: "error" }); });

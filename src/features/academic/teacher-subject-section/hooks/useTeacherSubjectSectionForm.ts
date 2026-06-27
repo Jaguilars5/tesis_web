@@ -44,9 +44,10 @@ export const useTeacherSubjectSectionForm = ({
   const handleSubmit = useCallback(
     async (values: TeacherSubjectSectionFormValues) => {
       setSubmitErrors({ general: [], validation: {} });
+      const { user, subject_offering, is_active } = values;
       if (editingTeacherSubjectSection) {
         const result = await unwrapMutation(
-          { id: editingTeacherSubjectSection.id, data: values },
+          { id: editingTeacherSubjectSection.id, data: { user, subject_offering, is_active } },
           update,
         );
         if (result.ok) {
@@ -55,7 +56,6 @@ export const useTeacherSubjectSectionForm = ({
         }
         setSubmitErrors(result.errors);
       } else {
-        const { user, subject_offering } = values;
         const result = await unwrapMutation(
           { user, subject_offering },
           create,

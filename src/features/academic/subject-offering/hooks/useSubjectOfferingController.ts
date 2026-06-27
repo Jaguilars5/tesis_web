@@ -13,6 +13,7 @@ import {
   loadSuccess,
   mutationError,
   selectSubjectOfferingError,
+  selectSubjectOfferingTotalCount,
   selectSubjectOfferings,
   selectSubjectOfferingsStatus,
 } from "../subject-offering.slice";
@@ -27,6 +28,7 @@ import type {
 export const useSubjectOfferingController = () => {
   const dispatch = useAppDispatch();
   const subjectOfferings = useAppSelector(selectSubjectOfferings);
+  const totalCount = useAppSelector(selectSubjectOfferingTotalCount);
   const status = useAppSelector(selectSubjectOfferingsStatus);
   const error = useAppSelector(selectSubjectOfferingError);
 
@@ -34,10 +36,10 @@ export const useSubjectOfferingController = () => {
     async (params?: SubjectOfferingListParamsT) => {
       dispatch(loadPending());
       try {
-        const items = await subjectOfferingService.list(
+        const result = await subjectOfferingService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(items));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(loadError(err instanceof Error ? err.message : "Error"));
       }
@@ -94,6 +96,7 @@ export const useSubjectOfferingController = () => {
 
   return {
     subjectOfferings,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadSubjectOfferings,

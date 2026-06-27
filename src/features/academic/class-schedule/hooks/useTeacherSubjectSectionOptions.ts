@@ -25,7 +25,7 @@ export const useTeacherSubjectSectionOptions = () => {
     setLoading({ type: "loading" });
     teacherSubjectSectionService
       .list({ page: 1, pageSize: 100 })
-      .then((items) => {
+      .then(({ items }) => {
         if (!cancelled) {
           dispatch({
             type: "success",

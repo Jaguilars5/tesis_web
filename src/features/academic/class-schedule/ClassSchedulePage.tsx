@@ -21,6 +21,7 @@ export default function ClassSchedulesPage() {
 
   const {
     classSchedules,
+    totalCount,
     isLoading,
     loadClassSchedules,
     createClassSchedule,
@@ -98,6 +99,7 @@ export default function ClassSchedulesPage() {
 
       <ClassScheduleTable
         classSchedules={classSchedules}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadClassSchedules={loadClassSchedules}
         teacherSubjectSectionOptions={teacherSubjectSectionOptions}

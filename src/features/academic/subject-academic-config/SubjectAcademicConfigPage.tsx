@@ -23,6 +23,7 @@ export default function SubjectAcademicConfigsPage() {
 
   const {
     subjectAcademicConfigs,
+    totalCount,
     isLoading,
     loadSubjectAcademicConfigs,
     createSubjectAcademicConfig,
@@ -109,6 +110,7 @@ export default function SubjectAcademicConfigsPage() {
 
       <SubjectAcademicConfigTable
         subjectAcademicConfigs={subjectAcademicConfigs}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadSubjectAcademicConfigs={loadSubjectAcademicConfigs}
         subjectOptions={subjectOptions}

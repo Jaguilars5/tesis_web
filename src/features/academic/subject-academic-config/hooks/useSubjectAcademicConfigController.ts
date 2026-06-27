@@ -15,6 +15,7 @@ import {
   selectSubjectAcademicConfigError,
   selectSubjectAcademicConfigs,
   selectSubjectAcademicConfigsStatus,
+  selectSubjectAcademicConfigTotalCount,
 } from "../subject-academic-config.slice";
 import type {
   SubjectAcademicConfigCreateParamsT,
@@ -29,15 +30,16 @@ export const useSubjectAcademicConfigController = () => {
   const subjectAcademicConfigs = useAppSelector(selectSubjectAcademicConfigs);
   const status = useAppSelector(selectSubjectAcademicConfigsStatus);
   const error = useAppSelector(selectSubjectAcademicConfigError);
+  const totalCount = useAppSelector(selectSubjectAcademicConfigTotalCount);
 
   const loadSubjectAcademicConfigs = useCallback(
     async (params?: SubjectAcademicConfigListParamsT) => {
       dispatch(loadPending());
       try {
-        const items = await subjectAcademicConfigService.list(
+        const result = await subjectAcademicConfigService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(items));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(loadError(err instanceof Error ? err.message : "Error"));
       }
@@ -98,6 +100,7 @@ export const useSubjectAcademicConfigController = () => {
 
   return {
     subjectAcademicConfigs,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadSubjectAcademicConfigs,

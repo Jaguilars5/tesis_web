@@ -66,7 +66,7 @@ export const useStudentNoteFilterOptions = (courseId: number | 0) => {
     }
     teacherSubjectSectionService
       .list(params)
-      .then((items) => {
+      .then(({ items }) => {
         if (cancelled) return;
         // El backend puede ignorar el filtro, por eso reforzamos en el cliente.
         const visible =

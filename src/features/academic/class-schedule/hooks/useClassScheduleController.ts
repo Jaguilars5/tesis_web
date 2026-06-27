@@ -13,6 +13,7 @@ import {
   loadSuccess,
   mutationError,
   selectClassScheduleError,
+  selectClassScheduleTotalCount,
   selectClassSchedules,
   selectClassSchedulesStatus,
 } from "../class-schedule.slice";
@@ -27,6 +28,7 @@ import type {
 export const useClassScheduleController = () => {
   const dispatch = useAppDispatch();
   const classSchedules = useAppSelector(selectClassSchedules);
+  const totalCount = useAppSelector(selectClassScheduleTotalCount);
   const status = useAppSelector(selectClassSchedulesStatus);
   const error = useAppSelector(selectClassScheduleError);
 
@@ -34,10 +36,10 @@ export const useClassScheduleController = () => {
     async (params?: ClassScheduleListParamsT) => {
       dispatch(loadPending());
       try {
-        const items = await classScheduleService.list(
+        const result = await classScheduleService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(items));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(loadError(err instanceof Error ? err.message : "Error"));
       }
@@ -94,6 +96,7 @@ export const useClassScheduleController = () => {
 
   return {
     classSchedules,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadClassSchedules,

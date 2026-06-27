@@ -13,6 +13,7 @@ import {
   loadSuccess,
   mutationError,
   selectPeriodTypeError,
+  selectPeriodTypeTotalCount,
   selectPeriodTypes,
   selectPeriodTypesStatus,
 } from "../period-types.slice";
@@ -29,15 +30,16 @@ export const usePeriodTypeController = () => {
   const periodTypes = useAppSelector(selectPeriodTypes);
   const status = useAppSelector(selectPeriodTypesStatus);
   const error = useAppSelector(selectPeriodTypeError);
+  const totalCount = useAppSelector(selectPeriodTypeTotalCount);
 
   const loadPeriodTypes = useCallback(
     async (params?: PeriodTypeListParamsT) => {
       dispatch(loadPending());
       try {
-        const items = await periodTypeService.list(
+        const result = await periodTypeService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(items));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(loadError(err instanceof Error ? err.message : "Error"));
       }
@@ -94,6 +96,7 @@ export const usePeriodTypeController = () => {
 
   return {
     periodTypes,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadPeriodTypes,

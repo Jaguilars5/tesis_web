@@ -25,6 +25,7 @@ export default function SubjectOfferingsPage() {
 
   const {
     subjectOfferings,
+    totalCount,
     isLoading,
     loadSubjectOfferings,
     createSubjectOffering,
@@ -108,6 +109,7 @@ export default function SubjectOfferingsPage() {
 
       <SubjectOfferingTable
         subjectOfferings={subjectOfferings}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadSubjectOfferings={loadSubjectOfferings}
         schoolYearOptions={schoolYearOptions}

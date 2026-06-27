@@ -7,86 +7,62 @@ interface Option {
   value: string;
 }
 
-export const usePeriodTypeOptions = () => {
-  const [periodTypeOptions, dispatch] = useReducer(
+const buildOptions = (items: PeriodTypeT[]): Option[] =>
+  items.map((item) => ({ label: item.name, value: String(item.id) }));
+
+const usePeriodTypeFetch = <T,>(transform: (items: PeriodTypeT[]) => T) => {
+  const [data, dispatch] = useReducer(
     (
-      _state: Option[],
-      action: { type: "success"; options: Option[] } | { type: "error" },
-    ) => (action.type === "success" ? action.options : []),
-    [],
-  );
-  const [loadingPeriodTypes, setLoading] = useReducer(
-    (_state: boolean, action: { type: "loading" } | { type: "done" }) =>
-      action.type === "loading",
-    true,
+      _state: { data: T; loading: boolean },
+      action:
+        | { type: "loading" }
+        | { type: "success"; data: T }
+        | { type: "error" },
+    ) => {
+      switch (action.type) {
+        case "loading":
+          return { data: _state.data, loading: true };
+        case "success":
+          return { data: action.data, loading: false };
+        case "error":
+          return { data: _state.data, loading: false };
+      }
+    },
+    { data: transform([]), loading: true },
   );
 
   useEffect(() => {
     let cancelled = false;
-    setLoading({ type: "loading" });
+    dispatch({ type: "loading" });
     periodTypeService
       .list({ page: 1, pageSize: 100 })
-      .then((items) => {
+      .then(({ items }) => {
         if (!cancelled) {
-          dispatch({
-            type: "success",
-            options: items.map((item) => ({
-              label: item.name,
-              value: String(item.id),
-            })),
-          });
-          setLoading({ type: "done" });
+          dispatch({ type: "success", data: transform(items) });
         }
       })
       .catch(() => {
         if (!cancelled) {
           dispatch({ type: "error" });
-          setLoading({ type: "done" });
         }
       });
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  return data;
+};
+
+export const usePeriodTypeOptions = () => {
+  const { data: periodTypeOptions, loading: loadingPeriodTypes } =
+    usePeriodTypeFetch(buildOptions);
   return { periodTypeOptions, loadingPeriodTypes };
 };
 
 export const usePeriodTypeList = () => {
-  const [periodTypes, dispatch] = useReducer(
-    (
-      _state: PeriodTypeT[],
-      action: { type: "success"; items: PeriodTypeT[] } | { type: "error" },
-    ) => (action.type === "success" ? action.items : []),
-    [],
-  );
-  const [loadingPeriodTypes, setLoading] = useReducer(
-    (_state: boolean, action: { type: "loading" } | { type: "done" }) =>
-      action.type === "loading",
-    true,
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading({ type: "loading" });
-    periodTypeService
-      .list({ page: 1, pageSize: 100 })
-      .then((items) => {
-        if (!cancelled) {
-          dispatch({ type: "success", items });
-          setLoading({ type: "done" });
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          dispatch({ type: "error" });
-          setLoading({ type: "done" });
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+  const { data: periodTypes, loading: loadingPeriodTypes } =
+    usePeriodTypeFetch((items) => items);
   return { periodTypes, loadingPeriodTypes };
 };

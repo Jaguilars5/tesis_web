@@ -25,10 +25,13 @@ const OrderingOptions: { label: string; value: AcademicPeriodOrderingT }[] = [
   { label: "Inicio (desc)", value: "-start_date" },
   { label: "Fin (asc)", value: "end_date" },
   { label: "Fin (desc)", value: "-end_date" },
+  { label: "Peso (asc)", value: "year_weight" },
+  { label: "Peso (desc)", value: "-year_weight" },
 ];
 
 interface AcademicPeriodTableProps {
   academicPeriods: AcademicPeriodT[];
+  totalCount: number;
   isLoading: boolean;
   loadAcademicPeriods: (params?: AcademicPeriodListParamsT) => void;
   schoolYearOptions: { label: string; value: string }[];
@@ -42,6 +45,7 @@ interface AcademicPeriodTableProps {
 
 export const AcademicPeriodTable: React.FC<AcademicPeriodTableProps> = ({
   academicPeriods,
+  totalCount,
   isLoading,
   loadAcademicPeriods,
   schoolYearOptions,
@@ -81,7 +85,7 @@ export const AcademicPeriodTable: React.FC<AcademicPeriodTableProps> = ({
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ page: 1, pageSize });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = useCallback(
@@ -94,13 +98,14 @@ export const AcademicPeriodTable: React.FC<AcademicPeriodTableProps> = ({
       debounceRef.current = setTimeout(() => {
         fetchData({
           page: 1,
+          pageSize,
           search: value || undefined,
           ordering,
           filters: buildFilters(),
         });
       }, 400);
     },
-    [fetchData, ordering, buildFilters],
+    [fetchData, pageSize, ordering, buildFilters],
   );
 
   const handleOrdering = useCallback(
@@ -109,12 +114,13 @@ export const AcademicPeriodTable: React.FC<AcademicPeriodTableProps> = ({
       setPage(1);
       fetchData({
         page: 1,
+        pageSize,
         search: search || undefined,
         ordering: value,
         filters: buildFilters(),
       });
     },
-    [fetchData, search, buildFilters],
+    [fetchData, pageSize, search, buildFilters],
   );
 
   const handleSchoolYearChange = useCallback(
@@ -123,12 +129,13 @@ export const AcademicPeriodTable: React.FC<AcademicPeriodTableProps> = ({
       setPage(1);
       fetchData({
         page: 1,
+        pageSize,
         search: search || undefined,
         ordering,
         filters: buildFilters({ school_year: value }),
       });
     },
-    [fetchData, search, ordering, buildFilters],
+    [fetchData, pageSize, search, ordering, buildFilters],
   );
 
   const handlePeriodTypeChange = useCallback(
@@ -137,15 +144,16 @@ export const AcademicPeriodTable: React.FC<AcademicPeriodTableProps> = ({
       setPage(1);
       fetchData({
         page: 1,
+        pageSize,
         search: search || undefined,
         ordering,
         filters: buildFilters({ period_type: value }),
       });
     },
-    [fetchData, search, ordering, buildFilters],
+    [fetchData, pageSize, search, ordering, buildFilters],
   );
 
-  const hasNextPage = academicPeriods.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<AcademicPeriodT>[] = [
     {
@@ -275,13 +283,14 @@ export const AcademicPeriodTable: React.FC<AcademicPeriodTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={academicPeriods.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {
           setPage(newPage);
           fetchData({
             page: newPage,
+            pageSize,
             search: search || undefined,
             ordering,
             filters: buildFilters(),

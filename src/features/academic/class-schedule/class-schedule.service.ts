@@ -1,6 +1,7 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type {
   PaginatedData,
+  PaginatedResult,
   ResponseApi,
 } from "@shared/types/api.response.types";
 
@@ -18,7 +19,7 @@ import type {
 } from "./class-schedule.types";
 
 class ClassScheduleService implements ClassScheduleServiceT {
-  async list(params?: ClassScheduleListParamsT): Promise<ClassScheduleT[]> {
+  async list(params?: ClassScheduleListParamsT): Promise<PaginatedResult<ClassScheduleT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -36,12 +37,10 @@ class ClassScheduleService implements ClassScheduleServiceT {
             )
             .join("&")}`
         : "";
-      const { data } = await apiClient.get<
-        ResponseApi<PaginatedData<ClassScheduleT>>
-      >(
+      const { data } = await apiClient.get<ResponseApi<PaginatedData<ClassScheduleT>>>(
         `${CLASS_SCHEDULE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

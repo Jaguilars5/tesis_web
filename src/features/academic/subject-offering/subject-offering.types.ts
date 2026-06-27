@@ -15,6 +15,7 @@ export interface SubjectOfferingFormValues {
   school_year: number;
   section: number;
   subject_academic_config: number;
+  is_active: boolean;
 }
 
 export type SubjectOfferingOrderingT = "id" | "-id";
@@ -44,12 +45,13 @@ export interface SubjectOfferingGetParamsT {
   id: number;
 }
 
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export type SubjectOfferingDeleteParamsT = SoftDeleteParamsT;
 
 export interface SubjectOfferingServiceT {
-  list(params?: SubjectOfferingListParamsT): Promise<SubjectOfferingT[]>;
+  list(params?: SubjectOfferingListParamsT): Promise<PaginatedResult<SubjectOfferingT>>;
   get(params: SubjectOfferingGetParamsT): Promise<SubjectOfferingT>;
   create(params: SubjectOfferingCreateParamsT): Promise<SubjectOfferingT>;
   update(params: SubjectOfferingUpdateParamsT): Promise<SubjectOfferingT>;

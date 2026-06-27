@@ -1,6 +1,7 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type {
   PaginatedData,
+  PaginatedResult,
   ResponseApi,
 } from "@shared/types/api.response.types";
 
@@ -18,9 +19,7 @@ import type {
 } from "./subject-academic-config.types";
 
 class SubjectAcademicConfigService implements SubjectAcademicConfigServiceT {
-  async list(
-    params?: SubjectAcademicConfigListParamsT,
-  ): Promise<SubjectAcademicConfigT[]> {
+  async list(params?: SubjectAcademicConfigListParamsT): Promise<PaginatedResult<SubjectAcademicConfigT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -38,12 +37,10 @@ class SubjectAcademicConfigService implements SubjectAcademicConfigServiceT {
             )
             .join("&")}`
         : "";
-      const { data } = await apiClient.get<
-        ResponseApi<PaginatedData<SubjectAcademicConfigT>>
-      >(
+      const { data } = await apiClient.get<ResponseApi<PaginatedData<SubjectAcademicConfigT>>>(
         `${SUBJECT_ACADEMIC_CONFIG_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

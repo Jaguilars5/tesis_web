@@ -6,6 +6,7 @@ export const ACADEMIC_PERIOD_ENDPOINTS = {
   CREATE: ACADEMIC_PERIOD_BASE_URL,
   UPDATE: (id: number) => `${ACADEMIC_PERIOD_BASE_URL}${id}/`,
   SOFT_DELETE: (id: number) => `${ACADEMIC_PERIOD_BASE_URL}${id}/soft-delete/`,
+  BULK_CREATE: `${ACADEMIC_PERIOD_BASE_URL}bulk/`,
 } as const;
 
 export const ACADEMIC_PERIOD_PERMISSIONS = {

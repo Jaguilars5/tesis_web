@@ -40,7 +40,7 @@ export default function EnrollmentWizardPage() {
 
   useEffect(() => {
     sectionService.list({ page: 1, pageSize: 100 }).then(setSections).catch(() => {});
-    academicPeriodService.list({ page: 1, pageSize: 100 }).then((items) => {
+    academicPeriodService.list({ page: 1, pageSize: 100 }).then(({ items }) => {
       setAcademicPeriods(items.map((p) => ({ label: `${p.name} (${p.code})`, value: String(p.id) })));
       if (items.length > 0) setSelectedPeriodId(items[0].id);
     }).catch(() => {});

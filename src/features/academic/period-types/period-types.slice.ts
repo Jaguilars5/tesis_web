@@ -6,12 +6,14 @@ import type { PeriodTypeT } from "./period-types.types";
 
 export interface PeriodTypeStateT {
   periodTypes: PeriodTypeT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: PeriodTypeStateT = {
   periodTypes: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -24,8 +26,9 @@ const periodTypeSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<PeriodTypeT[]>) {
-      state.periodTypes = action.payload;
+    loadSuccess(state, action: PayloadAction<{ items: PeriodTypeT[]; count: number }>) {
+      state.periodTypes = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -56,6 +59,9 @@ const periodTypeSlice = createSlice({
     clearPeriodTypeError(state) {
       state.error = null;
     },
+    setTotalCount(state, action: PayloadAction<number>) {
+      state.totalCount = action.payload;
+    },
   },
 });
 
@@ -68,6 +74,7 @@ export const {
   entityDeleted,
   mutationError,
   clearPeriodTypeError,
+  setTotalCount,
 } = periodTypeSlice.actions;
 
 export const selectPeriodTypes = (state: RootState): PeriodTypeT[] =>
@@ -78,6 +85,9 @@ export const selectPeriodTypesStatus = (state: RootState): RequestStatusT =>
 
 export const selectPeriodTypeError = (state: RootState): string | null =>
   state.academic.periodTypes.error;
+
+export const selectPeriodTypeTotalCount = (state: RootState): number =>
+  state.academic.periodTypes.totalCount;
 
 export const periodTypeReducer = periodTypeSlice.reducer;
 

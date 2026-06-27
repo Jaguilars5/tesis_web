@@ -22,6 +22,7 @@ export const classScheduleSchema = Yup.object({
         return value > start_time;
       },
     ),
+  is_active: Yup.boolean(),
 });
 
 export const formatDayOfWeek = (item: ClassScheduleT): string =>

@@ -16,6 +16,7 @@ export interface SubjectAcademicConfigFormValues {
   academic_grade: number;
   weekly_hours: number;
   is_required: boolean;
+  is_active: boolean;
 }
 
 export type SubjectAcademicConfigOrderingT = "weekly_hours" | "-weekly_hours";
@@ -46,13 +47,12 @@ export interface SubjectAcademicConfigGetParamsT {
 }
 
 import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+import type { PaginatedResult } from "@shared/types/api.response.types";
 
 export type SubjectAcademicConfigDeleteParamsT = SoftDeleteParamsT;
 
 export interface SubjectAcademicConfigServiceT {
-  list(
-    params?: SubjectAcademicConfigListParamsT,
-  ): Promise<SubjectAcademicConfigT[]>;
+  list(params?: SubjectAcademicConfigListParamsT): Promise<PaginatedResult<SubjectAcademicConfigT>>;
   get(params: SubjectAcademicConfigGetParamsT): Promise<SubjectAcademicConfigT>;
   create(
     params: SubjectAcademicConfigCreateParamsT,

@@ -73,6 +73,7 @@ const buildInitialCards = (
       year_weight: weight,
       is_regular_period: true,
       school_year: schoolYearId,
+      is_active: true,
     };
   });
 };
@@ -90,6 +91,7 @@ const buildEditInitialValues = (
       year_weight: null,
       is_regular_period: true,
       school_year: 0,
+      is_active: true,
     };
   }
   return {
@@ -101,6 +103,7 @@ const buildEditInitialValues = (
     year_weight: item.year_weight,
     is_regular_period: item.is_regular_period,
     school_year: item.school_year,
+    is_active: item.is_active,
   };
 };
 
@@ -480,7 +483,7 @@ export const AcademicPeriodFormModal: React.FC<
               />
             </div>
 
-            <div className="flex items-end pb-1">
+            <div className="flex items-center gap-6 pb-1">
               <CustomCheckbox
                 name="is_regular_period"
                 checked={editFormik.values.is_regular_period}
@@ -495,6 +498,22 @@ export const AcademicPeriodFormModal: React.FC<
                 className={checkboxClassname}
                 disabled={isSubmitting}
               />
+              {isEdit && (
+                <CustomCheckbox
+                  name="is_active"
+                  checked={editFormik.values.is_active}
+                  onChange={(e) =>
+                    editFormik.setFieldValue(
+                      "is_active",
+                      e.target.checked,
+                    )
+                  }
+                  onBlur={editFormik.handleBlur}
+                  label="Activo"
+                  className={checkboxClassname}
+                  disabled={isSubmitting}
+                />
+              )}
             </div>
 
             {weightError && (

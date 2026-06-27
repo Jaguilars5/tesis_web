@@ -28,6 +28,7 @@ const OrderingOptions: { label: string; value: PeriodTypeOrderingT }[] = [
 
 interface PeriodTypeTableProps {
   periodTypes: PeriodTypeT[];
+  totalCount: number;
   isLoading: boolean;
   loadPeriodTypes: (params?: PeriodTypeListParamsT) => void;
   onEdit: (periodType: PeriodTypeT) => void;
@@ -39,6 +40,7 @@ interface PeriodTypeTableProps {
 
 export const PeriodTypeTable: React.FC<PeriodTypeTableProps> = ({
   periodTypes,
+  totalCount,
   isLoading,
   loadPeriodTypes,
   onEdit,
@@ -99,7 +101,7 @@ export const PeriodTypeTable: React.FC<PeriodTypeTableProps> = ({
     [fetchData, pageSize, search],
   );
 
-  const hasNextPage = periodTypes.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<PeriodTypeT>[] = [
     {
@@ -200,7 +202,7 @@ export const PeriodTypeTable: React.FC<PeriodTypeTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={periodTypes.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {

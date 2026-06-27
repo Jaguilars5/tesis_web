@@ -1,3 +1,4 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface AcademicPeriodT {
@@ -26,6 +27,7 @@ export interface AcademicPeriodFormValues {
   year_weight: number | null;
   is_regular_period: boolean;
   school_year: number;
+  is_active: boolean;
 }
 
 export type AcademicPeriodOrderingT =
@@ -34,7 +36,9 @@ export type AcademicPeriodOrderingT =
   | "start_date"
   | "-start_date"
   | "end_date"
-  | "-end_date";
+  | "-end_date"
+  | "year_weight"
+  | "-year_weight";
 
 export interface AcademicPeriodListParamsT {
   page?: number;
@@ -62,10 +66,21 @@ export interface AcademicPeriodGetParamsT {
 
 export type AcademicPeriodDeleteParamsT = SoftDeleteParamsT;
 
+export interface BulkCreatePeriodErrorT {
+  index: number;
+  errors: Record<string, string>;
+}
+
+export interface BulkCreateResponseT {
+  created: AcademicPeriodT[];
+  errors: BulkCreatePeriodErrorT[];
+}
+
 export interface AcademicPeriodServiceT {
-  list(params?: AcademicPeriodListParamsT): Promise<AcademicPeriodT[]>;
+  list(params?: AcademicPeriodListParamsT): Promise<PaginatedResult<AcademicPeriodT>>;
   get(params: AcademicPeriodGetParamsT): Promise<AcademicPeriodT>;
   create(params: AcademicPeriodCreateParamsT): Promise<AcademicPeriodT>;
   update(params: AcademicPeriodUpdateParamsT): Promise<AcademicPeriodT>;
+  bulkCreate(periods: AcademicPeriodCreateParamsT[]): Promise<BulkCreateResponseT>;
   softDelete(params: AcademicPeriodDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

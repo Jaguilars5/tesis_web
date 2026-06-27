@@ -6,12 +6,14 @@ import type { ClassScheduleT } from "./class-schedule.types";
 
 export interface ClassScheduleStateT {
   classSchedules: ClassScheduleT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: ClassScheduleStateT = {
   classSchedules: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -24,8 +26,12 @@ const classScheduleSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<ClassScheduleT[]>) {
-      state.classSchedules = action.payload;
+    loadSuccess(
+      state,
+      action: PayloadAction<{ items: ClassScheduleT[]; count: number }>,
+    ) {
+      state.classSchedules = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -53,6 +59,9 @@ const classScheduleSlice = createSlice({
       state.status = "failed";
       state.error = action.payload;
     },
+    setTotalCount(state, action: PayloadAction<number>) {
+      state.totalCount = action.payload;
+    },
     clearClassScheduleError(state) {
       state.error = null;
     },
@@ -67,6 +76,7 @@ export const {
   entityUpdated,
   entityDeleted,
   mutationError,
+  setTotalCount,
   clearClassScheduleError,
 } = classScheduleSlice.actions;
 
@@ -78,6 +88,9 @@ export const selectClassSchedulesStatus = (state: RootState): RequestStatusT =>
 
 export const selectClassScheduleError = (state: RootState): string | null =>
   state.academic.classSchedules.error;
+
+export const selectClassScheduleTotalCount = (state: RootState): number =>
+  state.academic.classSchedules.totalCount;
 
 export const classScheduleReducer = classScheduleSlice.reducer;
 

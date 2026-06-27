@@ -1,8 +1,8 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
 
-import { inputClassname, selectClassname } from "@app/styles/styles";
-import { CustomInput, CustomSelect } from "@shared/components/Form";
+import { checkboxClassname, inputClassname, selectClassname } from "@app/styles/styles";
+import { CustomCheckbox, CustomInput, CustomSelect } from "@shared/components/Form";
 import { ErrrosInForm } from "@shared/components/ErrrosInForm";
 import type { SubmitErrorState } from "@shared/utils/validationErrors";
 
@@ -43,13 +43,15 @@ const getInitialValues = (
       day_of_week: editingClassSchedule.day_of_week,
       start_time: editingClassSchedule.start_time,
       end_time: editingClassSchedule.end_time,
+      is_active: editingClassSchedule.is_active,
     };
   }
   return {
-    teacher_subject_section: 0,
+    teacher_subject_section: null as unknown as number,
     day_of_week: 1,
     start_time: "",
     end_time: "",
+    is_active: true,
   };
 };
 
@@ -176,6 +178,20 @@ export const ClassScheduleFormModal: React.FC<ClassScheduleFormModalProps> = ({
               }
             />
           </div>
+
+          {isEdit && (
+            <div className="flex items-end pb-1">
+              <CustomCheckbox
+                name="is_active"
+                checked={formik.values.is_active}
+                onChange={(e) =>
+                  formik.setFieldValue("is_active", e.target.checked)
+                }
+                label="Activo"
+                className={checkboxClassname}
+              />
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <button

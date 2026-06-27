@@ -28,6 +28,7 @@ const OrderingOptions: { label: string; value: SubjectOrderingT }[] = [
 
 interface SubjectTableProps {
   subjects: SubjectT[];
+  totalCount: number;
   isLoading: boolean;
   loadSubjects: (params?: SubjectListParamsT) => void;
   onEdit: (subject: SubjectT) => void;
@@ -39,6 +40,7 @@ interface SubjectTableProps {
 
 export const SubjectTable: React.FC<SubjectTableProps> = ({
   subjects,
+  totalCount,
   isLoading,
   loadSubjects,
   onEdit,
@@ -99,7 +101,7 @@ export const SubjectTable: React.FC<SubjectTableProps> = ({
     [fetchData, pageSize, search],
   );
 
-  const hasNextPage = subjects.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<SubjectT>[] = [
     {
@@ -195,7 +197,7 @@ export const SubjectTable: React.FC<SubjectTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={subjects.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {

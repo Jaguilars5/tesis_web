@@ -44,6 +44,7 @@ const ORDERING_OPTIONS: {
 
 type TeacherSubjectSectionTableProps = {
   teacherSubjectSections: TeacherSubjectSectionT[];
+  totalCount: number;
   isLoading: boolean;
   loadTeacherSubjectSections: (params?: TeacherSubjectSectionListParamsT) => void;
   onEdit: (assignment: TeacherSubjectSectionT) => void;
@@ -92,6 +93,7 @@ const selectClassNames = {
 
 export const TeacherSubjectSectionTable = ({
   teacherSubjectSections,
+  totalCount,
   isLoading,
   loadTeacherSubjectSections,
   onEdit,
@@ -230,7 +232,7 @@ export const TeacherSubjectSectionTable = ({
     setExpandedGroups((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
-  const hasNextPage = teacherSubjectSections.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const groupColumns: TableColumnProps<GroupedRow>[] = useMemo(
     () => [
@@ -528,7 +530,7 @@ export const TeacherSubjectSectionTable = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={teacherSubjectSections.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {

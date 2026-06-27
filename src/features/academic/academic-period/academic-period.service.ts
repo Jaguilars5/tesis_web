@@ -1,6 +1,7 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type {
   PaginatedData,
+  PaginatedResult,
   ResponseApi,
 } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
@@ -14,10 +15,11 @@ import type {
   AcademicPeriodServiceT,
   AcademicPeriodT,
   AcademicPeriodUpdateParamsT,
+  BulkCreateResponseT,
 } from "./academic-period.types";
 
 class AcademicPeriodService implements AcademicPeriodServiceT {
-  async list(params?: AcademicPeriodListParamsT): Promise<AcademicPeriodT[]> {
+  async list(params?: AcademicPeriodListParamsT): Promise<PaginatedResult<AcademicPeriodT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -35,12 +37,10 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
             )
             .join("&")}`
         : "";
-      const { data } = await apiClient.get<
-        ResponseApi<PaginatedData<AcademicPeriodT>>
-      >(
+      const { data } = await apiClient.get<ResponseApi<PaginatedData<AcademicPeriodT>>>(
         `${ACADEMIC_PERIOD_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
@@ -59,12 +59,9 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
 
   async create(params: AcademicPeriodCreateParamsT): Promise<AcademicPeriodT> {
     try {
-      const cleaned = { ...params };
-      if (cleaned.period_type === 0)
-        cleaned.period_type = null as unknown as number;
       const { data } = await apiClient.post<ResponseApi<AcademicPeriodT>>(
         ACADEMIC_PERIOD_ENDPOINTS.CREATE,
-        cleaned,
+        params,
       );
       return data.data;
     } catch (error) {
@@ -74,12 +71,23 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
 
   async update(params: AcademicPeriodUpdateParamsT): Promise<AcademicPeriodT> {
     try {
-      const cleaned = { ...params.data };
-      if (cleaned.period_type === 0)
-        cleaned.period_type = null as unknown as number;
       const { data } = await apiClient.patch<ResponseApi<AcademicPeriodT>>(
         ACADEMIC_PERIOD_ENDPOINTS.UPDATE(params.id),
-        cleaned,
+        params.data,
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
+  async bulkCreate(
+    periods: AcademicPeriodCreateParamsT[],
+  ): Promise<BulkCreateResponseT> {
+    try {
+      const { data } = await apiClient.post<ResponseApi<BulkCreateResponseT>>(
+        ACADEMIC_PERIOD_ENDPOINTS.BULK_CREATE,
+        { periods },
       );
       return data.data;
     } catch (error) {

@@ -18,6 +18,7 @@ import type { PeriodTypeT } from "./period-types.types";
 export default function PeriodTypesPage() {
   const {
     periodTypes,
+    totalCount,
     isLoading,
     loadPeriodTypes,
     createPeriodType,
@@ -95,6 +96,7 @@ export default function PeriodTypesPage() {
 
       <PeriodTypeTable
         periodTypes={periodTypes}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadPeriodTypes={loadPeriodTypes}
         onEdit={openModal}

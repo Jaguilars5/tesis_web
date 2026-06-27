@@ -7,6 +7,12 @@ export interface ClassScheduleT {
   is_active: boolean;
   subject_offering_name: string;
   day_of_week_name: string;
+  section_name: string;
+  section_id: number;
+  subject_name: string;
+  subject_id: number;
+  teacher_name: string;
+  teacher_id: number;
   created_at: string;
   updated_at: string;
 }
@@ -16,6 +22,7 @@ export interface ClassScheduleFormValues {
   day_of_week: number;
   start_time: string;
   end_time: string;
+  is_active: boolean;
 }
 
 export type ClassScheduleOrderingT =
@@ -48,12 +55,13 @@ export interface ClassScheduleGetParamsT {
   id: number;
 }
 
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteParamsT, SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export type ClassScheduleDeleteParamsT = SoftDeleteParamsT;
 
 export interface ClassScheduleServiceT {
-  list(params?: ClassScheduleListParamsT): Promise<ClassScheduleT[]>;
+  list(params?: ClassScheduleListParamsT): Promise<PaginatedResult<ClassScheduleT>>;
   get(params: ClassScheduleGetParamsT): Promise<ClassScheduleT>;
   create(params: ClassScheduleCreateParamsT): Promise<ClassScheduleT>;
   update(params: ClassScheduleUpdateParamsT): Promise<ClassScheduleT>;

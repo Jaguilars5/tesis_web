@@ -6,12 +6,14 @@ import type { AcademicPeriodT } from "./academic-period.types";
 
 export interface AcademicPeriodStateT {
   academicPeriods: AcademicPeriodT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: AcademicPeriodStateT = {
   academicPeriods: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -24,8 +26,9 @@ const academicPeriodSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<AcademicPeriodT[]>) {
-      state.academicPeriods = action.payload;
+    loadSuccess(state, action: PayloadAction<{ items: AcademicPeriodT[]; count: number }>) {
+      state.academicPeriods = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -49,6 +52,9 @@ const academicPeriodSlice = createSlice({
       );
       state.status = "succeeded";
     },
+    setTotalCount(state, action: PayloadAction<number>) {
+      state.totalCount = action.payload;
+    },
     mutationError(state, action: PayloadAction<string>) {
       state.status = "failed";
       state.error = action.payload;
@@ -66,6 +72,7 @@ export const {
   entityCreated,
   entityUpdated,
   entityDeleted,
+  setTotalCount,
   mutationError,
   clearAcademicPeriodError,
 } = academicPeriodSlice.actions;
@@ -78,6 +85,8 @@ export const selectAcademicPeriodsStatus = (state: RootState): RequestStatusT =>
 
 export const selectAcademicPeriodError = (state: RootState): string | null =>
   state.academic.academicPeriods.error;
+
+export const selectAcademicPeriodTotalCount = (state: RootState): number => state.academic.academicPeriods.totalCount;
 
 export const academicPeriodsReducer = academicPeriodSlice.reducer;
 

@@ -42,12 +42,12 @@ export const useSubjectOfferingForm = ({
   const handleSubmit = useCallback(
     async (values: SubjectOfferingFormValues) => {
       setSubmitErrors({ general: [], validation: {} });
-      const { school_year, section, subject_academic_config } = values;
+      const { school_year, section, subject_academic_config, is_active } = values;
       if (editing) {
         const response = await unwrapMutation(
           {
             id: editing.id,
-            data: { school_year, section, subject_academic_config },
+            data: { school_year, section, subject_academic_config, is_active },
           },
           update,
         );
@@ -58,7 +58,7 @@ export const useSubjectOfferingForm = ({
         setSubmitErrors(response.errors);
       } else {
         const response = await unwrapMutation(
-          { school_year, section, subject_academic_config },
+          { school_year, section, subject_academic_config, is_active: true },
           create,
         );
         if (response.ok) {

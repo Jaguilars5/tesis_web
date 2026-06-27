@@ -34,7 +34,7 @@ export const useEvaluativeActivityOptions = () => {
     Promise.all([
       teacherSubjectSectionService.list(tssParams),
       activityTypeService.list({ page: 1, pageSize: 100 }),
-    ]).then(([tss, at]) => {
+    ]).then(([{ items: tss }, at]) => {
       if (cancelled) return;
       // El backend puede ignorar el filtro, por eso reforzamos en el cliente.
       const visibleTss =

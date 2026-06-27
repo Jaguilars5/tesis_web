@@ -3,7 +3,9 @@ import * as Yup from "yup";
 import type { AcademicPeriodT } from "./academic-period.types";
 
 export const academicPeriodSchema = Yup.object({
-  code: Yup.string().max(50, "El codigo no debe exceder 50 caracteres"),
+  code: Yup.string()
+    .max(50, "El codigo no debe exceder 50 caracteres")
+    .required("El codigo es obligatorio"),
   name: Yup.string()
     .min(1, "El nombre debe tener al menos 1 caracter")
     .max(80, "El nombre no debe exceder 80 caracteres")
@@ -29,10 +31,10 @@ export const academicPeriodSchema = Yup.object({
     .max(100, "El peso no debe exceder 100")
     .transform((_, val) => (val === "" ? null : val)),
   is_regular_period: Yup.boolean(),
+  is_active: Yup.boolean(),
   school_year: Yup.number()
     .min(1, "Debe seleccionar un ano escolar")
     .required("El ano escolar es obligatorio"),
-  is_active: Yup.boolean(),
 });
 
 export const formatAcademicPeriodName = (item: AcademicPeriodT): string =>

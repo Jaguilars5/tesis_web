@@ -15,6 +15,7 @@ import {
   selectAcademicPeriodError,
   selectAcademicPeriods,
   selectAcademicPeriodsStatus,
+  selectAcademicPeriodTotalCount,
 } from "../academic-period.slice";
 import type {
   AcademicPeriodCreateParamsT,
@@ -22,11 +23,13 @@ import type {
   AcademicPeriodListParamsT,
   AcademicPeriodT,
   AcademicPeriodUpdateParamsT,
+  BulkCreateResponseT,
 } from "../academic-period.types";
 
 export const useAcademicPeriodController = () => {
   const dispatch = useAppDispatch();
   const academicPeriods = useAppSelector(selectAcademicPeriods);
+  const totalCount = useAppSelector(selectAcademicPeriodTotalCount);
   const status = useAppSelector(selectAcademicPeriodsStatus);
   const error = useAppSelector(selectAcademicPeriodError);
 
@@ -34,10 +37,10 @@ export const useAcademicPeriodController = () => {
     async (params?: AcademicPeriodListParamsT) => {
       dispatch(loadPending());
       try {
-        const items = await academicPeriodService.list(
+        const result = await academicPeriodService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(items));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(loadError(err instanceof Error ? err.message : "Error"));
       }
@@ -75,6 +78,25 @@ export const useAcademicPeriodController = () => {
     [dispatch],
   );
 
+  const bulkCreateAcademicPeriods = useCallback(
+    async (
+      periods: AcademicPeriodCreateParamsT[],
+    ): Promise<BulkCreateResponseT> => {
+      try {
+        const result = await academicPeriodService.bulkCreate(periods);
+        for (const created of result.created) {
+          dispatch(entityCreated(created));
+        }
+        return result;
+      } catch (err) {
+        const rv = toRejectValue(err);
+        dispatch(mutationError(rv.msg));
+        throw rv;
+      }
+    },
+    [dispatch],
+  );
+
   const deleteAcademicPeriod = useCallback(
     async (params: AcademicPeriodDeleteParamsT): Promise<SoftDeleteResponseT> => {
       try {
@@ -94,11 +116,13 @@ export const useAcademicPeriodController = () => {
 
   return {
     academicPeriods,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadAcademicPeriods,
     createAcademicPeriod,
     updateAcademicPeriod,
+    bulkCreateAcademicPeriods,
     deleteAcademicPeriod,
   };
 };

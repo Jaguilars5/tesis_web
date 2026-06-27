@@ -1,6 +1,7 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type {
   PaginatedData,
+  PaginatedResult,
   ResponseApi,
 } from "@shared/types/api.response.types";
 
@@ -18,7 +19,9 @@ import type {
 } from "./subject-offering.types";
 
 class SubjectOfferingService implements SubjectOfferingServiceT {
-  async list(params?: SubjectOfferingListParamsT): Promise<SubjectOfferingT[]> {
+  async list(
+    params?: SubjectOfferingListParamsT,
+  ): Promise<PaginatedResult<SubjectOfferingT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -41,7 +44,7 @@ class SubjectOfferingService implements SubjectOfferingServiceT {
       >(
         `${SUBJECT_OFFERING_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

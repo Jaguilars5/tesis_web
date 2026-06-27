@@ -15,6 +15,7 @@ import {
   selectSubjectError,
   selectSubjects,
   selectSubjectsStatus,
+  selectSubjectTotalCount,
 } from "../subject.slice";
 import type {
   SubjectCreateParamsT,
@@ -27,6 +28,7 @@ import type {
 export const useSubjectController = () => {
   const dispatch = useAppDispatch();
   const subjects = useAppSelector(selectSubjects);
+  const totalCount = useAppSelector(selectSubjectTotalCount);
   const status = useAppSelector(selectSubjectsStatus);
   const error = useAppSelector(selectSubjectError);
 
@@ -34,10 +36,10 @@ export const useSubjectController = () => {
     async (params?: SubjectListParamsT) => {
       dispatch(loadPending());
       try {
-        const items = await subjectService.list(
+        const result = await subjectService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(items));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(loadError(err instanceof Error ? err.message : "Error"));
       }
@@ -94,6 +96,7 @@ export const useSubjectController = () => {
 
   return {
     subjects,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadSubjects,

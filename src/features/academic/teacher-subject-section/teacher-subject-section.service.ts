@@ -1,5 +1,5 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { PaginatedData, PaginatedResult, ResponseApi } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 import { TEACHER_SUBJECT_SECTION_ENDPOINTS } from "./teacher-subject-section.constants";
@@ -14,7 +14,9 @@ import type {
 } from "./teacher-subject-section.types";
 
 class TeacherSubjectSectionService implements TeacherSubjectSectionServiceT {
-  async list(params?: TeacherSubjectSectionListParamsT): Promise<TeacherSubjectSectionT[]> {
+  async list(
+    params?: TeacherSubjectSectionListParamsT,
+  ): Promise<PaginatedResult<TeacherSubjectSectionT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -36,7 +38,7 @@ class TeacherSubjectSectionService implements TeacherSubjectSectionServiceT {
       >(
         `${TEACHER_SUBJECT_SECTION_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filterQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
