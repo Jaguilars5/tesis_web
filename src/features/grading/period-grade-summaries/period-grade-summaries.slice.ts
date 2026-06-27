@@ -5,12 +5,14 @@ import type { PeriodGradeSummaryT } from "./period-grade-summaries.types";
 
 export interface PeriodGradeSummariesStateT {
   periodGradeSummaries: PeriodGradeSummaryT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: PeriodGradeSummariesStateT = {
   periodGradeSummaries: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -23,8 +25,9 @@ const periodGradeSummariesSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<PeriodGradeSummaryT[]>) {
-      state.periodGradeSummaries = action.payload;
+    loadSuccess(state, action: PayloadAction<{ items: PeriodGradeSummaryT[]; count: number }>) {
+      state.periodGradeSummaries = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -71,6 +74,9 @@ export const {
 
 export const selectPeriodGradeSummaries = (state: RootState): PeriodGradeSummaryT[] =>
   state.grading.periodGradeSummaries.periodGradeSummaries;
+
+export const selectTotalCount = (state: RootState): number =>
+  state.grading.periodGradeSummaries.totalCount;
 
 export const selectPeriodGradeSummariesStatus = (state: RootState): RequestStatusT =>
   state.grading.periodGradeSummaries.status;

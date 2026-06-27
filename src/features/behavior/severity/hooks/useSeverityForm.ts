@@ -37,9 +37,9 @@ export const useSeverityForm = ({ create, update }: UseFormArgs) => {
     async (values: SeverityFormValues) => {
       setSubmitErrors({ general: [], validation: {} });
       if (editing) {
-        const { code, name, description } = values;
+        const { code, name, description, is_active } = values;
         const response = await unwrapMutation(
-          { id: editing.id, data: { code, name, description } },
+          { id: editing.id, data: { code, name, description, is_active } },
           update,
         );
         if (response.ok) {
@@ -50,7 +50,7 @@ export const useSeverityForm = ({ create, update }: UseFormArgs) => {
       } else {
         const { code, name, description } = values;
         const response = await unwrapMutation(
-          { code, name, description },
+          { code, name, description, is_active: true },
           create,
         );
         if (response.ok) {

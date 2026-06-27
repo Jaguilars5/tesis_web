@@ -1,7 +1,10 @@
 import { useCallback, useState } from "react";
 import { unwrapMutation } from "@shared/utils/validationErrors";
 import type { SubmitErrorState } from "@shared/utils/validationErrors";
-import type { ConductIncidentT, ConductIncidentFormValues } from "../conduct-incident.types";
+import type {
+  ConductIncidentT,
+  ConductIncidentFormValues,
+} from "../conduct-incident.types";
 import type { useConductIncidentController } from "./useConductIncidentController";
 
 export type CIControllerT = ReturnType<typeof useConductIncidentController>;

@@ -3,19 +3,23 @@ import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 export interface SectionT {
   id: number;
   parallel: string;
+  code: string;
   school_year: number;
   school_year_name: string;
   academic_grade: number;
   academic_grade_name: string;
+  capacity: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
 export interface SectionFormValues {
+  code: string;
   parallel: string;
   school_year: number;
   academic_grade: number;
+  capacity: number;
 }
 
 export type SectionOrderingT =

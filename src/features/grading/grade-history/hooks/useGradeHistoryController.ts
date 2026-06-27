@@ -8,6 +8,7 @@ import {
   itemLoaded,
   mutationError,
   selectItems,
+  selectTotalCount,
   selectStatus,
   selectError,
 } from "../grade-history.slice";
@@ -20,6 +21,7 @@ import type {
 export const useGradeHistoryController = () => {
   const dispatch = useAppDispatch();
   const items = useAppSelector(selectItems);
+  const totalCount = useAppSelector(selectTotalCount);
   const status = useAppSelector(selectStatus);
   const error = useAppSelector(selectError);
 
@@ -30,7 +32,7 @@ export const useGradeHistoryController = () => {
         const result = await gradeHistoryService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(result));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(
           loadError(
@@ -62,6 +64,7 @@ export const useGradeHistoryController = () => {
 
   return {
     items,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadItems,

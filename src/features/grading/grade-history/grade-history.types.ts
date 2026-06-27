@@ -1,3 +1,5 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
+
 export interface GradeChangeHistoryT {
   id: number;
   student_note: number;
@@ -5,8 +7,11 @@ export interface GradeChangeHistoryT {
   modified_by_user: number | null;
   modified_by_user_name: string;
   created_by: number | null;
+  updated_by: number | null;
   previous_score: number;
   new_score: number;
+  previous_qualitative: number | null;
+  new_qualitative: number | null;
   reason: string;
   reason_code: string;
   origin: string;
@@ -17,8 +22,6 @@ export interface GradeChangeHistoryT {
 }
 
 export type GradeChangeHistoryOrderingT =
-  | "student_note_name" | "-student_note_name"
-  | "modified_by_user_name" | "-modified_by_user_name"
   | "modified_at" | "-modified_at"
   | "previous_score" | "-previous_score"
   | "new_score" | "-new_score";
@@ -35,6 +38,6 @@ export interface GradeChangeHistoryGetParamsT {
 }
 
 export interface GradeHistoryServiceT {
-  list(params?: GradeChangeHistoryListParamsT): Promise<GradeChangeHistoryT[]>;
+  list(params?: GradeChangeHistoryListParamsT): Promise<PaginatedResult<GradeChangeHistoryT>>;
   get(params: GradeChangeHistoryGetParamsT): Promise<GradeChangeHistoryT>;
 }

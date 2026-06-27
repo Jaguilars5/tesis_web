@@ -1,3 +1,4 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface AbsenceTypeT {
@@ -23,6 +24,7 @@ export interface AbsenceTypeFormValues {
   code: string;
   name: string;
   description: string;
+  is_active: boolean;
 }
 
 export type AbsenceTypeCreateParamsT = AbsenceTypeFormValues;
@@ -40,7 +42,7 @@ export interface AbsenceTypeDeleteParamsT {
 }
 
 export interface AbsenceTypeServiceT {
-  list(params?: AbsenceTypeListParamsT): Promise<AbsenceTypeT[]>;
+  list(params?: AbsenceTypeListParamsT): Promise<PaginatedResult<AbsenceTypeT>>;
   get(params: AbsenceTypeGetParamsT): Promise<AbsenceTypeT>;
   create(params: AbsenceTypeCreateParamsT): Promise<AbsenceTypeT>;
   update(params: AbsenceTypeUpdateParamsT): Promise<AbsenceTypeT>;

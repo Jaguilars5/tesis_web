@@ -15,6 +15,7 @@ import type { QualitativeScaleT } from "./qualitative-scales.types";
 export default function QualitativeScalesPage() {
   const {
     qualitativeScales,
+    totalCount,
     isLoading,
     loadQualitativeScales,
     createQualitativeScale,
@@ -90,6 +91,7 @@ export default function QualitativeScalesPage() {
 
       <QualitativeScalesTable
         qualitativeScales={qualitativeScales}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadQualitativeScales={loadQualitativeScales}
         onEdit={openModal}

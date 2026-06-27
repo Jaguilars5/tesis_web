@@ -19,7 +19,7 @@ export const useAttendanceStatusOptions = () => {
     let cancelled = false;
     dispatch({ type: "loading" });
     attendanceStatusService.list({ page: 1, pageSize: 100 })
-      .then((items) => {
+      .then(({ items }) => {
         if (!cancelled) dispatch({ type: "success", options: items.map((i) => ({ label: i.name, value: String(i.id) })) });
       })
       .catch(() => { if (!cancelled) dispatch({ type: "error" }); });

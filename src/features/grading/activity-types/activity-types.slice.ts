@@ -5,12 +5,14 @@ import type { ActivityTypeT } from "./activity-types.types";
 
 export interface ActivityTypesStateT {
   items: ActivityTypeT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: ActivityTypesStateT = {
   items: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -23,8 +25,9 @@ const activityTypesSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<ActivityTypeT[]>) {
-      state.items = action.payload;
+    loadSuccess(state, action: PayloadAction<{ items: ActivityTypeT[]; count: number }>) {
+      state.items = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -67,6 +70,8 @@ export const {
 
 export const selectItems = (state: RootState): ActivityTypeT[] =>
   state.grading.activityTypes.items;
+export const selectTotalCount = (state: RootState): number =>
+  state.grading.activityTypes.totalCount;
 export const selectStatus = (state: RootState): RequestStatusT =>
   state.grading.activityTypes.status;
 export const selectError = (state: RootState): string | null =>

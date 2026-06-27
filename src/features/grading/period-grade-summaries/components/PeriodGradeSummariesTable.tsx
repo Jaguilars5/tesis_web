@@ -21,18 +21,15 @@ import type {
 } from "../period-grade-summaries.types";
 
 const OrderingOptions: { label: string; value: PeriodGradeSummaryOrderingT }[] = [
-  { label: "Estudiante (A-Z)", value: "enrollment_name" },
-  { label: "Estudiante (Z-A)", value: "-enrollment_name" },
-  { label: "Oferta (A-Z)", value: "subject_offering_name" },
-  { label: "Oferta (Z-A)", value: "-subject_offering_name" },
-  { label: "Período (A-Z)", value: "academic_period_name" },
-  { label: "Período (Z-A)", value: "-academic_period_name" },
   { label: "Promedio (asc)", value: "final_avg_truncated" },
   { label: "Promedio (desc)", value: "-final_avg_truncated" },
+  { label: "Creado (asc)", value: "created_at" },
+  { label: "Creado (desc)", value: "-created_at" },
 ];
 
 interface Props {
   periodGradeSummaries: PeriodGradeSummaryT[];
+  totalCount: number;
   isLoading: boolean;
   loadPeriodGradeSummaries: (params?: PeriodGradeSummaryListParamsT) => void;
   onEdit: (entity: PeriodGradeSummaryT) => void;
@@ -44,6 +41,7 @@ interface Props {
 
 export const PeriodGradeSummariesTable: React.FC<Props> = ({
   periodGradeSummaries,
+  totalCount,
   isLoading,
   loadPeriodGradeSummaries,
   onEdit,
@@ -127,7 +125,7 @@ export const PeriodGradeSummariesTable: React.FC<Props> = ({
     fetchData({ page: 1 });
   }, [periodFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const hasNextPage = periodGradeSummaries.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<PeriodGradeSummaryT>[] = [
     { key: "enrollment_name", label: "Estudiante", className: tableFirstColumnClassname },
@@ -152,11 +150,11 @@ export const PeriodGradeSummariesTable: React.FC<Props> = ({
       ),
     },
     {
-      key: "requires_recovery",
+      key: "is_failing",
       label: "Recupera",
       className: tableColumnsClassname,
       render: (entity) =>
-        entity.requires_recovery ? (
+        entity.is_failing ? (
           <Badge variant="destructive">Sí</Badge>
         ) : (
           <Badge variant="outline">No</Badge>
@@ -247,7 +245,7 @@ export const PeriodGradeSummariesTable: React.FC<Props> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={periodGradeSummaries.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {

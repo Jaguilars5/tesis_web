@@ -22,10 +22,13 @@ import type {
 const OrderingOptions: { label: string; value: AttendanceOrderingT }[] = [
   { label: "Fecha (reciente)", value: "-attendance_date" },
   { label: "Fecha (antiguo)", value: "attendance_date" },
+  { label: "Creado (reciente)", value: "-created_at" },
+  { label: "Creado (antiguo)", value: "created_at" },
 ];
 
 interface AttendanceTableProps {
   attendances: AttendanceT[];
+  totalCount: number;
   isLoading: boolean;
   loadAttendances: (params?: AttendanceListParamsT) => void;
   onEdit: (attendance: AttendanceT) => void;
@@ -35,6 +38,7 @@ interface AttendanceTableProps {
 
 export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   attendances,
+  totalCount,
   isLoading,
   loadAttendances,
   onEdit,
@@ -56,7 +60,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ page: 1, pageSize });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = useCallback(
@@ -67,22 +71,22 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       setHasSearched(true);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: value || undefined });
+        fetchData({ page: 1, pageSize, search: value || undefined });
       }, 400);
     },
-    [fetchData],
+    [fetchData, pageSize],
   );
 
   const handleOrdering = useCallback(
     (value: AttendanceOrderingT) => {
       setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: value });
+      fetchData({ page: 1, pageSize, ordering: value });
     },
-    [fetchData],
+    [fetchData, pageSize],
   );
 
-  const hasNextPage = attendances.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<AttendanceT>[] = [
     {
@@ -186,12 +190,12 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={attendances.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {
           setPage(newPage);
-          fetchData({ page: newPage });
+          fetchData({ page: newPage, pageSize });
         }}
         onPageSizeChange={(newSize) => {
           setPageSize(newSize);

@@ -28,6 +28,7 @@ const OrderingOptions: { label: string; value: IncidentTypeOrderingT }[] = [
 
 interface IncidentTypeTableProps {
   incidentTypes: IncidentTypeT[];
+  totalCount: number;
   isLoading: boolean;
   loadIncidentTypes: (params?: IncidentTypeListParamsT) => void;
   onEdit: (s: IncidentTypeT) => void;
@@ -39,6 +40,7 @@ interface IncidentTypeTableProps {
 
 export const IncidentTypeTable: React.FC<IncidentTypeTableProps> = ({
   incidentTypes,
+  totalCount,
   isLoading,
   loadIncidentTypes,
   onEdit,
@@ -62,7 +64,7 @@ export const IncidentTypeTable: React.FC<IncidentTypeTableProps> = ({
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ page: 1, pageSize });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = useCallback(
@@ -73,22 +75,22 @@ export const IncidentTypeTable: React.FC<IncidentTypeTableProps> = ({
       setHasSearched(true);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: v || undefined });
+        fetchData({ page: 1, pageSize, search: v || undefined });
       }, 400);
     },
-    [fetchData],
+    [fetchData, pageSize],
   );
 
   const handleOrdering = useCallback(
     (value: IncidentTypeOrderingT) => {
       setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: value });
+      fetchData({ page: 1, pageSize, ordering: value });
     },
-    [fetchData],
+    [fetchData, pageSize],
   );
 
-  const hasNextPage = incidentTypes.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<IncidentTypeT>[] = [
     {
@@ -193,12 +195,12 @@ export const IncidentTypeTable: React.FC<IncidentTypeTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={incidentTypes.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(np) => {
           setPage(np);
-          fetchData({ page: np });
+          fetchData({ page: np, pageSize });
         }}
         onPageSizeChange={(ns) => {
           setPageSize(ns);

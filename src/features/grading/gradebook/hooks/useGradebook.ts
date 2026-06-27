@@ -4,14 +4,16 @@ import { useSearchParams } from "react-router-dom";
 import { UserRoleEnum } from "@features/auth";
 import { selectAuthUser } from "@features/auth/auth.slice";
 import { teacherSubjectSectionService } from "@features/academic/teacher-subject-section";
-import { enrollmentService } from "@features/students/enrollments/enrollments.service";
 import { useAppSelector } from "@shared/redux/hooks";
 
 import { evaluativeActivityService } from "../../evaluative-activities/evaluative-activities.service";
-import { studentNoteService } from "../../student-notes/student-notes.service";
+import { gradebookService } from "../gradebook.service";
 
 import type { TeacherSubjectSectionListParamsT } from "@features/academic/teacher-subject-section/teacher-subject-section.types";
-import type { GradebookStateT, GradeRosterEntryT } from "../gradebook.types";
+import type {
+  GradebookStateT,
+  GradeRosterEntryT,
+} from "../gradebook.types";
 
 interface OptionT {
   label: string;
@@ -22,6 +24,7 @@ const initialState: GradebookStateT = {
   teacherSubjectSectionId: null,
   evaluativeActivityId: null,
   roster: [],
+  maxScore: null,
   loadingRoster: false,
   saving: false,
   loaded: false,
@@ -39,7 +42,6 @@ export const useGradebook = () => {
 
   const [activityOptions, setActivityOptions] = useState<OptionT[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
-  const [maxScore, setMaxScore] = useState<number | null>(null);
 
   const didInitFromParams = useRef(false);
   const autoLoadPending = useRef(false);
@@ -47,7 +49,10 @@ export const useGradebook = () => {
   useEffect(() => {
     let cancelled = false;
     setLoadingSections(true);
-    const params: TeacherSubjectSectionListParamsT = { page: 1, pageSize: 100 };
+    const params: TeacherSubjectSectionListParamsT = {
+      page: 1,
+      pageSize: 100,
+    };
     if (user?.role === UserRoleEnum.TEACHER) {
       params.filters = { user: user.id, is_active: true };
     }
@@ -68,7 +73,9 @@ export const useGradebook = () => {
       .finally(() => {
         if (!cancelled) setLoadingSections(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   useEffect(() => {
@@ -76,27 +83,38 @@ export const useGradebook = () => {
     const tss = Number(searchParams.get("tss"));
     const activity = Number(searchParams.get("activity"));
     if (!tss || !activity) return;
-    // Para docentes, esperar a que carguen sus clases y validar que la clase
-    // pertenezca al docente. Evita calificar clases ajenas vía URL manipulada.
     if (user?.role === UserRoleEnum.TEACHER) {
       if (loadingSections) return;
       const isOwnSection = sectionOptions.some((o) => Number(o.value) === tss);
       if (!isOwnSection) {
         didInitFromParams.current = true;
-        setState((prev) => ({ ...prev, error: "No tiene acceso a esta clase." }));
+        setState((prev) => ({
+          ...prev,
+          error: "No tiene acceso a esta clase.",
+        }));
         return;
       }
     }
     didInitFromParams.current = true;
     autoLoadPending.current = true;
-    setState((prev) => ({ ...prev, teacherSubjectSectionId: tss, evaluativeActivityId: activity }));
+    setState((prev) => ({
+      ...prev,
+      teacherSubjectSectionId: tss,
+      evaluativeActivityId: activity,
+    }));
     setLoadingActivities(true);
   }, [searchParams, user, loadingSections, sectionOptions]);
 
   const setTeacherSubjectSectionId = useCallback((id: number | null) => {
-    setState((prev) => ({ ...prev, teacherSubjectSectionId: id, evaluativeActivityId: null, roster: [], loaded: false, success: false }));
+    setState((prev) => ({
+      ...prev,
+      teacherSubjectSectionId: id,
+      evaluativeActivityId: null,
+      roster: [],
+      loaded: false,
+      success: false,
+    }));
     setActivityOptions([]);
-    setMaxScore(null);
     setLoadingActivities(!!id);
   }, []);
 
@@ -105,110 +123,191 @@ export const useGradebook = () => {
     if (!id) return;
     let cancelled = false;
     evaluativeActivityService
-      .list({ page: 1, pageSize: 100, filters: { teacher_subject_section: id } })
+      .list({
+        page: 1,
+        pageSize: 100,
+        filters: { teacher_subject_section: id },
+      })
       .then((items) => {
         if (cancelled) return;
-        setActivityOptions(items.map((a) => ({ label: a.title, value: String(a.id) })));
+        setActivityOptions(
+          items.map((a) => ({ label: a.title, value: String(a.id) })),
+        );
       })
-      .catch(() => { if (!cancelled) setActivityOptions([]); })
-      .finally(() => { if (!cancelled) setLoadingActivities(false); });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) setActivityOptions([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingActivities(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [state.teacherSubjectSectionId]);
 
   const setEvaluativeActivityId = useCallback((id: number | null) => {
-    setState((prev) => ({ ...prev, evaluativeActivityId: id, roster: [], loaded: false, success: false }));
+    setState((prev) => ({
+      ...prev,
+      evaluativeActivityId: id,
+      roster: [],
+      loaded: false,
+      success: false,
+    }));
   }, []);
 
   const updateScore = useCallback(
     (enrollmentId: number, numericScore: number | null) => {
       setState((prev) => ({
         ...prev,
-        roster: prev.roster.map((e) => e.enrollmentId === enrollmentId ? { ...e, numericScore } : e),
+        roster: prev.roster.map((e) =>
+          e.enrollmentId === enrollmentId ? { ...e, numericScore } : e,
+        ),
       }));
-    }, [],
+    },
+    [],
   );
 
   const updateObservation = useCallback(
     (enrollmentId: number, teacherObservation: string) => {
       setState((prev) => ({
         ...prev,
-        roster: prev.roster.map((e) => e.enrollmentId === enrollmentId ? { ...e, teacherObservation } : e),
+        roster: prev.roster.map((e) =>
+          e.enrollmentId === enrollmentId ? { ...e, teacherObservation } : e,
+        ),
       }));
-    }, [],
+    },
+    [],
   );
 
   const loadRoster = useCallback(async () => {
     const { teacherSubjectSectionId, evaluativeActivityId } = state;
     if (!teacherSubjectSectionId || !evaluativeActivityId) return;
 
-    setState((prev) => ({ ...prev, loadingRoster: true, error: null, loaded: false, success: false }));
+    setState((prev) => ({
+      ...prev,
+      loadingRoster: true,
+      error: null,
+      loaded: false,
+      success: false,
+    }));
 
     try {
-      const [tss, activity] = await Promise.all([
-        teacherSubjectSectionService.get({ id: teacherSubjectSectionId }),
-        evaluativeActivityService.get({ id: evaluativeActivityId }),
-      ]);
-      const sectionId = tss.subject_offering_section;
-      if (!sectionId) throw new Error("La clase no tiene una sección asignada");
-      setMaxScore(activity.max_score ? Number(activity.max_score) : null);
-
-      const [enrollments, notes] = await Promise.all([
-        enrollmentService.listBySection({ section_id: sectionId, status: "ACT" }),
-        studentNoteService.list({ page: 1, pageSize: 100, filters: { evaluative_activity: evaluativeActivityId } }),
-      ]);
-
-      const notesMap = new Map(notes.map((n) => [n.enrollment, n]));
-      const roster: GradeRosterEntryT[] = enrollments.map((e) => {
-        const note = notesMap.get(e.id);
-        return { enrollmentId: e.id, studentName: e.student_name, noteId: note?.id ?? null, numericScore: note?.numeric_score ?? null, teacherObservation: note?.teacher_observation ?? "" };
+      const response = await gradebookService.getRoster({
+        evaluativeActivityId,
+        teacherSubjectSectionId,
       });
 
-      setState((prev) => ({ ...prev, roster, loadingRoster: false, loaded: true }));
+      const maxScore = response.evaluative_activity.max_score
+        ? Number(response.evaluative_activity.max_score)
+        : null;
+
+      const roster: GradeRosterEntryT[] = response.students.map((s) => ({
+        enrollmentId: s.enrollment_id,
+        studentName: s.student_name,
+        noteId: s.note?.id ?? null,
+        numericScore: s.note?.numeric_score ?? null,
+        teacherObservation: s.note?.teacher_observation ?? "",
+      }));
+
+      setState((prev) => ({
+        ...prev,
+        roster,
+        maxScore,
+        loadingRoster: false,
+        loaded: true,
+      }));
     } catch (err) {
-      setState((prev) => ({ ...prev, loadingRoster: false, error: err instanceof Error ? err.message : "Error al cargar estudiantes" }));
+      setState((prev) => ({
+        ...prev,
+        loadingRoster: false,
+        error:
+          err instanceof Error ? err.message : "Error al cargar estudiantes",
+      }));
     }
   }, [state.teacherSubjectSectionId, state.evaluativeActivityId]);
 
   useEffect(() => {
-    if (autoLoadPending.current && state.teacherSubjectSectionId && state.evaluativeActivityId) {
+    if (
+      autoLoadPending.current &&
+      state.teacherSubjectSectionId &&
+      state.evaluativeActivityId
+    ) {
       autoLoadPending.current = false;
       loadRoster();
     }
   }, [state.teacherSubjectSectionId, state.evaluativeActivityId, loadRoster]);
 
   const saveGrades = useCallback(async () => {
-    const { evaluativeActivityId, roster } = state;
-    if (!evaluativeActivityId) return;
+    const { evaluativeActivityId, teacherSubjectSectionId, roster } = state;
+    if (!evaluativeActivityId || !teacherSubjectSectionId) return;
 
-    setState((prev) => ({ ...prev, saving: true, error: null, success: false }));
+    const records = roster
+      .filter((e) => e.numericScore !== null || e.teacherObservation)
+      .map((e) => ({
+        enrollment: e.enrollmentId,
+        numeric_score: e.numericScore,
+        teacher_observation: e.teacherObservation,
+      }));
+
+    if (records.length === 0) {
+      setState((prev) => ({
+        ...prev,
+        error: "Ingrese al menos una calificaci\u00f3n antes de guardar.",
+      }));
+      return;
+    }
+
+    setState((prev) => ({
+      ...prev,
+      saving: true,
+      error: null,
+      success: false,
+    }));
 
     try {
-      const operations = roster
-        .filter((e) => e.noteId !== null || e.numericScore !== null)
-        .map((e) => {
-          if (e.noteId !== null) {
-            return studentNoteService.update({ id: e.noteId, data: { numeric_score: e.numericScore, teacher_observation: e.teacherObservation } });
-          }
-          return studentNoteService.create({ enrollment: e.enrollmentId, evaluative_activity: evaluativeActivityId, grading_mode: "NUMERIC", numeric_score: e.numericScore, qualitative_scale: null, teacher_observation: e.teacherObservation });
-        });
+      await gradebookService.saveGrades({
+        evaluative_activity_id: evaluativeActivityId,
+        teacher_subject_section_id: teacherSubjectSectionId,
+        records,
+      });
 
-      await Promise.all(operations);
-      setState((prev) => ({ ...prev, saving: false, success: true }));
+      setState((prev) => ({
+        ...prev,
+        saving: false,
+        success: true,
+      }));
+
       await loadRoster();
     } catch (err) {
-      setState((prev) => ({ ...prev, saving: false, error: err instanceof Error ? err.message : "Error al guardar calificaciones", success: false }));
+      setState((prev) => ({
+        ...prev,
+        saving: false,
+        error:
+          err instanceof Error
+            ? err.message
+            : "Error al guardar calificaciones",
+        success: false,
+      }));
     }
-  }, [state.evaluativeActivityId, state.roster, loadRoster]);
+  }, [
+    state.evaluativeActivityId,
+    state.teacherSubjectSectionId,
+    state.roster,
+    loadRoster,
+  ]);
 
-  const gradedCount = state.roster.filter((e) => e.numericScore !== null).length;
-  const canLoad = !!(state.teacherSubjectSectionId && state.evaluativeActivityId);
+  const gradedCount = state.roster.filter(
+    (e) => e.numericScore !== null,
+  ).length;
+  const canLoad = !!(
+    state.teacherSubjectSectionId && state.evaluativeActivityId
+  );
   const canSave = state.loaded && !state.saving;
 
   return {
     ...state,
     sectionOptions,
     activityOptions,
-    maxScore,
     gradedCount,
     isLoading: loadingSections,
     loadingActivities,

@@ -30,6 +30,7 @@ interface SeverityTableProps {
   severities: SeverityT[];
   isLoading: boolean;
   loadSeverities: (params?: SeverityListParamsT) => void;
+  totalCount: number;
   onEdit: (s: SeverityT) => void;
   onView: (s: SeverityT) => void;
   onDelete: (s: SeverityT) => void;
@@ -41,6 +42,7 @@ export const SeverityTable: React.FC<SeverityTableProps> = ({
   severities,
   isLoading,
   loadSeverities,
+  totalCount,
   onEdit,
   onView,
   onDelete,
@@ -62,8 +64,8 @@ export const SeverityTable: React.FC<SeverityTableProps> = ({
   );
 
   useEffect(() => {
-    fetchData();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchData({ page: 1, pageSize });
+  }, [pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,22 +75,22 @@ export const SeverityTable: React.FC<SeverityTableProps> = ({
       setHasSearched(true);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: v || undefined });
+        fetchData({ page: 1, pageSize, search: v || undefined });
       }, 400);
     },
-    [fetchData],
+    [fetchData, pageSize],
   );
 
   const handleOrdering = useCallback(
     (value: SeverityOrderingT) => {
       setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: value });
+      fetchData({ page: 1, pageSize, ordering: value });
     },
-    [fetchData],
+    [fetchData, pageSize],
   );
 
-  const hasNextPage = severities.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<SeverityT>[] = [
     {
@@ -193,12 +195,12 @@ export const SeverityTable: React.FC<SeverityTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={severities.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(np) => {
           setPage(np);
-          fetchData({ page: np });
+          fetchData({ page: np, pageSize });
         }}
         onPageSizeChange={(ns) => {
           setPageSize(ns);

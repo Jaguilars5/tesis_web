@@ -10,7 +10,7 @@ export default function GradeHistoryPage() {
   const permissions = useAppSelector(selectUserPermissions);
   const canView = hasPermission(permissions, GRADE_HISTORY_PERMISSIONS.GET);
 
-  const { items, isLoading, loadItems } = useGradeHistoryController();
+  const { items, totalCount, isLoading, loadItems } = useGradeHistoryController();
 
   if (!canView) {
     return null;
@@ -24,7 +24,7 @@ export default function GradeHistoryPage() {
           <p className="mt-1 text-sm text-slate-500">Consulta los cambios realizados en las calificaciones</p>
         </div>
       </div>
-      <GradeHistoryTable gradeHistoryItems={items} isLoading={isLoading} loadGradeHistory={loadItems} />
+      <GradeHistoryTable gradeHistoryItems={items} totalCount={totalCount} isLoading={isLoading} loadGradeHistory={loadItems} />
     </div>
   );
 }

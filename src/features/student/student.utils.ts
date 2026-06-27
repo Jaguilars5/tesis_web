@@ -6,9 +6,9 @@ export const severityBadge = (severity: string): string => severity?.toLowerCase
 export const severityDot = (severity: string): string => severity?.toLowerCase().includes("alto") ? "bg-red-500" : severity?.toLowerCase().includes("medio") ? "bg-amber-500" : "bg-slate-400";
 export function promotionBadge(status: string): string { const s = status.toLowerCase(); if (s.includes("aprobado") || s.includes("aprovado")) return "bg-green-100 text-green-700"; if (s.includes("reprobado") || s.includes("perdido")) return "bg-red-100 text-red-700"; return "bg-slate-100 text-slate-600"; }
 
-export function mapGradeActivities(summaries: PeriodGradeSummaryRaw[]): { subjects: { name: string; average: number; qualitativeScale: string | null; requiresRecovery: boolean }[]; overallAverage: number | null; recoveryCount: number } {
-  const subjects = summaries.map((s) => ({ name: s.subject_offering_name, average: s.final_avg_truncated, qualitativeScale: s.qualitative_scale_name, requiresRecovery: s.requires_recovery }));
+export function mapGradeActivities(summaries: PeriodGradeSummaryRaw[]): { subjects: { name: string; average: number; qualitativeScale: string | null; isFailing: boolean }[]; overallAverage: number | null; recoveryCount: number } {
+  const subjects = summaries.map((s) => ({ name: s.subject_offering_name, average: s.final_avg_truncated, qualitativeScale: s.qualitative_scale_name, isFailing: s.is_failing }));
   const validAverages = subjects.filter((s) => s.average !== null).map((s) => s.average as number);
   const overallAverage = validAverages.length > 0 ? Math.round((validAverages.reduce((a, b) => a + b, 0) / validAverages.length) * 10) / 10 : null;
-  return { subjects, overallAverage, recoveryCount: subjects.filter((s) => s.requiresRecovery).length };
+  return { subjects, overallAverage, recoveryCount: subjects.filter((s) => s.isFailing).length };
 }

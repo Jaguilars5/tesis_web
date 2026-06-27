@@ -1,3 +1,4 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface PeriodGradeSummaryT {
@@ -13,22 +14,20 @@ export interface PeriodGradeSummaryT {
   final_avg_truncated: number;
   qualitative_scale: number | null;
   qualitative_scale_name: string;
-  requires_recovery: boolean;
+  is_failing: boolean;
   promotion_status: string;
+  calculated_by: number | null;
+  approved_by: number | null;
   calculated_at: string;
   created_at: string;
   updated_at: string;
 }
 
 export type PeriodGradeSummaryOrderingT =
-  | "enrollment_name"
-  | "-enrollment_name"
-  | "subject_offering_name"
-  | "-subject_offering_name"
-  | "academic_period_name"
-  | "-academic_period_name"
   | "final_avg_truncated"
-  | "-final_avg_truncated";
+  | "-final_avg_truncated"
+  | "created_at"
+  | "-created_at";
 
 export interface PeriodGradeSummaryListParamsT {
   page?: number;
@@ -40,13 +39,13 @@ export interface PeriodGradeSummaryListParamsT {
 
 export type PeriodGradeSummaryCreateDataT = Omit<
   PeriodGradeSummaryT,
-  "id" | "enrollment_name" | "subject_offering_name" | "academic_period_name" | "qualitative_scale_name" | "calculated_at" | "created_at" | "updated_at"
+  "id" | "enrollment_name" | "subject_offering_name" | "academic_period_name" | "qualitative_scale_name" | "calculated_by" | "approved_by" | "calculated_at" | "created_at" | "updated_at"
 >;
 
 export type PeriodGradeSummaryCreateParamsT = PeriodGradeSummaryCreateDataT;
 
 export type PeriodGradeSummaryUpdateDataT = Partial<
-  Omit<PeriodGradeSummaryT, "id">
+  Omit<PeriodGradeSummaryT, "id" | "calculated_by" | "approved_by">
 >;
 
 export interface PeriodGradeSummaryUpdateParamsT {
@@ -64,7 +63,7 @@ export interface PeriodGradeSummaryDeleteParamsT {
 }
 
 export interface PeriodGradeSummaryServiceT {
-  list(params?: PeriodGradeSummaryListParamsT): Promise<PeriodGradeSummaryT[]>;
+  list(params?: PeriodGradeSummaryListParamsT): Promise<PaginatedResult<PeriodGradeSummaryT>>;
   get(params: PeriodGradeSummaryGetParamsT): Promise<PeriodGradeSummaryT>;
   create(data: PeriodGradeSummaryCreateDataT): Promise<PeriodGradeSummaryT>;
   update(params: PeriodGradeSummaryUpdateParamsT): Promise<PeriodGradeSummaryT>;
@@ -75,7 +74,7 @@ export interface PeriodGradeSummaryFormValues {
   formative_avg: number;
   summative_avg: number;
   final_avg_truncated: number;
-  requires_recovery: boolean;
+  is_failing: boolean;
   enrollment: number;
   subject_offering: number;
   academic_period: number;

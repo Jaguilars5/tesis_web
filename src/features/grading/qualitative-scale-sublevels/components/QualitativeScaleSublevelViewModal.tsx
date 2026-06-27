@@ -23,6 +23,8 @@ function viewReducer(_state: State, action: Action): State {
       return { data: action.data, loading: false, error: null };
     case "error":
       return { data: null, loading: false, error: action.error };
+    default:
+      return _state;
   }
 }
 

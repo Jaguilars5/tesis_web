@@ -5,12 +5,14 @@ import type { QualitativeScaleT } from "./qualitative-scales.types";
 
 export interface QualitativeScalesStateT {
   qualitativeScales: QualitativeScaleT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: QualitativeScalesStateT = {
   qualitativeScales: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -23,8 +25,9 @@ const qualitativeScalesSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<QualitativeScaleT[]>) {
-      state.qualitativeScales = action.payload;
+    loadSuccess(state, action: PayloadAction<{ items: QualitativeScaleT[]; count: number }>) {
+      state.qualitativeScales = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -71,6 +74,9 @@ export const {
 
 export const selectQualitativeScales = (state: RootState): QualitativeScaleT[] =>
   state.grading.qualitativeScales.qualitativeScales;
+
+export const selectTotalCount = (state: RootState): number =>
+  state.grading.qualitativeScales.totalCount;
 
 export const selectQualitativeScalesStatus = (state: RootState): RequestStatusT =>
   state.grading.qualitativeScales.status;

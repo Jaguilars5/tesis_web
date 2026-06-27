@@ -1,5 +1,5 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { PaginatedData, PaginatedResult, ResponseApi } from "@shared/types/api.response.types";
 import { BEHAVIOR_EVALUATION_ENDPOINTS } from "./behavior-evaluation.constants";
 import type {
   BehaviorEvaluationCalculateDataT,
@@ -13,7 +13,9 @@ import type {
 import type { RelatedConductIncidentT } from "./behavior-evaluation.types";
 
 class BehaviorEvaluationService implements BehaviorEvaluationServiceT {
-  async list(params?: BehaviorEvaluationListParamsT): Promise<BehaviorEvaluationT[]> {
+  async list(
+    params?: BehaviorEvaluationListParamsT,
+  ): Promise<PaginatedResult<BehaviorEvaluationT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -34,7 +36,7 @@ class BehaviorEvaluationService implements BehaviorEvaluationServiceT {
       >(
         `${BEHAVIOR_EVALUATION_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

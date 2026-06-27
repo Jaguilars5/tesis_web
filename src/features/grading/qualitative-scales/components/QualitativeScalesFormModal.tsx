@@ -95,9 +95,21 @@ export const QualitativeScalesFormModal: React.FC<Props> = ({
           />
 
           <CustomInput
+            label="Nombre"
+            name="name"
+            placeholder="Ej: Excelente"
+            value={formik.values.name}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            type="text"
+            error={formik.touched.name ? formik.errors.name : undefined}
+            className={inputClassname}
+          />
+
+          <CustomInput
             label="Descripción"
             name="description"
-            placeholder="Ej: Excelente, Satisfactorio..."
+            placeholder="Ej: Desempeño excepcional..."
             value={formik.values.description}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
@@ -111,7 +123,7 @@ export const QualitativeScalesFormModal: React.FC<Props> = ({
           />
 
           <CustomInput
-            label="Equivalencia Numérica"
+            label="Equivalencia Numérica (0-10)"
             name="numeric_equivalence"
             placeholder="Ej: 10.00"
             value={formik.values.numeric_equivalence}

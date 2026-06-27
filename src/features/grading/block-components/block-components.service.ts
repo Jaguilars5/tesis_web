@@ -1,5 +1,5 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { PaginatedData, PaginatedResult, ResponseApi } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { BLOCK_COMPONENTS_ENDPOINTS } from "./block-components.constants";
 import type {
@@ -13,7 +13,7 @@ import type {
 } from "./block-components.types";
 
 class BlockComponentService implements BlockComponentServiceT {
-  async list(params?: BlockComponentListParamsT): Promise<BlockComponentT[]> {
+  async list(params?: BlockComponentListParamsT): Promise<PaginatedResult<BlockComponentT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -34,7 +34,7 @@ class BlockComponentService implements BlockComponentServiceT {
       >(
         `${BLOCK_COMPONENTS_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

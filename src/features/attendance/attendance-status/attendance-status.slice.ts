@@ -5,12 +5,14 @@ import type { AttendanceStatusT } from "./attendance-status.types";
 
 export interface AttendanceStatusStateT {
   items: AttendanceStatusT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: AttendanceStatusStateT = {
   items: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -20,7 +22,7 @@ const attendanceStatusSlice = createSlice({
   initialState,
   reducers: {
     loadPending(state) { state.status = "loading"; state.error = null; },
-    loadSuccess(state, action: PayloadAction<AttendanceStatusT[]>) { state.items = action.payload; state.status = "succeeded"; },
+    loadSuccess(state, action: PayloadAction<{ items: AttendanceStatusT[]; count: number }>) { state.items = action.payload.items; state.totalCount = action.payload.count; state.status = "succeeded"; },
     loadError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
     entityCreated(state, action: PayloadAction<AttendanceStatusT>) { state.items.unshift(action.payload); state.status = "succeeded"; },
     entityUpdated(state, action: PayloadAction<AttendanceStatusT>) {
@@ -33,6 +35,7 @@ const attendanceStatusSlice = createSlice({
       state.status = "succeeded";
     },
     mutationError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
+    setTotalCount(state, action: PayloadAction<number>) { state.totalCount = action.payload; },
     clearAttendanceStatusError(state) { state.error = null; },
   },
 });
@@ -40,10 +43,11 @@ const attendanceStatusSlice = createSlice({
 export const {
   loadPending, loadSuccess, loadError,
   entityCreated, entityUpdated, entityDeleted,
-  mutationError, clearAttendanceStatusError,
+  mutationError, setTotalCount, clearAttendanceStatusError,
 } = attendanceStatusSlice.actions;
 
 export const selectItems = (state: RootState): AttendanceStatusT[] => state.attendance.attendanceStatuses.items;
+export const selectTotalCount = (state: RootState): number => state.attendance.attendanceStatuses.totalCount;
 export const selectStatus = (state: RootState): RequestStatusT => state.attendance.attendanceStatuses.status;
 export const selectError = (state: RootState): string | null => state.attendance.attendanceStatuses.error;
 

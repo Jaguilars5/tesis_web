@@ -21,7 +21,7 @@ export default function AbsenceTypesPage() {
   const canEdit = hasPermission(permissions, ABSENCE_TYPE_PERMISSIONS.UPDATE);
   const canDelete = hasPermission(permissions, ABSENCE_TYPE_PERMISSIONS.DELETE);
 
-  const { items, isLoading, loadItems, createItem, updateItem, deleteItem } =
+  const { items, totalCount, isLoading, loadItems, createItem, updateItem, deleteItem } =
     useAbsenceTypeController();
 
   const {
@@ -83,6 +83,7 @@ export default function AbsenceTypesPage() {
 
       <AbsenceTypeTable
         absenceTypes={items}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadAbsenceTypes={loadItems}
         onEdit={openModal}

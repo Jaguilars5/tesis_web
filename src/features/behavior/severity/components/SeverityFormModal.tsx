@@ -1,8 +1,8 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
 
-import { inputClassname } from "@app/styles/styles";
-import { CustomInput } from "@shared/components/Form";
+import { checkboxClassname, inputClassname } from "@app/styles/styles";
+import { CustomCheckbox, CustomInput } from "@shared/components/Form";
 import { ErrrosInForm } from "@shared/components/ErrrosInForm";
 
 import { severitySchema } from "../severity.utils";
@@ -43,9 +43,10 @@ export const SeverityFormModal: React.FC<SeverityFormModalProps> = ({
         code: editingSeverity.code,
         name: editingSeverity.name,
         description: editingSeverity.description,
+        is_active: editingSeverity.is_active,
       };
     }
-    return { code: "", name: "", description: "" };
+    return { code: "", name: "", description: "", is_active: true };
   };
 
   const formik = useFormik<SeverityFormValues>({
@@ -122,6 +123,17 @@ export const SeverityFormModal: React.FC<SeverityFormModalProps> = ({
             }
             className={inputClassname}
           />
+          {isEdit && (
+            <div className="flex items-end pb-1">
+              <CustomCheckbox
+                name="is_active"
+                checked={formik.values.is_active}
+                onChange={(e) => formik.setFieldValue("is_active", e.target.checked)}
+                label="Activo"
+                className={checkboxClassname}
+              />
+            </div>
+          )}
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <button
               type="button"

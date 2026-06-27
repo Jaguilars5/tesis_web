@@ -1,4 +1,4 @@
-import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
+import type { PaginatedResult } from "@shared/types/api.response.types";
 
 export interface ConductIncidentT {
   id: number;
@@ -15,12 +15,18 @@ export interface ConductIncidentT {
   actions_taken: string;
   family_notified: boolean;
   uuid: string;
+  sync_status: string | null;
   sync_version: number;
+  synced_at: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export type ConductIncidentOrderingT = "incident_date" | "-incident_date" | "id" | "-id";
+export type ConductIncidentOrderingT =
+  | "incident_date"
+  | "-incident_date"
+  | "id"
+  | "-id";
 
 export interface ConductIncidentListParamsT {
   page?: number;
@@ -43,7 +49,20 @@ export interface ConductIncidentFormValues {
   family_notified: boolean;
 }
 
-export type ConductIncidentCreateParamsT = Omit<ConductIncidentT, "id" | "incident_type_name" | "severity_name" | "academic_period_name" | "enrollment_name" | "uuid" | "sync_version" | "created_at" | "updated_at">;
+export type ConductIncidentCreateParamsT = Omit<
+  ConductIncidentT,
+  | "id"
+  | "incident_type_name"
+  | "severity_name"
+  | "academic_period_name"
+  | "enrollment_name"
+  | "uuid"
+  | "sync_status"
+  | "sync_version"
+  | "synced_at"
+  | "created_at"
+  | "updated_at"
+>;
 export type ConductIncidentUpdateDataT = Partial<ConductIncidentCreateParamsT>;
 export interface ConductIncidentUpdateParamsT {
   id: number;
@@ -52,15 +71,12 @@ export interface ConductIncidentUpdateParamsT {
 export interface ConductIncidentGetParamsT {
   id: number;
 }
-export interface ConductIncidentDeleteParamsT {
-  id: number;
-  confirm?: boolean;
-}
 
 export interface ConductIncidentServiceT {
-  list(params?: ConductIncidentListParamsT): Promise<ConductIncidentT[]>;
+  list(
+    params?: ConductIncidentListParamsT,
+  ): Promise<PaginatedResult<ConductIncidentT>>;
   get(params: ConductIncidentGetParamsT): Promise<ConductIncidentT>;
   create(params: ConductIncidentCreateParamsT): Promise<ConductIncidentT>;
   update(params: ConductIncidentUpdateParamsT): Promise<ConductIncidentT>;
-  softDelete(params: ConductIncidentDeleteParamsT): Promise<SoftDeleteResponseT>;
 }

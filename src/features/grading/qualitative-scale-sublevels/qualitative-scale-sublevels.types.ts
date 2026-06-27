@@ -1,3 +1,4 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface QualitativeScaleSublevelT {
@@ -12,10 +13,10 @@ export interface QualitativeScaleSublevelT {
 }
 
 export type QualitativeScaleSublevelOrderingT =
-  | "scale_name"
-  | "-scale_name"
-  | "sublevel_name"
-  | "-sublevel_name";
+  | "scale"
+  | "-scale"
+  | "sublevel"
+  | "-sublevel";
 
 export interface QualitativeScaleSublevelListParamsT {
   page?: number;
@@ -52,7 +53,7 @@ export interface QualitativeScaleSublevelDeleteParamsT {
 }
 
 export interface QualitativeScaleSublevelServiceT {
-  list(params?: QualitativeScaleSublevelListParamsT): Promise<QualitativeScaleSublevelT[]>;
+  list(params?: QualitativeScaleSublevelListParamsT): Promise<PaginatedResult<QualitativeScaleSublevelT>>;
   get(params: QualitativeScaleSublevelGetParamsT): Promise<QualitativeScaleSublevelT>;
   create(data: QualitativeScaleSublevelCreateDataT): Promise<QualitativeScaleSublevelT>;
   update(params: QualitativeScaleSublevelUpdateParamsT): Promise<QualitativeScaleSublevelT>;

@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@shared/redux/hooks";
 import { toRejectValue } from "@shared/utils/validationErrors";
-import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { conductIncidentService } from "../conduct-incident.service";
 import {
   loadPending,
@@ -10,9 +9,9 @@ import {
   currentLoaded,
   entityCreated,
   entityUpdated,
-  entityDeleted,
   mutationError,
   selectItems,
+  selectTotalCount,
   selectStatus,
   selectError,
   selectCurrentConductIncident,
@@ -23,12 +22,12 @@ import type {
   ConductIncidentT,
   ConductIncidentUpdateParamsT,
   ConductIncidentGetParamsT,
-  ConductIncidentDeleteParamsT,
 } from "../conduct-incident.types";
 
 export const useConductIncidentController = () => {
   const dispatch = useAppDispatch();
   const items = useAppSelector(selectItems);
+  const totalCount = useAppSelector(selectTotalCount);
   const currentConductIncident = useAppSelector(selectCurrentConductIncident);
   const status = useAppSelector(selectStatus);
   const error = useAppSelector(selectError);
@@ -40,7 +39,7 @@ export const useConductIncidentController = () => {
         const result = await conductIncidentService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(result));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(
           loadError(
@@ -98,25 +97,9 @@ export const useConductIncidentController = () => {
     [dispatch],
   );
 
-  const deleteItem = useCallback(
-    async (params: ConductIncidentDeleteParamsT): Promise<SoftDeleteResponseT> => {
-      try {
-        const response = await conductIncidentService.softDelete(params);
-        if (response.is_active === false) {
-          dispatch(entityDeleted(response.id));
-        }
-        return response;
-      } catch (err) {
-        const rv = toRejectValue(err);
-        dispatch(mutationError(rv.msg));
-        throw rv;
-      }
-    },
-    [dispatch],
-  );
-
   return {
     items,
+    totalCount,
     currentConductIncident,
     isLoading: status === "loading",
     error,
@@ -124,8 +107,9 @@ export const useConductIncidentController = () => {
     loadConductIncident,
     createItem,
     updateItem,
-    deleteItem,
   };
 };
 
-export type ConductIncidentControllerT = ReturnType<typeof useConductIncidentController>;
+export type ConductIncidentControllerT = ReturnType<
+  typeof useConductIncidentController
+>;

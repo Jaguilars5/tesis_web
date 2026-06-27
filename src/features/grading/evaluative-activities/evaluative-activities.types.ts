@@ -16,7 +16,11 @@ export interface EvaluativeActivityT {
   updated_at: string;
 }
 
-export type EvaluativeActivityOrderingT = "title" | "-title" | "due_date" | "-due_date";
+export type EvaluativeActivityOrderingT =
+  | "title"
+  | "-title"
+  | "due_date"
+  | "-due_date";
 
 export interface EvaluativeActivityListParamsT {
   page?: number;
@@ -29,8 +33,17 @@ export interface EvaluativeActivityListParamsT {
   };
 }
 
-export type EvaluativeActivityCreateParamsT = Omit<EvaluativeActivityT, "id" | "is_active" | "block_component_name" | "teacher_subject_section_name" | "created_at" | "updated_at">;
-export type EvaluativeActivityUpdateDataT = Partial<EvaluativeActivityCreateParamsT>;
+export type EvaluativeActivityCreateParamsT = Omit<
+  EvaluativeActivityT,
+  | "id"
+  | "is_active"
+  | "block_component_name"
+  | "teacher_subject_section_name"
+  | "created_at"
+  | "updated_at"
+>;
+export type EvaluativeActivityUpdateDataT =
+  Partial<EvaluativeActivityCreateParamsT>;
 export interface EvaluativeActivityUpdateParamsT {
   id: number;
   data: EvaluativeActivityUpdateDataT;
@@ -48,7 +61,9 @@ export interface EvaluativeActivityServiceT {
   get(params: EvaluativeActivityGetParamsT): Promise<EvaluativeActivityT>;
   create(params: EvaluativeActivityCreateParamsT): Promise<EvaluativeActivityT>;
   update(params: EvaluativeActivityUpdateParamsT): Promise<EvaluativeActivityT>;
-  softDelete(params: EvaluativeActivityDeleteParamsT): Promise<SoftDeleteResponseT>;
+  softDelete(
+    params: EvaluativeActivityDeleteParamsT,
+  ): Promise<SoftDeleteResponseT>;
 }
 
 export interface EvaluativeActivityFormValues {

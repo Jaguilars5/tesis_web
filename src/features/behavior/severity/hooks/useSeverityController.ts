@@ -14,6 +14,7 @@ import {
   selectItems,
   selectStatus,
   selectError,
+  selectTotalCount,
 } from "../severity.slice";
 import type {
   SeverityListParamsT,
@@ -28,6 +29,7 @@ export const useSeverityController = () => {
   const items = useAppSelector(selectItems);
   const status = useAppSelector(selectStatus);
   const error = useAppSelector(selectError);
+  const totalCount = useAppSelector(selectTotalCount);
 
   const loadItems = useCallback(
     async (params?: SeverityListParamsT) => {
@@ -36,7 +38,7 @@ export const useSeverityController = () => {
         const result = await severityService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(result));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(
           loadError(
@@ -97,6 +99,7 @@ export const useSeverityController = () => {
 
   return {
     items,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadItems,

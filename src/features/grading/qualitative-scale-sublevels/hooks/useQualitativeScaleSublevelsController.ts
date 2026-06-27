@@ -11,6 +11,7 @@ import {
   entityDeleted,
   mutationError,
   selectQualitativeScaleSublevels,
+  selectTotalCount,
   selectQualitativeScaleSublevelsStatus,
   selectQualitativeScaleSublevelsError,
 } from "../qualitative-scale-sublevels.slice";
@@ -26,6 +27,7 @@ import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 export const useQualitativeScaleSublevelsController = () => {
   const dispatch = useAppDispatch();
   const qualitativeScaleSublevels = useAppSelector(selectQualitativeScaleSublevels);
+  const totalCount = useAppSelector(selectTotalCount);
   const status = useAppSelector(selectQualitativeScaleSublevelsStatus);
   const error = useAppSelector(selectQualitativeScaleSublevelsError);
 
@@ -33,10 +35,10 @@ export const useQualitativeScaleSublevelsController = () => {
     async (params?: QualitativeScaleSublevelListParamsT) => {
       dispatch(loadPending());
       try {
-        const items = await qualitativeScaleSublevelService.list(
+        const result = await qualitativeScaleSublevelService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(items));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(loadError(err instanceof Error ? err.message : "Error"));
       }
@@ -93,6 +95,7 @@ export const useQualitativeScaleSublevelsController = () => {
 
   return {
     qualitativeScaleSublevels,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadQualitativeScaleSublevels,

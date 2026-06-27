@@ -16,6 +16,7 @@ import type { QualitativeScaleSublevelT } from "./qualitative-scale-sublevels.ty
 export default function QualitativeScaleSublevelsPage() {
   const {
     qualitativeScaleSublevels,
+    totalCount,
     isLoading,
     loadQualitativeScaleSublevels,
     createQualitativeScaleSublevel,
@@ -93,6 +94,7 @@ export default function QualitativeScaleSublevelsPage() {
 
       <QualitativeScaleSublevelsTable
         qualitativeScaleSublevels={qualitativeScaleSublevels}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadQualitativeScaleSublevels={loadQualitativeScaleSublevels}
         onEdit={openModal}

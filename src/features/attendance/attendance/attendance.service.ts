@@ -1,5 +1,5 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { PaginatedData, PaginatedResult, ResponseApi } from "@shared/types/api.response.types";
 import { ATTENDANCE_ENDPOINTS } from "./attendance.constants";
 import type {
   AttendanceCreateParamsT,
@@ -11,7 +11,9 @@ import type {
 } from "./attendance.types";
 
 class AttendanceService implements AttendanceServiceT {
-  async list(params?: AttendanceListParamsT): Promise<AttendanceT[]> {
+  async list(
+    params?: AttendanceListParamsT,
+  ): Promise<PaginatedResult<AttendanceT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -21,12 +23,20 @@ class AttendanceService implements AttendanceServiceT {
       const orderingQuery = params?.ordering
         ? `&ordering=${encodeURIComponent(params.ordering)}`
         : "";
+      const filtersQuery = params?.filters
+        ? `&${Object.entries(params.filters)
+            .filter(([, value]) => value !== undefined && value !== null)
+            .map(
+              ([key, value]) => `${key}=${encodeURIComponent(String(value))}`,
+            )
+            .join("&")}`
+        : "";
       const { data } = await apiClient.get<
         ResponseApi<PaginatedData<AttendanceT>>
       >(
-        `${ATTENDANCE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+        `${ATTENDANCE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

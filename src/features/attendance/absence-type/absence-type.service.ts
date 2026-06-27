@@ -1,5 +1,5 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { PaginatedData, PaginatedResult, ResponseApi } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { ABSENCE_TYPE_ENDPOINTS } from "./absence-type.constants";
 import type {
@@ -13,7 +13,9 @@ import type {
 } from "./absence-type.types";
 
 class AbsenceTypeService implements AbsenceTypeServiceT {
-  async list(params?: AbsenceTypeListParamsT): Promise<AbsenceTypeT[]> {
+  async list(
+    params?: AbsenceTypeListParamsT,
+  ): Promise<PaginatedResult<AbsenceTypeT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -28,7 +30,7 @@ class AbsenceTypeService implements AbsenceTypeServiceT {
       >(
         `${ABSENCE_TYPE_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

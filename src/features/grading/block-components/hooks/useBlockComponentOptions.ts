@@ -7,7 +7,7 @@ export const useBlockComponentFilterCatalogs = () => {
   const { academicPeriodOptions } = useAcademicPeriodOptions();
 
   const { options: evaluationBlockOptions, loading: loadingBlocks } = useCatalogOptions(
-    () => evaluationBlockService.list({ page: 1, pageSize: 100 }),
+    () => evaluationBlockService.list({ page: 1, pageSize: 100 }).then((r) => r.items),
     [],
     (b) => ({ label: b.name, value: String(b.id) }),
   );

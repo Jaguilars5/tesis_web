@@ -28,6 +28,7 @@ const OrderingOptions: { label: string; value: AbsenceTypeOrderingT }[] = [
 
 interface AbsenceTypeTableProps {
   absenceTypes: AbsenceTypeT[];
+  totalCount: number;
   isLoading: boolean;
   loadAbsenceTypes: (params?: AbsenceTypeListParamsT) => void;
   onEdit: (absenceType: AbsenceTypeT) => void;
@@ -39,6 +40,7 @@ interface AbsenceTypeTableProps {
 
 export const AbsenceTypeTable: React.FC<AbsenceTypeTableProps> = ({
   absenceTypes,
+  totalCount,
   isLoading,
   loadAbsenceTypes,
   onEdit,
@@ -63,7 +65,7 @@ export const AbsenceTypeTable: React.FC<AbsenceTypeTableProps> = ({
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ page: 1, pageSize });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = useCallback(
@@ -74,22 +76,22 @@ export const AbsenceTypeTable: React.FC<AbsenceTypeTableProps> = ({
       setHasSearched(true);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: value || undefined });
+        fetchData({ page: 1, pageSize, search: value || undefined });
       }, 400);
     },
-    [fetchData],
+    [fetchData, pageSize],
   );
 
   const handleOrdering = useCallback(
     (newOrdering: AbsenceTypeOrderingT) => {
       setOrdering(newOrdering);
       setPage(1);
-      fetchData({ page: 1, ordering: newOrdering });
+      fetchData({ page: 1, pageSize, ordering: newOrdering });
     },
-    [fetchData],
+    [fetchData, pageSize],
   );
 
-  const hasNextPage = absenceTypes.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<AbsenceTypeT>[] = [
     {
@@ -194,12 +196,12 @@ export const AbsenceTypeTable: React.FC<AbsenceTypeTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={absenceTypes.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {
           setPage(newPage);
-          fetchData({ page: newPage });
+          fetchData({ page: newPage, pageSize });
         }}
         onPageSizeChange={(newSize) => {
           setPageSize(newSize);

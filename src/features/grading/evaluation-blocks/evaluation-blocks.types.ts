@@ -1,3 +1,4 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface EvaluationBlockT {
@@ -5,8 +6,10 @@ export interface EvaluationBlockT {
   code: string;
   academic_period: number;
   academic_period_name: string;
+  subject_offering: number;
+  subject_offering_name: string;
   name: string;
-  tipo: string | null;
+  block_type: string | null;
   weight_percentage: number;
   is_active: boolean;
   created_at: string;
@@ -14,15 +17,21 @@ export interface EvaluationBlockT {
 }
 
 export type EvaluationBlockOrderingT =
-  | "name" | "-name" | "code" | "-code"
+  | "name" | "-name"
   | "weight_percentage" | "-weight_percentage"
-  | "academic_period_name" | "-academic_period_name";
+  | "block_type" | "-block_type";
 
 export interface EvaluationBlockListParamsT {
   page?: number;
   pageSize?: number;
   search?: string;
   ordering?: EvaluationBlockOrderingT;
+  filters?: {
+    academic_period?: number;
+    subject_offering?: number;
+    block_type?: string;
+    is_active?: boolean;
+  };
 }
 
 export interface EvaluationBlockFormValues {
@@ -30,7 +39,8 @@ export interface EvaluationBlockFormValues {
   name: string;
   weight_percentage: number;
   academic_period: number;
-  tipo: string | null;
+  subject_offering: number;
+  block_type: string | null;
 }
 
 export type EvaluationBlockCreateParamsT = EvaluationBlockFormValues;
@@ -48,7 +58,7 @@ export interface EvaluationBlockDeleteParamsT {
 }
 
 export interface EvaluationBlockServiceT {
-  list(params?: EvaluationBlockListParamsT): Promise<EvaluationBlockT[]>;
+  list(params?: EvaluationBlockListParamsT): Promise<PaginatedResult<EvaluationBlockT>>;
   get(params: EvaluationBlockGetParamsT): Promise<EvaluationBlockT>;
   create(params: EvaluationBlockCreateParamsT): Promise<EvaluationBlockT>;
   update(params: EvaluationBlockUpdateParamsT): Promise<EvaluationBlockT>;

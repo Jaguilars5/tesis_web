@@ -28,6 +28,7 @@ const OrderingOptions: { label: string; value: ActivityTypeOrderingT }[] = [
 
 interface ActivityTypesTableProps {
   activityTypes: ActivityTypeT[];
+  totalCount: number;
   isLoading: boolean;
   loadActivityTypes: (params?: ActivityTypeListParamsT) => void;
   onEdit: (s: ActivityTypeT) => void;
@@ -39,6 +40,7 @@ interface ActivityTypesTableProps {
 
 export const ActivityTypesTable: React.FC<ActivityTypesTableProps> = ({
   activityTypes,
+  totalCount,
   isLoading,
   loadActivityTypes,
   onEdit,
@@ -88,7 +90,7 @@ export const ActivityTypesTable: React.FC<ActivityTypesTableProps> = ({
     [fetchData],
   );
 
-  const hasNextPage = activityTypes.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<ActivityTypeT>[] = [
     {
@@ -189,7 +191,7 @@ export const ActivityTypesTable: React.FC<ActivityTypesTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={activityTypes.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(np) => {

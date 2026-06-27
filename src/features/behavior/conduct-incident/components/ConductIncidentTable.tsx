@@ -1,4 +1,4 @@
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -28,24 +28,22 @@ const OrderingOptions: { label: string; value: ConductIncidentOrderingT }[] = [
 
 interface ConductIncidentTableProps {
   conductIncidents: ConductIncidentT[];
+  totalCount: number;
   isLoading: boolean;
   loadConductIncidents: (params?: ConductIncidentListParamsT) => void;
   onEdit: (e: ConductIncidentT) => void;
   onView: (e: ConductIncidentT) => void;
-  onDelete: (e: ConductIncidentT) => void;
   canEdit?: boolean;
-  canDelete?: boolean;
 }
 
 export const ConductIncidentTable: React.FC<ConductIncidentTableProps> = ({
   conductIncidents,
+  totalCount,
   isLoading,
   loadConductIncidents,
   onEdit,
   onView,
-  onDelete,
   canEdit = true,
-  canDelete = true,
 }) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -70,7 +68,7 @@ export const ConductIncidentTable: React.FC<ConductIncidentTableProps> = ({
   );
 
   useEffect(() => {
-    fetchData({ ordering, search: search || undefined, filters: buildFilters() });
+    fetchData({ page: 1, pageSize, ordering, search: search || undefined, filters: buildFilters() });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = useCallback(
@@ -81,31 +79,31 @@ export const ConductIncidentTable: React.FC<ConductIncidentTableProps> = ({
       setHasSearched(true);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: v || undefined, ordering, filters: buildFilters() });
+        fetchData({ page: 1, pageSize, search: v || undefined, ordering, filters: buildFilters() });
       }, 400);
     },
-    [fetchData, ordering, buildFilters],
+    [fetchData, pageSize, ordering, buildFilters],
   );
 
   const handleOrdering = useCallback(
     (value: ConductIncidentOrderingT) => {
       setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: value, search: search || undefined, filters: buildFilters() });
+      fetchData({ page: 1, pageSize, ordering: value, search: search || undefined, filters: buildFilters() });
     },
-    [fetchData, search, buildFilters],
+    [fetchData, pageSize, search, buildFilters],
   );
 
   const handleEnrollmentFilterChange = useCallback(
     (value: number) => {
       setEnrollmentFilter(value);
       setPage(1);
-      fetchData({ page: 1, ordering, search: search || undefined, filters: { enrollment: value || undefined } });
+      fetchData({ page: 1, pageSize, ordering, search: search || undefined, filters: { enrollment: value || undefined } });
     },
-    [fetchData, ordering, search],
+    [fetchData, pageSize, ordering, search],
   );
 
-  const hasNextPage = conductIncidents.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<ConductIncidentT>[] = [
     { key: "enrollment_name", label: "Estudiante", className: tableFirstColumnClassname, render: (e) => <span>{e.enrollment_name}</span> },
@@ -130,14 +128,11 @@ export const ConductIncidentTable: React.FC<ConductIncidentTableProps> = ({
             {canEdit && (
               <button type="button" onClick={() => onEdit(e)} className="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600" title="Editar"><Pencil className="size-4" /></button>
             )}
-            {canDelete && (
-              <button type="button" onClick={() => onDelete(e)} className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600" title="Desactivar"><Trash2 className="size-4" /></button>
-            )}
           </div>
         )}
       />
-      <Pagination page={page} pageSize={pageSize} totalItems={conductIncidents.length} isLoading={isLoading} hasNextPage={hasNextPage}
-        onPageChange={(np) => { setPage(np); fetchData({ page: np, ordering, search: search || undefined, filters: buildFilters() }); }}
+      <Pagination page={page} pageSize={pageSize} totalItems={totalCount} isLoading={isLoading} hasNextPage={hasNextPage}
+        onPageChange={(np) => { setPage(np); fetchData({ page: np, pageSize, ordering, search: search || undefined, filters: buildFilters() }); }}
         onPageSizeChange={(ns) => { setPageSize(ns); setPage(1); fetchData({ page: 1, pageSize: ns, ordering, search: search || undefined, filters: buildFilters() }); }} />
     </div>
   );

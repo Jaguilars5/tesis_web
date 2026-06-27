@@ -1,3 +1,4 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface SeverityT {
@@ -23,6 +24,7 @@ export interface SeverityFormValues {
   code: string;
   name: string;
   description: string;
+  is_active: boolean;
 }
 
 export type SeverityCreateParamsT = SeverityFormValues;
@@ -40,7 +42,7 @@ export interface SeverityDeleteParamsT {
 }
 
 export interface SeverityServiceT {
-  list(params?: SeverityListParamsT): Promise<SeverityT[]>;
+  list(params?: SeverityListParamsT): Promise<PaginatedResult<SeverityT>>;
   get(params: SeverityGetParamsT): Promise<SeverityT>;
   create(params: SeverityCreateParamsT): Promise<SeverityT>;
   update(params: SeverityUpdateParamsT): Promise<SeverityT>;

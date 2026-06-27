@@ -6,10 +6,10 @@ import {
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
-import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect";
-import { SearchInput } from "@shared/components/Form";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
+import { STATUS_OPTIONS } from "@shared/hooks/useStatusOptions";
 import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps";
 import type { TableColumnProps } from "@shared/components/Table";
 import type {
@@ -29,6 +29,7 @@ const OrderingOptions: { label: string; value: QualitativeScaleOrderingT }[] = [
 
 interface Props {
   qualitativeScales: QualitativeScaleT[];
+  totalCount: number;
   isLoading: boolean;
   loadQualitativeScales: (params?: QualitativeScaleListParamsT) => void;
   onEdit: (entity: QualitativeScaleT) => void;
@@ -40,6 +41,7 @@ interface Props {
 
 export const QualitativeScalesTable: React.FC<Props> = ({
   qualitativeScales,
+  totalCount,
   isLoading,
   loadQualitativeScales,
   onEdit,
@@ -53,8 +55,16 @@ export const QualitativeScalesTable: React.FC<Props> = ({
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] = useState<QualitativeScaleOrderingT>("code");
   const [hasSearched, setHasSearched] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("");
 
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  const buildFilters = useCallback(() => {
+    const f: { is_active?: boolean } = {};
+    if (statusFilter === "active") f.is_active = true;
+    else if (statusFilter === "inactive") f.is_active = false;
+    return f;
+  }, [statusFilter]);
 
   const fetchData = useCallback(
     (options?: {
@@ -62,20 +72,26 @@ export const QualitativeScalesTable: React.FC<Props> = ({
       pageSize?: number;
       search?: string;
       ordering?: QualitativeScaleOrderingT;
+      filters?: { is_active?: boolean };
     }) => {
       loadQualitativeScales({
         page: options?.page ?? page,
         pageSize: options?.pageSize ?? pageSize,
         search: options?.search !== undefined ? options.search : search || undefined,
         ordering: options?.ordering ?? ordering,
+        filters: options?.filters ?? buildFilters(),
       });
     },
-    [loadQualitativeScales, page, pageSize, search, ordering],
+    [loadQualitativeScales, page, pageSize, search, ordering, buildFilters],
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ filters: buildFilters() });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    fetchData({ page: 1 });
+  }, [statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,10 +117,19 @@ export const QualitativeScalesTable: React.FC<Props> = ({
     [fetchData],
   );
 
-  const hasNextPage = qualitativeScales.length >= pageSize;
+  const handleStatusFilter = useCallback(
+    (option: SelectOptionT) => {
+      setStatusFilter(option.value as string);
+      setPage(1);
+    },
+    [],
+  );
+
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<QualitativeScaleT>[] = [
     { key: "code", label: "Código", className: tableFirstColumnClassname },
+    { key: "name", label: "Nombre", className: tableColumnsClassname },
     { key: "description", label: "Descripción", className: tableColumnsClassname },
     { key: "numeric_equivalence", label: "Equivalencia", className: tableColumnsClassname },
   ];
@@ -119,6 +144,15 @@ export const QualitativeScalesTable: React.FC<Props> = ({
           value={search}
           className="relative min-w-50 flex-1"
           placeholder="Filtrar escalas..."
+        />
+        <CustomSelect
+          name="filter-status"
+          label=""
+          placeholder="Todos"
+          value={statusFilter}
+          options={STATUS_OPTIONS}
+          onChange={handleStatusFilter}
+          className={filterSelectClassname}
         />
         <CustomSelect
           name="ordering"
@@ -183,7 +217,7 @@ export const QualitativeScalesTable: React.FC<Props> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={qualitativeScales.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {

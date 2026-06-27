@@ -21,7 +21,7 @@ export default function IncidentTypesPage() {
   const canEdit = hasPermission(permissions, INCIDENT_TYPE_PERMISSIONS.UPDATE);
   const canDelete = hasPermission(permissions, INCIDENT_TYPE_PERMISSIONS.DELETE);
 
-  const { items, isLoading, loadItems, createItem, updateItem, deleteItem } =
+  const { items, totalCount, isLoading, loadItems, createItem, updateItem, deleteItem } =
     useIncidentTypeController();
 
   const {
@@ -60,6 +60,7 @@ export default function IncidentTypesPage() {
 
       <IncidentTypeTable
         incidentTypes={items}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadIncidentTypes={loadItems}
         onEdit={openModal}

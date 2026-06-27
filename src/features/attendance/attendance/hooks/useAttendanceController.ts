@@ -11,6 +11,7 @@ import {
   entityUpdated,
   mutationError,
   selectItems,
+  selectTotalCount,
   selectCurrentAttendance,
   selectStatus,
   selectError,
@@ -26,6 +27,7 @@ import type {
 export const useAttendanceController = () => {
   const dispatch = useAppDispatch();
   const items = useAppSelector(selectItems);
+  const totalCount = useAppSelector(selectTotalCount);
   const currentAttendance = useAppSelector(selectCurrentAttendance);
   const status = useAppSelector(selectStatus);
   const error = useAppSelector(selectError);
@@ -37,7 +39,7 @@ export const useAttendanceController = () => {
         const result = await attendanceService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(result));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(
           loadError(
@@ -97,6 +99,7 @@ export const useAttendanceController = () => {
 
   return {
     items,
+    totalCount,
     currentAttendance,
     isLoading: status === "loading",
     error,

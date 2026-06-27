@@ -24,12 +24,20 @@ export interface BehaviorEvaluationT {
   evaluation_date: string;
   approval_date: string | null;
   uuid: string;
+  sync_status: string | null;
   sync_version: number;
+  synced_at: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export type BehaviorEvaluationOrderingT = "id" | "-id";
+export type BehaviorEvaluationOrderingT =
+  | "id"
+  | "-id"
+  | "evaluation_date"
+  | "-evaluation_date"
+  | "created_at"
+  | "-created_at";
 
 export interface BehaviorEvaluationListParamsT {
   page?: number;
@@ -65,8 +73,10 @@ export interface BehaviorEvaluationCalculateDataT {
   academic_period_id: number;
 }
 
+import type { PaginatedResult } from "@shared/types/api.response.types";
+
 export interface BehaviorEvaluationServiceT {
-  list(params?: BehaviorEvaluationListParamsT): Promise<BehaviorEvaluationT[]>;
+  list(params?: BehaviorEvaluationListParamsT): Promise<PaginatedResult<BehaviorEvaluationT>>;
   get(params: BehaviorEvaluationGetParamsT): Promise<BehaviorEvaluationT>;
   update(params: BehaviorEvaluationUpdateParamsT): Promise<BehaviorEvaluationT>;
   calculate(data: BehaviorEvaluationCalculateDataT): Promise<BehaviorEvaluationT>;

@@ -1,5 +1,8 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type {
+  PaginatedData,
+  ResponseApi,
+} from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { EVALUATIVE_ACTIVITY_ENDPOINTS } from "./evaluative-activities.constants";
 import type {
@@ -13,7 +16,9 @@ import type {
 } from "./evaluative-activities.types";
 
 class EvaluativeActivityService implements EvaluativeActivityServiceT {
-  async list(params?: EvaluativeActivityListParamsT): Promise<EvaluativeActivityT[]> {
+  async list(
+    params?: EvaluativeActivityListParamsT,
+  ): Promise<EvaluativeActivityT[]> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -26,7 +31,9 @@ class EvaluativeActivityService implements EvaluativeActivityServiceT {
       const filtersQuery = params?.filters
         ? `&${Object.entries(params.filters)
             .filter(([, value]) => value !== undefined && value !== null)
-            .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
+            .map(
+              ([key, value]) => `${key}=${encodeURIComponent(String(value))}`,
+            )
             .join("&")}`
         : "";
       const { data } = await apiClient.get<
@@ -40,7 +47,9 @@ class EvaluativeActivityService implements EvaluativeActivityServiceT {
     }
   }
 
-  async get(params: EvaluativeActivityGetParamsT): Promise<EvaluativeActivityT> {
+  async get(
+    params: EvaluativeActivityGetParamsT,
+  ): Promise<EvaluativeActivityT> {
     try {
       const { data } = await apiClient.get<ResponseApi<EvaluativeActivityT>>(
         EVALUATIVE_ACTIVITY_ENDPOINTS.GET(params.id),
@@ -51,7 +60,9 @@ class EvaluativeActivityService implements EvaluativeActivityServiceT {
     }
   }
 
-  async create(payload: EvaluativeActivityCreateParamsT): Promise<EvaluativeActivityT> {
+  async create(
+    payload: EvaluativeActivityCreateParamsT,
+  ): Promise<EvaluativeActivityT> {
     try {
       const { data } = await apiClient.post<ResponseApi<EvaluativeActivityT>>(
         EVALUATIVE_ACTIVITY_ENDPOINTS.CREATE,
@@ -63,7 +74,9 @@ class EvaluativeActivityService implements EvaluativeActivityServiceT {
     }
   }
 
-  async update(params: EvaluativeActivityUpdateParamsT): Promise<EvaluativeActivityT> {
+  async update(
+    params: EvaluativeActivityUpdateParamsT,
+  ): Promise<EvaluativeActivityT> {
     try {
       const { data } = await apiClient.patch<ResponseApi<EvaluativeActivityT>>(
         EVALUATIVE_ACTIVITY_ENDPOINTS.UPDATE(params.id),
@@ -80,9 +93,10 @@ class EvaluativeActivityService implements EvaluativeActivityServiceT {
   ): Promise<SoftDeleteResponseT> {
     try {
       const body = params.confirm ? { confirm: true } : undefined;
-      const { data } = await apiClient.post<
-        ResponseApi<SoftDeleteResponseT>
-      >(EVALUATIVE_ACTIVITY_ENDPOINTS.SOFT_DELETE(params.id), body);
+      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
+        EVALUATIVE_ACTIVITY_ENDPOINTS.SOFT_DELETE(params.id),
+        body,
+      );
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });

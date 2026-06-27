@@ -9,7 +9,7 @@ export const TAKE_ATTENDANCE_ENDPOINTS = {
 
 export const TAKE_ATTENDANCE_PERMISSIONS = {
   GET: "attendance.view_attendance",
-  CREATE: "attendance.add_attendance",
-  UPDATE: "attendance.change_attendance",
+  CREATE: "attendance.create_attendance",
+  UPDATE: "attendance.update_attendance",
   DELETE: "attendance.delete_attendance",
 } as const;

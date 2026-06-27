@@ -1,3 +1,4 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface AttendanceStatusT {
@@ -23,6 +24,7 @@ export interface AttendanceStatusFormValues {
   code: string;
   name: string;
   description: string;
+  is_active: boolean;
 }
 
 export type AttendanceStatusCreateParamsT = AttendanceStatusFormValues;
@@ -40,7 +42,7 @@ export interface AttendanceStatusDeleteParamsT {
 }
 
 export interface AttendanceStatusServiceT {
-  list(params?: AttendanceStatusListParamsT): Promise<AttendanceStatusT[]>;
+  list(params?: AttendanceStatusListParamsT): Promise<PaginatedResult<AttendanceStatusT>>;
   get(params: AttendanceStatusGetParamsT): Promise<AttendanceStatusT>;
   create(params: AttendanceStatusCreateParamsT): Promise<AttendanceStatusT>;
   update(params: AttendanceStatusUpdateParamsT): Promise<AttendanceStatusT>;

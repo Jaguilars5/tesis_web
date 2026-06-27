@@ -3,7 +3,6 @@ import {
   CalendarCheck,
   GraduationCap,
   HeartHandshake,
-  TrendingUp,
   UserCheck,
   Users,
 } from "lucide-react";

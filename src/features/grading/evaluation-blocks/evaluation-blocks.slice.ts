@@ -5,12 +5,14 @@ import type { EvaluationBlockT } from "./evaluation-blocks.types";
 
 export interface EvaluationBlocksStateT {
   items: EvaluationBlockT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: EvaluationBlocksStateT = {
   items: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -20,7 +22,7 @@ const evaluationBlocksSlice = createSlice({
   initialState,
   reducers: {
     loadPending(state) { state.status = "loading"; state.error = null; },
-    loadSuccess(state, action: PayloadAction<EvaluationBlockT[]>) { state.items = action.payload; state.status = "succeeded"; },
+    loadSuccess(state, action: PayloadAction<{ items: EvaluationBlockT[]; count: number }>) { state.items = action.payload.items; state.totalCount = action.payload.count; state.status = "succeeded"; },
     loadError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
     entityCreated(state, action: PayloadAction<EvaluationBlockT>) { state.items.unshift(action.payload); state.status = "succeeded"; },
     entityUpdated(state, action: PayloadAction<EvaluationBlockT>) {
@@ -44,6 +46,7 @@ export const {
 } = evaluationBlocksSlice.actions;
 
 export const selectItems = (state: RootState): EvaluationBlockT[] => state.grading.evaluationBlocks.items;
+export const selectTotalCount = (state: RootState): number => state.grading.evaluationBlocks.totalCount;
 export const selectStatus = (state: RootState): RequestStatusT => state.grading.evaluationBlocks.status;
 export const selectError = (state: RootState): string | null => state.grading.evaluationBlocks.error;
 

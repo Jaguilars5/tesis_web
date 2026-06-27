@@ -21,7 +21,7 @@ export default function BlockComponentsPage() {
   const canEdit = hasPermission(permissions, BLOCK_COMPONENTS_PERMISSIONS.UPDATE);
   const canDelete = hasPermission(permissions, BLOCK_COMPONENTS_PERMISSIONS.DELETE);
 
-  const { items, isLoading, loadItems, createItem, updateItem, deleteItem } =
+  const { items, totalCount, isLoading, loadItems, createItem, updateItem, deleteItem } =
     useBlockComponentsController();
 
   const { isOpen, isEdit, editingItem, submitErrors, openModal, closeModal, handleSubmit } =
@@ -46,7 +46,7 @@ export default function BlockComponentsPage() {
         )}
       </div>
 
-      <BlockComponentsTable blockComponents={items} isLoading={isLoading} loadBlockComponents={loadItems} onEdit={openModal} onView={openViewModal} onDelete={openDeleteModal} canEdit={canEdit} canDelete={canDelete} />
+      <BlockComponentsTable blockComponents={items} totalCount={totalCount} isLoading={isLoading} loadBlockComponents={loadItems} onEdit={openModal} onView={openViewModal} onDelete={openDeleteModal} canEdit={canEdit} canDelete={canDelete} />
 
       <BlockComponentsFormModal key={editingItem?.id ?? "create"} isOpen={isOpen} onClose={closeModal} isEdit={isEdit} editingBlockComponent={editingItem} onSubmit={handleSubmit} submitErrors={submitErrors} />
 

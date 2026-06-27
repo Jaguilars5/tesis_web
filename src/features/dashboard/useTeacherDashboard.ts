@@ -101,7 +101,7 @@ export const useTeacherDashboard = () => {
 
     const load = async () => {
       try {
-        const [{ items: tssList }, allActivities, { items: allSchedules }, allIncidents] =
+        const [{ items: tssList }, allActivities, { items: allSchedules }, { items: allIncidents }] =
           await Promise.all([
             teacherSubjectSectionService.list({
               page: 1,

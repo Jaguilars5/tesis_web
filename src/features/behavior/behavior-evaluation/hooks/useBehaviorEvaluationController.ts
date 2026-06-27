@@ -11,6 +11,7 @@ import {
   evaluationCalculated,
   mutationError,
   selectItems,
+  selectTotalCount,
   selectCurrentBehaviorEvaluation,
   selectStatus,
   selectError,
@@ -26,6 +27,7 @@ import type {
 export const useBehaviorEvaluationController = () => {
   const dispatch = useAppDispatch();
   const items = useAppSelector(selectItems);
+  const totalCount = useAppSelector(selectTotalCount);
   const currentBehaviorEvaluation = useAppSelector(selectCurrentBehaviorEvaluation);
   const status = useAppSelector(selectStatus);
   const error = useAppSelector(selectError);
@@ -37,7 +39,7 @@ export const useBehaviorEvaluationController = () => {
         const result = await behaviorEvaluationService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(result));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(
           loadError(
@@ -97,6 +99,7 @@ export const useBehaviorEvaluationController = () => {
 
   return {
     items,
+    totalCount,
     currentBehaviorEvaluation,
     isLoading: status === "loading",
     error,

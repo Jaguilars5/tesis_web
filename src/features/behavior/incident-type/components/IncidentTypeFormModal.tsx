@@ -1,8 +1,8 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
 
-import { inputClassname } from "@app/styles/styles";
-import { CustomInput } from "@shared/components/Form";
+import { checkboxClassname, inputClassname } from "@app/styles/styles";
+import { CustomCheckbox, CustomInput } from "@shared/components/Form";
 import { ErrrosInForm } from "@shared/components/ErrrosInForm";
 
 import { incidentTypeSchema } from "../incident-type.utils";
@@ -43,9 +43,10 @@ export const IncidentTypeFormModal: React.FC<IncidentTypeFormModalProps> = ({
         code: editingIncidentType.code,
         name: editingIncidentType.name,
         description: editingIncidentType.description,
+        is_active: editingIncidentType.is_active,
       };
     }
-    return { code: "", name: "", description: "" };
+    return { code: "", name: "", description: "", is_active: true };
   };
 
   const formik = useFormik<IncidentTypeFormValues>({
@@ -76,6 +77,7 @@ export const IncidentTypeFormModal: React.FC<IncidentTypeFormModalProps> = ({
           <CustomInput label="Código" name="code" placeholder="Ej: BULLYING, FIGHT" value={formik.values.code} onBlur={formik.handleBlur} onChange={formik.handleChange} type="text" error={formik.touched.code ? formik.errors.code : undefined} className={inputClassname} />
           <CustomInput label="Nombre" name="name" placeholder="Nombre del tipo de incidente" value={formik.values.name} onBlur={formik.handleBlur} onChange={formik.handleChange} type="text" error={formik.touched.name ? formik.errors.name : undefined} className={inputClassname} />
           <CustomInput label="Descripción" name="description" placeholder="Descripción opcional" value={formik.values.description} onBlur={formik.handleBlur} onChange={formik.handleChange} type="text" error={formik.touched.description ? formik.errors.description : undefined} className={inputClassname} />
+          {isEdit && (<div className="flex items-end pb-1"><CustomCheckbox name="is_active" checked={formik.values.is_active} onChange={(e) => formik.setFieldValue("is_active", e.target.checked)} label="Activo" className={checkboxClassname} /></div>)}
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <button type="button" onClick={onClose} className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">Cancelar</button>
             <button type="submit" disabled={formik.isSubmitting} className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60">

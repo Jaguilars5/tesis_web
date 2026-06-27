@@ -36,10 +36,10 @@ export const useAbsenceTypeForm = ({ create, update }: UseFormArgs) => {
   const handleSubmit = useCallback(
     async (values: AbsenceTypeFormValues) => {
       setSubmitErrors({ general: [], validation: {} });
+      const { code, name, description, is_active } = values;
       if (editing) {
-        const { code, name, description } = values;
         const response = await unwrapMutation(
-          { id: editing.id, data: { code, name, description } },
+          { id: editing.id, data: { code, name, description, is_active } },
           update,
         );
         if (response.ok) {
@@ -48,9 +48,8 @@ export const useAbsenceTypeForm = ({ create, update }: UseFormArgs) => {
         }
         setSubmitErrors(response.errors);
       } else {
-        const { code, name, description } = values;
         const response = await unwrapMutation(
-          { code, name, description },
+          { code, name, description, is_active: true },
           create,
         );
         if (response.ok) {

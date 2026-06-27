@@ -5,12 +5,14 @@ import type { QualitativeScaleSublevelT } from "./qualitative-scale-sublevels.ty
 
 export interface QualitativeScaleSublevelsStateT {
   qualitativeScaleSublevels: QualitativeScaleSublevelT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: QualitativeScaleSublevelsStateT = {
   qualitativeScaleSublevels: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -23,8 +25,9 @@ const qualitativeScaleSublevelsSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<QualitativeScaleSublevelT[]>) {
-      state.qualitativeScaleSublevels = action.payload;
+    loadSuccess(state, action: PayloadAction<{ items: QualitativeScaleSublevelT[]; count: number }>) {
+      state.qualitativeScaleSublevels = action.payload.items;
+      state.totalCount = action.payload.count;
       state.status = "succeeded";
     },
     loadError(state, action: PayloadAction<string>) {
@@ -71,6 +74,9 @@ export const {
 
 export const selectQualitativeScaleSublevels = (state: RootState): QualitativeScaleSublevelT[] =>
   state.grading.qualitativeScaleSublevels.qualitativeScaleSublevels;
+
+export const selectTotalCount = (state: RootState): number =>
+  state.grading.qualitativeScaleSublevels.totalCount;
 
 export const selectQualitativeScaleSublevelsStatus = (state: RootState): RequestStatusT =>
   state.grading.qualitativeScaleSublevels.status;

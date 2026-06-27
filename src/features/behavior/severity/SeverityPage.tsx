@@ -21,7 +21,7 @@ export default function SeveritiesPage() {
   const canEdit = hasPermission(permissions, SEVERITY_PERMISSIONS.UPDATE);
   const canDelete = hasPermission(permissions, SEVERITY_PERMISSIONS.DELETE);
 
-  const { items, isLoading, loadItems, createItem, updateItem, deleteItem } =
+  const { items, totalCount, isLoading, loadItems, createItem, updateItem, deleteItem } =
     useSeverityController();
 
   const { isOpen, isEdit, editingItem, submitErrors, openModal, closeModal, handleSubmit } =
@@ -51,7 +51,7 @@ export default function SeveritiesPage() {
         )}
       </div>
 
-      <SeverityTable severities={items} isLoading={isLoading} loadSeverities={loadItems} onEdit={openModal} onView={openViewModal} onDelete={openDeleteModal} canEdit={canEdit} canDelete={canDelete} />
+      <SeverityTable severities={items} isLoading={isLoading} loadSeverities={loadItems} totalCount={totalCount} onEdit={openModal} onView={openViewModal} onDelete={openDeleteModal} canEdit={canEdit} canDelete={canDelete} />
 
       <SeverityFormModal key={editingItem?.id ?? "create"} isOpen={isOpen} onClose={closeModal} isEdit={isEdit} editingSeverity={editingItem} onSubmit={handleSubmit} submitErrors={submitErrors} />
 

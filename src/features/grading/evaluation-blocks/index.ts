@@ -4,6 +4,8 @@ export * from "./evaluation-blocks.service";
 export * from "./hooks/useEvaluationBlockController";
 export * from "./hooks/useEvaluationBlockForm";
 export * from "./hooks/useAcademicPeriodOptions";
+export * from "./hooks/useSubjectOfferingOptions";
+export * from "./hooks/useBlockTypeOptions";
 export * from "./evaluation-blocks.slice";
 export * from "./evaluation-blocks.utils";
 export { default as evaluationBlocksReducer } from "./evaluation-blocks.slice";

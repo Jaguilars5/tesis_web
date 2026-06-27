@@ -11,6 +11,7 @@ import {
   entityDeleted,
   mutationError,
   selectPeriodGradeSummaries,
+  selectTotalCount,
   selectPeriodGradeSummariesStatus,
   selectPeriodGradeSummariesError,
 } from "../period-grade-summaries.slice";
@@ -26,6 +27,7 @@ import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 export const usePeriodGradeSummariesController = () => {
   const dispatch = useAppDispatch();
   const periodGradeSummaries = useAppSelector(selectPeriodGradeSummaries);
+  const totalCount = useAppSelector(selectTotalCount);
   const status = useAppSelector(selectPeriodGradeSummariesStatus);
   const error = useAppSelector(selectPeriodGradeSummariesError);
 
@@ -33,10 +35,10 @@ export const usePeriodGradeSummariesController = () => {
     async (params?: PeriodGradeSummaryListParamsT) => {
       dispatch(loadPending());
       try {
-        const items = await periodGradeSummaryService.list(
+        const result = await periodGradeSummaryService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(items));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(loadError(err instanceof Error ? err.message : "Error"));
       }
@@ -99,6 +101,7 @@ export const usePeriodGradeSummariesController = () => {
 
   return {
     periodGradeSummaries,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadPeriodGradeSummaries,

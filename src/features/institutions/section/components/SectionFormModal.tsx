@@ -42,8 +42,16 @@ export const SectionFormModal: React.FC<SectionFormModalProps> = ({
         parallel: editingSection.parallel,
         school_year: editingSection.school_year,
         academic_grade: editingSection.academic_grade,
+        capacity: editingSection.capacity,
+        code: editingSection.code,
       };
-    return { parallel: "", school_year: 0, academic_grade: 0 };
+    return {
+      parallel: "",
+      school_year: 0,
+      academic_grade: 0,
+      capacity: 0,
+      code: "",
+    };
   };
 
   const formik = useFormik<SectionFormValues>({
@@ -93,6 +101,17 @@ export const SectionFormModal: React.FC<SectionFormModalProps> = ({
             error={formik.touched.parallel ? formik.errors.parallel : undefined}
             className={inputClassname}
           />
+          <CustomInput
+            label="Código"
+            name="code"
+            placeholder="Ej: 123456"
+            value={formik.values.code}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            type="text"
+            error={formik.touched.code ? formik.errors.code : undefined}
+            className={inputClassname}
+          />
           <CustomSelect
             label="Año Escolar"
             name="school_year"
@@ -127,6 +146,18 @@ export const SectionFormModal: React.FC<SectionFormModalProps> = ({
                 : undefined
             }
           />
+          <CustomInput
+            label="Capacidad"
+            name="capacity"
+            placeholder="Ej: 30"
+            value={formik.values.capacity}
+            onBlur={formik.handleBlur}
+            onChange={formik.handleChange}
+            type="number"
+            error={formik.touched.capacity ? formik.errors.capacity : undefined}
+            className={inputClassname}
+          />
+
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <button
               type="button"

@@ -1,3 +1,4 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface IncidentTypeT {
@@ -23,6 +24,7 @@ export interface IncidentTypeFormValues {
   code: string;
   name: string;
   description: string;
+  is_active: boolean;
 }
 
 export type IncidentTypeCreateParamsT = IncidentTypeFormValues;
@@ -40,7 +42,7 @@ export interface IncidentTypeDeleteParamsT {
 }
 
 export interface IncidentTypeServiceT {
-  list(params?: IncidentTypeListParamsT): Promise<IncidentTypeT[]>;
+  list(params?: IncidentTypeListParamsT): Promise<PaginatedResult<IncidentTypeT>>;
   get(params: IncidentTypeGetParamsT): Promise<IncidentTypeT>;
   create(params: IncidentTypeCreateParamsT): Promise<IncidentTypeT>;
   update(params: IncidentTypeUpdateParamsT): Promise<IncidentTypeT>;

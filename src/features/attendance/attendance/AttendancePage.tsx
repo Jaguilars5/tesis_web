@@ -19,7 +19,7 @@ export default function AttendancesPage() {
   const canCreate = hasPermission(permissions, ATTENDANCE_PERMISSIONS.CREATE);
   const canEdit = hasPermission(permissions, ATTENDANCE_PERMISSIONS.UPDATE);
 
-  const { items, isLoading, loadItems, createItem, updateItem } =
+  const { items, totalCount, isLoading, loadItems, createItem, updateItem } =
     useAttendanceController();
 
   const {
@@ -68,6 +68,7 @@ export default function AttendancesPage() {
 
       <AttendanceTable
         attendances={items}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadAttendances={loadItems}
         onEdit={openModal}

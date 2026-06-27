@@ -1,7 +1,10 @@
 import { useCallback, useState } from "react";
 import { unwrapMutation } from "@shared/utils/validationErrors";
 import type { SubmitErrorState } from "@shared/utils/validationErrors";
-import type { EvaluativeActivityT, EvaluativeActivityFormValues } from "../evaluative-activities.types";
+import type {
+  EvaluativeActivityT,
+  EvaluativeActivityFormValues,
+} from "../evaluative-activities.types";
 import type { EAControllerT } from "./useEvaluativeActivityController";
 
 export interface UseFormArgs {
@@ -35,20 +38,57 @@ export const useEvaluativeActivityForm = ({ create, update }: UseFormArgs) => {
     async (values: EvaluativeActivityFormValues) => {
       setSubmitErrors({ general: [], validation: {} });
       if (editing) {
-        const { title, teacher_subject_section, activity_type, max_score, due_date } = values;
+        const {
+          title,
+          teacher_subject_section,
+          activity_type,
+          max_score,
+          due_date,
+        } = values;
         const response = await unwrapMutation(
-          { id: editing.id, data: { title, teacher_subject_section, activity_type, max_score, due_date } },
+          {
+            id: editing.id,
+            data: {
+              title,
+              teacher_subject_section,
+              activity_type,
+              max_score,
+              due_date,
+            },
+          },
           update,
         );
-        if (response.ok) { closeModal(); return; }
+        if (response.ok) {
+          closeModal();
+          return;
+        }
         setSubmitErrors(response.errors);
       } else {
-        const { title, teacher_subject_section, activity_type, max_score, due_date, block_component, internal_weight } = values;
+        const {
+          title,
+          teacher_subject_section,
+          activity_type,
+          max_score,
+          due_date,
+          block_component,
+          internal_weight,
+        } = values;
         const response = await unwrapMutation(
-          { title, teacher_subject_section, activity_type, max_score, due_date, block_component, internal_weight },
+          {
+            title,
+            teacher_subject_section,
+            activity_type,
+            max_score,
+            due_date,
+            block_component,
+            internal_weight,
+          },
           create,
         );
-        if (response.ok) { closeModal(); return; }
+        if (response.ok) {
+          closeModal();
+          return;
+        }
         setSubmitErrors(response.errors);
       }
     },

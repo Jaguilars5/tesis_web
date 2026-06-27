@@ -1,5 +1,5 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { PaginatedData, PaginatedResult, ResponseApi } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { EVALUATION_BLOCKS_ENDPOINTS } from "./evaluation-blocks.constants";
 import type {
@@ -13,7 +13,7 @@ import type {
 } from "./evaluation-blocks.types";
 
 class EvaluationBlockService implements EvaluationBlockServiceT {
-  async list(params?: EvaluationBlockListParamsT): Promise<EvaluationBlockT[]> {
+  async list(params?: EvaluationBlockListParamsT): Promise<PaginatedResult<EvaluationBlockT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -23,12 +23,18 @@ class EvaluationBlockService implements EvaluationBlockServiceT {
       const orderingQuery = params?.ordering
         ? `&ordering=${encodeURIComponent(params.ordering)}`
         : "";
+      const filtersQuery = params?.filters
+        ? `&${Object.entries(params.filters)
+            .filter(([, value]) => value !== undefined && value !== null)
+            .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
+            .join("&")}`
+        : "";
       const { data } = await apiClient.get<
         ResponseApi<PaginatedData<EvaluationBlockT>>
       >(
-        `${EVALUATION_BLOCKS_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+        `${EVALUATION_BLOCKS_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

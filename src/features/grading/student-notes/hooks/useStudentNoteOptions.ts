@@ -65,7 +65,7 @@ export const useStudentNoteOptions = () => {
       evaluativeActivityService.list({ page: 1, pageSize: 100 }),
       qualitativeScaleService.list({ page: 1, pageSize: 100 }),
     ])
-      .then(([enrollments, evaluativeActivities, qualitativeScales]) => {
+      .then(([enrollments, evaluativeActivities, { items: qualitativeScales }]) => {
         if (cancelled) return;
         dispatch({
           type: "success",

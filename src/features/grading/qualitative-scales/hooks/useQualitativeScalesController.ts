@@ -11,6 +11,7 @@ import {
   entityDeleted,
   mutationError,
   selectQualitativeScales,
+  selectTotalCount,
   selectQualitativeScalesStatus,
   selectQualitativeScalesError,
 } from "../qualitative-scales.slice";
@@ -26,6 +27,7 @@ import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 export const useQualitativeScalesController = () => {
   const dispatch = useAppDispatch();
   const qualitativeScales = useAppSelector(selectQualitativeScales);
+  const totalCount = useAppSelector(selectTotalCount);
   const status = useAppSelector(selectQualitativeScalesStatus);
   const error = useAppSelector(selectQualitativeScalesError);
 
@@ -33,10 +35,10 @@ export const useQualitativeScalesController = () => {
     async (params?: QualitativeScaleListParamsT) => {
       dispatch(loadPending());
       try {
-        const items = await qualitativeScaleService.list(
+        const result = await qualitativeScaleService.list(
           params ?? { page: 1, pageSize: 100 },
         );
-        dispatch(loadSuccess(items));
+        dispatch(loadSuccess({ items: result.items, count: result.count }));
       } catch (err) {
         dispatch(loadError(err instanceof Error ? err.message : "Error"));
       }
@@ -93,6 +95,7 @@ export const useQualitativeScalesController = () => {
 
   return {
     qualitativeScales,
+    totalCount,
     isLoading: status === "loading",
     error,
     loadQualitativeScales,

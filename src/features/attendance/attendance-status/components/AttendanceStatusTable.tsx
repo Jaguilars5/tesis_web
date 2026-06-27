@@ -28,6 +28,7 @@ const OrderingOptions: { label: string; value: AttendanceStatusOrderingT }[] = [
 
 interface AttendanceStatusTableProps {
   attendanceStatuses: AttendanceStatusT[];
+  totalCount: number;
   isLoading: boolean;
   loadAttendanceStatuses: (params?: AttendanceStatusListParamsT) => void;
   onEdit: (s: AttendanceStatusT) => void;
@@ -39,6 +40,7 @@ interface AttendanceStatusTableProps {
 
 export const AttendanceStatusTable: React.FC<AttendanceStatusTableProps> = ({
   attendanceStatuses,
+  totalCount,
   isLoading,
   loadAttendanceStatuses,
   onEdit,
@@ -62,7 +64,7 @@ export const AttendanceStatusTable: React.FC<AttendanceStatusTableProps> = ({
   );
 
   useEffect(() => {
-    fetchData();
+    fetchData({ page: 1, pageSize });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSearch = useCallback(
@@ -73,22 +75,22 @@ export const AttendanceStatusTable: React.FC<AttendanceStatusTableProps> = ({
       setHasSearched(true);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        fetchData({ page: 1, search: value || undefined });
+        fetchData({ page: 1, pageSize, search: value || undefined });
       }, 400);
     },
-    [fetchData],
+    [fetchData, pageSize],
   );
 
   const handleOrdering = useCallback(
     (value: AttendanceStatusOrderingT) => {
       setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: value });
+      fetchData({ page: 1, pageSize, ordering: value });
     },
-    [fetchData],
+    [fetchData, pageSize],
   );
 
-  const hasNextPage = attendanceStatuses.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<AttendanceStatusT>[] = [
     {
@@ -193,12 +195,12 @@ export const AttendanceStatusTable: React.FC<AttendanceStatusTableProps> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={attendanceStatuses.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(np) => {
           setPage(np);
-          fetchData({ page: np });
+          fetchData({ page: np, pageSize });
         }}
         onPageSizeChange={(ns) => {
           setPageSize(ns);

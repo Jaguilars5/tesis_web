@@ -13,7 +13,7 @@ export interface StudentDashboardData {
   attendanceSummary: { present: number; absent: number; late: number; total: number };
   totalSubjects: number;
   recoverySubjects: number;
-  subjects: { name: string; average: number | null; qualitativeScale: string | null; requiresRecovery: boolean }[];
+  subjects: { name: string; average: number | null; qualitativeScale: string | null; isFailing: boolean }[];
   conductEval: { scale: number; scaleName: string } | null;
 }
 
@@ -57,11 +57,11 @@ export const useStudentDashboard = () => {
             name: s.subject_offering_name,
             average: s.final_avg_truncated,
             qualitativeScale: s.qualitative_scale_name,
-            requiresRecovery: s.requires_recovery,
+            isFailing: s.is_failing,
           }));
           const validAverages = subjects.filter((s) => s.average !== null).map((s) => s.average as number);
           if (validAverages.length > 0) overallAverage = Math.round((validAverages.reduce((a, b) => a + b, 0) / validAverages.length) * 10) / 10;
-          recoveryCount = subjects.filter((s) => s.requiresRecovery).length;
+          recoveryCount = subjects.filter((s) => s.isFailing).length;
         }
 
         let present = 0, absent = 0, late = 0;

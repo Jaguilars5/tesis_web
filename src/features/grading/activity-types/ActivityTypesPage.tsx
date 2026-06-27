@@ -27,7 +27,7 @@ export default function ActivityTypesPage() {
     ACTIVITY_TYPES_PERMISSIONS.DELETE,
   );
 
-  const { items, isLoading, loadItems, createItem, updateItem, deleteItem } =
+  const { items, totalCount, isLoading, loadItems, createItem, updateItem, deleteItem } =
     useActivityTypesController();
 
   const {
@@ -87,6 +87,7 @@ export default function ActivityTypesPage() {
 
       <ActivityTypesTable
         activityTypes={items}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadActivityTypes={loadItems}
         onEdit={openModal}

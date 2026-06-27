@@ -5,6 +5,6 @@ export interface GradeActivity { evaluative_activity_id: number; evaluative_acti
 export interface SubjectGrades { subject: string; subject_offering: number; activities: GradeActivity[]; }
 export interface StudentNoteRaw { id: number; enrollment_name: string; evaluative_activity_title: string; numeric_score: number | null; }
 export interface EvaluativeActivityRaw { id: number; block_component_name: string; title: string; activity_type: number | null; max_score: string; due_date: string; internal_weight: string; }
-export interface PeriodGradeSummaryRaw { id: number; enrollment_name: string; subject_offering_name: string; formative_avg: number; summative_avg: number; final_avg_truncated: number; qualitative_scale_name: string; requires_recovery: boolean; }
+export interface PeriodGradeSummaryRaw { id: number; enrollment_name: string; subject_offering_name: string; formative_avg: number; summative_avg: number; final_avg_truncated: number; qualitative_scale_name: string; is_failing: boolean; }
 export interface BehaviorEvaluationRaw { id: number; enrollment_name: string; academic_period_name: string; final_scale: number | null; calculated_scale: number; final_scale_name: string | null; calculated_scale_name: string; general_observation: string; evaluation_date: string; }
 export interface ConductIncidentRaw { id: number; enrollment_name: string; incident_type_name: string; severity_name: string; incident_date: string; description: string; }

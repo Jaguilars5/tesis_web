@@ -14,6 +14,7 @@ function reducer(_state: State, action: Action): State {
     case "loading": return { data: null, loading: true, error: null };
     case "success": return { data: action.data, loading: false, error: null };
     case "error": return { data: null, loading: false, error: action.error };
+    default: return _state;
   }
 }
 

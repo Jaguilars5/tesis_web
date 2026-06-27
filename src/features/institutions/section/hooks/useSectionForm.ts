@@ -37,9 +37,13 @@ export const useSectionForm = ({ create, update }: UseFormArgs) => {
     async (values: SectionFormValues) => {
       setSubmitErrors({ general: [], validation: {} });
       if (editing) {
-        const { parallel, school_year, academic_grade } = values;
+        const { parallel, school_year, academic_grade, capacity, code } =
+          values;
         const response = await unwrapMutation(
-          { id: editing.id, data: { parallel, school_year, academic_grade } },
+          {
+            id: editing.id,
+            data: { parallel, school_year, academic_grade, capacity, code },
+          },
           update,
         );
         if (response.ok) {
@@ -48,9 +52,10 @@ export const useSectionForm = ({ create, update }: UseFormArgs) => {
         }
         setSubmitErrors(response.errors);
       } else {
-        const { parallel, school_year, academic_grade } = values;
+        const { parallel, school_year, academic_grade, capacity, code } =
+          values;
         const response = await unwrapMutation(
-          { parallel, school_year, academic_grade },
+          { parallel, school_year, academic_grade, capacity, code },
           create,
         );
         if (response.ok) {

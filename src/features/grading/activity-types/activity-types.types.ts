@@ -1,3 +1,4 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface ActivityTypeT {
@@ -40,7 +41,7 @@ export interface ActivityTypeDeleteParamsT {
 }
 
 export interface ActivityTypeServiceT {
-  list(params?: ActivityTypeListParamsT): Promise<ActivityTypeT[]>;
+  list(params?: ActivityTypeListParamsT): Promise<PaginatedResult<ActivityTypeT>>;
   get(params: ActivityTypeGetParamsT): Promise<ActivityTypeT>;
   create(params: ActivityTypeCreateParamsT): Promise<ActivityTypeT>;
   update(params: ActivityTypeUpdateParamsT): Promise<ActivityTypeT>;

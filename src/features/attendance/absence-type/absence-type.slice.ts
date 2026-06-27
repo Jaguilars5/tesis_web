@@ -5,12 +5,14 @@ import type { AbsenceTypeT } from "./absence-type.types";
 
 export interface AbsenceTypeStateT {
   items: AbsenceTypeT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: AbsenceTypeStateT = {
   items: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -20,7 +22,7 @@ const absenceTypeSlice = createSlice({
   initialState,
   reducers: {
     loadPending(state) { state.status = "loading"; state.error = null; },
-    loadSuccess(state, action: PayloadAction<AbsenceTypeT[]>) { state.items = action.payload; state.status = "succeeded"; },
+    loadSuccess(state, action: PayloadAction<{ items: AbsenceTypeT[]; count: number }>) { state.items = action.payload.items; state.totalCount = action.payload.count; state.status = "succeeded"; },
     loadError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
     entityCreated(state, action: PayloadAction<AbsenceTypeT>) { state.items.unshift(action.payload); state.status = "succeeded"; },
     entityUpdated(state, action: PayloadAction<AbsenceTypeT>) {
@@ -33,6 +35,7 @@ const absenceTypeSlice = createSlice({
       state.status = "succeeded";
     },
     mutationError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
+    setTotalCount(state, action: PayloadAction<number>) { state.totalCount = action.payload; },
     clearAbsenceTypeError(state) { state.error = null; },
   },
 });
@@ -40,10 +43,11 @@ const absenceTypeSlice = createSlice({
 export const {
   loadPending, loadSuccess, loadError,
   entityCreated, entityUpdated, entityDeleted,
-  mutationError, clearAbsenceTypeError,
+  mutationError, setTotalCount, clearAbsenceTypeError,
 } = absenceTypeSlice.actions;
 
 export const selectItems = (state: RootState): AbsenceTypeT[] => state.attendance.absenceTypes.items;
+export const selectTotalCount = (state: RootState): number => state.attendance.absenceTypes.totalCount;
 export const selectStatus = (state: RootState): RequestStatusT => state.attendance.absenceTypes.status;
 export const selectError = (state: RootState): string | null => state.attendance.absenceTypes.error;
 

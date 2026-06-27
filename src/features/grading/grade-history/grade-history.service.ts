@@ -1,5 +1,5 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { PaginatedData, PaginatedResult, ResponseApi } from "@shared/types/api.response.types";
 import { GRADE_HISTORY_ENDPOINTS } from "./grade-history.constants";
 import type {
   GradeChangeHistoryGetParamsT,
@@ -9,7 +9,7 @@ import type {
 } from "./grade-history.types";
 
 class GradeHistoryService implements GradeHistoryServiceT {
-  async list(params?: GradeChangeHistoryListParamsT): Promise<GradeChangeHistoryT[]> {
+  async list(params?: GradeChangeHistoryListParamsT): Promise<PaginatedResult<GradeChangeHistoryT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -24,7 +24,7 @@ class GradeHistoryService implements GradeHistoryServiceT {
       >(
         `${GRADE_HISTORY_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

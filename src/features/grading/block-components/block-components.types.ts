@@ -1,3 +1,4 @@
+import type { PaginatedResult } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export interface BlockComponentT {
@@ -13,9 +14,8 @@ export interface BlockComponentT {
 }
 
 export type BlockComponentOrderingT =
-  | "name" | "-name" | "code" | "-code"
-  | "internal_weight" | "-internal_weight"
-  | "evaluation_block_name" | "-evaluation_block_name";
+  | "name" | "-name"
+  | "internal_weight" | "-internal_weight";
 
 export interface BlockComponentListParamsT {
   page?: number;
@@ -51,7 +51,7 @@ export interface BlockComponentDeleteParamsT {
 }
 
 export interface BlockComponentServiceT {
-  list(params?: BlockComponentListParamsT): Promise<BlockComponentT[]>;
+  list(params?: BlockComponentListParamsT): Promise<PaginatedResult<BlockComponentT>>;
   get(params: BlockComponentGetParamsT): Promise<BlockComponentT>;
   create(params: BlockComponentCreateParamsT): Promise<BlockComponentT>;
   update(params: BlockComponentUpdateParamsT): Promise<BlockComponentT>;

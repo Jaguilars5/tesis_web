@@ -14,6 +14,7 @@ function reducer(_state: State, action: Action): State {
     case "loading": return { data: null, loading: true, error: null };
     case "success": return { data: action.data, loading: false, error: null };
     case "error": return { data: null, loading: false, error: action.error };
+    default: return _state;
   }
 }
 
@@ -49,7 +50,8 @@ export const EvaluationBlockViewModal: React.FC<EvaluationBlockViewModalProps> =
             <DetailRow icon={<BookOpen className="size-4" />} label="Nombre" value={state.data.name} />
             <DetailRow icon={<Percent className="size-4" />} label="Porcentaje" value={`${state.data.weight_percentage}%`} />
             <DetailRow icon={<BookOpen className="size-4" />} label="Período" value={state.data.academic_period_name} />
-            {state.data.tipo && <DetailRow icon={<FileText className="size-4" />} label="Tipo" value={state.data.tipo} />}
+            <DetailRow icon={<BookOpen className="size-4" />} label="Oferta" value={state.data.subject_offering_name} />
+            {state.data.block_type && <DetailRow icon={<FileText className="size-4" />} label="Tipo" value={state.data.block_type} />}
             <div className="flex items-start gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500"><span className="size-2 rounded-full bg-current" /></span>
               <div className="min-w-0 flex-1">

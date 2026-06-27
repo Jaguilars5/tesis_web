@@ -18,10 +18,6 @@ import type {
 } from "../grade-history.types";
 
 const OrderingOptions: { label: string; value: GradeChangeHistoryOrderingT }[] = [
-  { label: "Nota (A-Z)", value: "student_note_name" },
-  { label: "Nota (Z-A)", value: "-student_note_name" },
-  { label: "Modificado por (A-Z)", value: "modified_by_user_name" },
-  { label: "Modificado por (Z-A)", value: "-modified_by_user_name" },
   { label: "Fecha (asc)", value: "modified_at" },
   { label: "Fecha (desc)", value: "-modified_at" },
   { label: "Antes (asc)", value: "previous_score" },
@@ -32,12 +28,14 @@ const OrderingOptions: { label: string; value: GradeChangeHistoryOrderingT }[] =
 
 interface GradeHistoryTableProps {
   gradeHistoryItems: GradeChangeHistoryT[];
+  totalCount: number;
   isLoading: boolean;
   loadGradeHistory: (params?: GradeChangeHistoryListParamsT) => void;
 }
 
 export const GradeHistoryTable: React.FC<GradeHistoryTableProps> = ({
   gradeHistoryItems,
+  totalCount,
   isLoading,
   loadGradeHistory,
 }) => {
@@ -78,7 +76,7 @@ export const GradeHistoryTable: React.FC<GradeHistoryTableProps> = ({
     [fetchData],
   );
 
-  const hasNextPage = gradeHistoryItems.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<GradeChangeHistoryT>[] = [
     { key: "student_note_name", label: "Nota", className: tableFirstColumnClassname },
@@ -98,7 +96,7 @@ export const GradeHistoryTable: React.FC<GradeHistoryTableProps> = ({
       <CustomTable<GradeChangeHistoryT> data={gradeHistoryItems} columns={columns} isLoading={isLoading && gradeHistoryItems.length === 0}
         emptyMessage={hasSearched ? "No se encontraron registros con los filtros" : "No se encontraron registros de historial"}
         className={tableClassname} loadingMessage="Cargando historial..." />
-      <Pagination page={page} pageSize={pageSize} totalItems={gradeHistoryItems.length} isLoading={isLoading} hasNextPage={hasNextPage}
+      <Pagination page={page} pageSize={pageSize} totalItems={totalCount} isLoading={isLoading} hasNextPage={hasNextPage}
         onPageChange={(np) => { setPage(np); fetchData({ page: np }); }}
         onPageSizeChange={(ns) => { setPageSize(ns); setPage(1); fetchData({ page: 1, pageSize: ns }); }} />
     </div>

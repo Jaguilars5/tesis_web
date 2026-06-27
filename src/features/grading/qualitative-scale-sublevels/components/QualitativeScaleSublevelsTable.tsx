@@ -21,14 +21,15 @@ import type {
 } from "../qualitative-scale-sublevels.types";
 
 const OrderingOptions: { label: string; value: QualitativeScaleSublevelOrderingT }[] = [
-  { label: "Escala (A-Z)", value: "scale_name" },
-  { label: "Escala (Z-A)", value: "-scale_name" },
-  { label: "Subnivel (A-Z)", value: "sublevel_name" },
-  { label: "Subnivel (Z-A)", value: "-sublevel_name" },
+  { label: "Escala (asc)", value: "scale" },
+  { label: "Escala (desc)", value: "-scale" },
+  { label: "Subnivel (asc)", value: "sublevel" },
+  { label: "Subnivel (desc)", value: "-sublevel" },
 ];
 
 interface Props {
   qualitativeScaleSublevels: QualitativeScaleSublevelT[];
+  totalCount: number;
   isLoading: boolean;
   loadQualitativeScaleSublevels: (params?: QualitativeScaleSublevelListParamsT) => void;
   onEdit: (entity: QualitativeScaleSublevelT) => void;
@@ -40,6 +41,7 @@ interface Props {
 
 export const QualitativeScaleSublevelsTable: React.FC<Props> = ({
   qualitativeScaleSublevels,
+  totalCount,
   isLoading,
   loadQualitativeScaleSublevels,
   onEdit,
@@ -51,7 +53,7 @@ export const QualitativeScaleSublevelsTable: React.FC<Props> = ({
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [ordering, setOrdering] = useState<QualitativeScaleSublevelOrderingT>("scale_name");
+  const [ordering, setOrdering] = useState<QualitativeScaleSublevelOrderingT>("scale");
   const [hasSearched, setHasSearched] = useState(false);
   const [scaleFilter, setScaleFilter] = useState<number | 0>(0);
   const [sublevelFilter, setSublevelFilter] = useState<number | 0>(0);
@@ -133,7 +135,7 @@ export const QualitativeScaleSublevelsTable: React.FC<Props> = ({
     fetchData({ page: 1 });
   }, [scaleFilter, sublevelFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const hasNextPage = qualitativeScaleSublevels.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<QualitativeScaleSublevelT>[] = [
     { key: "scale_name", label: "Escala", className: tableFirstColumnClassname },
@@ -243,7 +245,7 @@ export const QualitativeScaleSublevelsTable: React.FC<Props> = ({
       <Pagination
         page={page}
         pageSize={pageSize}
-        totalItems={qualitativeScaleSublevels.length}
+        totalItems={totalCount}
         isLoading={isLoading}
         hasNextPage={hasNextPage}
         onPageChange={(newPage) => {

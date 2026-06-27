@@ -5,12 +5,14 @@ import type { IncidentTypeT } from "./incident-type.types";
 
 export interface IncidentTypeStateT {
   items: IncidentTypeT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: IncidentTypeStateT = {
   items: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -20,7 +22,7 @@ const incidentTypeSlice = createSlice({
   initialState,
   reducers: {
     loadPending(state) { state.status = "loading"; state.error = null; },
-    loadSuccess(state, action: PayloadAction<IncidentTypeT[]>) { state.items = action.payload; state.status = "succeeded"; },
+    loadSuccess(state, action: PayloadAction<{ items: IncidentTypeT[]; count: number }>) { state.items = action.payload.items; state.totalCount = action.payload.count; state.status = "succeeded"; },
     loadError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
     entityCreated(state, action: PayloadAction<IncidentTypeT>) { state.items.unshift(action.payload); state.status = "succeeded"; },
     entityUpdated(state, action: PayloadAction<IncidentTypeT>) {
@@ -33,6 +35,7 @@ const incidentTypeSlice = createSlice({
       state.status = "succeeded";
     },
     mutationError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
+    setTotalCount(state, action: PayloadAction<number>) { state.totalCount = action.payload; },
     clearIncidentTypeError(state) { state.error = null; },
   },
 });
@@ -40,10 +43,11 @@ const incidentTypeSlice = createSlice({
 export const {
   loadPending, loadSuccess, loadError,
   entityCreated, entityUpdated, entityDeleted,
-  mutationError, clearIncidentTypeError,
+  mutationError, setTotalCount, clearIncidentTypeError,
 } = incidentTypeSlice.actions;
 
 export const selectItems = (state: RootState): IncidentTypeT[] => state.behavior.incidentTypes.items;
+export const selectTotalCount = (state: RootState): number => state.behavior.incidentTypes.totalCount;
 export const selectStatus = (state: RootState): RequestStatusT => state.behavior.incidentTypes.status;
 export const selectError = (state: RootState): string | null => state.behavior.incidentTypes.error;
 

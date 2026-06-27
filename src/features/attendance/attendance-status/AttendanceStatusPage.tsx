@@ -21,7 +21,7 @@ export default function AttendanceStatusesPage() {
   const canEdit = hasPermission(permissions, ATTENDANCE_STATUS_PERMISSIONS.UPDATE);
   const canDelete = hasPermission(permissions, ATTENDANCE_STATUS_PERMISSIONS.DELETE);
 
-  const { items, isLoading, loadItems, createItem, updateItem, deleteItem } =
+  const { items, totalCount, isLoading, loadItems, createItem, updateItem, deleteItem } =
     useAttendanceStatusController();
 
   const {
@@ -60,6 +60,7 @@ export default function AttendanceStatusesPage() {
 
       <AttendanceStatusTable
         attendanceStatuses={items}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadAttendanceStatuses={loadItems}
         onEdit={openModal}

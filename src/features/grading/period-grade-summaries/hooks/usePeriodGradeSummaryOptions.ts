@@ -70,7 +70,7 @@ export const usePeriodGradeSummaryOptions = () => {
       academicPeriodService.list({ page: 1, pageSize: 100 }),
       qualitativeScaleService.list({ page: 1, pageSize: 100 }),
     ])
-      .then(([enrollments, { items: subjectOfferings }, { items: academicPeriods }, qualitativeScales]) => {
+      .then(([enrollments, { items: subjectOfferings }, { items: academicPeriods }, { items: qualitativeScales }]) => {
         if (cancelled) return;
         dispatch({
           type: "success",

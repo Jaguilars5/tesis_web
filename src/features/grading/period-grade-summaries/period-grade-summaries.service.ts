@@ -1,5 +1,5 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { PaginatedData, PaginatedResult, ResponseApi } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { PERIOD_GRADE_SUMMARIES_ENDPOINTS } from "./period-grade-summaries.constants";
 import type {
@@ -13,7 +13,7 @@ import type {
 } from "./period-grade-summaries.types";
 
 class PeriodGradeSummaryService implements PeriodGradeSummaryServiceT {
-  async list(params?: PeriodGradeSummaryListParamsT): Promise<PeriodGradeSummaryT[]> {
+  async list(params?: PeriodGradeSummaryListParamsT): Promise<PaginatedResult<PeriodGradeSummaryT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -27,7 +27,7 @@ class PeriodGradeSummaryService implements PeriodGradeSummaryServiceT {
       const { data } = await apiClient.get<ResponseApi<PaginatedData<PeriodGradeSummaryT>>>(
         `${PERIOD_GRADE_SUMMARIES_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

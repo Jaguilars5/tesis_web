@@ -23,16 +23,13 @@ import type {
 const OrderingOptions: { label: string; value: BlockComponentOrderingT }[] = [
   { label: "Nombre (A-Z)", value: "name" },
   { label: "Nombre (Z-A)", value: "-name" },
-  { label: "Código (A-Z)", value: "code" },
-  { label: "Código (Z-A)", value: "-code" },
   { label: "Ponderación (asc)", value: "internal_weight" },
   { label: "Ponderación (desc)", value: "-internal_weight" },
-  { label: "Bloque (A-Z)", value: "evaluation_block_name" },
-  { label: "Bloque (Z-A)", value: "-evaluation_block_name" },
 ];
 
 interface BlockComponentsTableProps {
   blockComponents: BlockComponentT[];
+  totalCount: number;
   isLoading: boolean;
   loadBlockComponents: (params?: BlockComponentListParamsT) => void;
   onEdit: (s: BlockComponentT) => void;
@@ -44,6 +41,7 @@ interface BlockComponentsTableProps {
 
 export const BlockComponentsTable: React.FC<BlockComponentsTableProps> = ({
   blockComponents,
+  totalCount,
   isLoading,
   loadBlockComponents,
   onEdit,
@@ -134,7 +132,7 @@ export const BlockComponentsTable: React.FC<BlockComponentsTableProps> = ({
     [fetchData, ordering, search, evalBlockFilter, periodFilter],
   );
 
-  const hasNextPage = blockComponents.length >= pageSize;
+  const hasNextPage = totalCount > page * pageSize;
 
   const columns: TableColumnProps<BlockComponentT>[] = [
     { key: "name", label: "Nombre", className: tableFirstColumnClassname, render: (s) => <span>{s.name}</span> },
@@ -162,7 +160,7 @@ export const BlockComponentsTable: React.FC<BlockComponentsTableProps> = ({
           </div>
         )}
       />
-      <Pagination page={page} pageSize={pageSize} totalItems={blockComponents.length} isLoading={isLoading} hasNextPage={hasNextPage}
+      <Pagination page={page} pageSize={pageSize} totalItems={totalCount} isLoading={isLoading} hasNextPage={hasNextPage}
         onPageChange={(np) => { setPage(np); fetchData({ page: np, ordering, search: search || undefined, filters: buildFilters() }); }}
         onPageSizeChange={(ns) => { setPageSize(ns); setPage(1); fetchData({ page: 1, pageSize: ns, ordering, search: search || undefined, filters: buildFilters() }); }} />
     </div>

@@ -42,9 +42,9 @@ export const useEvaluationBlockForm = ({ create, update }: UseFormArgs) => {
         if (response.ok) { closeModal(); return; }
         setSubmitErrors(response.errors);
       } else {
-        const { code, name, weight_percentage, academic_period, tipo } = values;
+        const { code, name, weight_percentage, academic_period, subject_offering, block_type } = values;
         const response = await unwrapMutation(
-          { code, name, weight_percentage, academic_period, tipo },
+          { code, name, weight_percentage, academic_period, subject_offering, block_type },
           create,
         );
         if (response.ok) { closeModal(); return; }

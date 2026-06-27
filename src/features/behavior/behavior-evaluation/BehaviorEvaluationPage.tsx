@@ -22,7 +22,7 @@ export default function BehaviorEvaluationPage() {
   const canCreate = hasPermission(permissions, BEHAVIOR_EVALUATION_PERMISSIONS.CREATE);
   const canEdit = hasPermission(permissions, BEHAVIOR_EVALUATION_PERMISSIONS.UPDATE);
 
-  const { items, isLoading, loadItems, updateItem, calculateItem } =
+  const { items, totalCount, isLoading, loadItems, updateItem, calculateItem } =
     useBehaviorEvaluationController();
 
   const { isOpen, editingItem, submitErrors, openModal, closeModal, handleSubmit } =
@@ -62,7 +62,7 @@ export default function BehaviorEvaluationPage() {
         )}
       </div>
 
-      <BehaviorEvaluationTable behaviorEvaluations={items} isLoading={isLoading} loadBehaviorEvaluations={loadItems} onEdit={handleOverride} onView={openViewModal} canEdit={canEdit} />
+      <BehaviorEvaluationTable behaviorEvaluations={items} totalCount={totalCount} isLoading={isLoading} loadBehaviorEvaluations={loadItems} onEdit={handleOverride} onView={openViewModal} canEdit={canEdit} />
 
       {isCalculateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

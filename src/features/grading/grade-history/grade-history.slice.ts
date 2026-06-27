@@ -5,12 +5,14 @@ import type { GradeChangeHistoryT } from "./grade-history.types";
 
 export interface GradeHistoryStateT {
   items: GradeChangeHistoryT[];
+  totalCount: number;
   status: RequestStatusT;
   error: string | null;
 }
 
 const initialState: GradeHistoryStateT = {
   items: [],
+  totalCount: 0,
   status: "idle",
   error: null,
 };
@@ -20,7 +22,7 @@ const gradeHistorySlice = createSlice({
   initialState,
   reducers: {
     loadPending(state) { state.status = "loading"; state.error = null; },
-    loadSuccess(state, action: PayloadAction<GradeChangeHistoryT[]>) { state.items = action.payload; state.status = "succeeded"; },
+    loadSuccess(state, action: PayloadAction<{ items: GradeChangeHistoryT[]; count: number }>) { state.items = action.payload.items; state.totalCount = action.payload.count; state.status = "succeeded"; },
     loadError(state, action: PayloadAction<string>) { state.status = "failed"; state.error = action.payload; },
     itemLoaded(state, action: PayloadAction<GradeChangeHistoryT>) {
       const idx = state.items.findIndex((i) => i.id === action.payload.id);
@@ -39,6 +41,7 @@ export const {
 } = gradeHistorySlice.actions;
 
 export const selectItems = (state: RootState): GradeChangeHistoryT[] => state.grading.gradeHistory.items;
+export const selectTotalCount = (state: RootState): number => state.grading.gradeHistory.totalCount;
 export const selectStatus = (state: RootState): RequestStatusT => state.grading.gradeHistory.status;
 export const selectError = (state: RootState): string | null => state.grading.gradeHistory.error;
 

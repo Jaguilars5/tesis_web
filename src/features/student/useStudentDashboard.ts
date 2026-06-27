@@ -21,7 +21,7 @@ interface DashboardData {
     name: string;
     average: number;
     qualitativeScale: string | null;
-    requiresRecovery: boolean;
+    isFailing: boolean;
   }[];
   conductEval: { scale: number; scaleName: string } | null;
 }

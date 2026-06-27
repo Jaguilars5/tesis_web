@@ -8,4 +8,8 @@ export const sectionSchema = Yup.object({
   academic_grade: Yup.number()
     .min(1, "El grado académico es obligatorio")
     .required("El grado académico es obligatorio"),
+  capacity: Yup.number()
+    .min(1, "La capacidad es obligatoria")
+    .required("La capacidad es obligatoria"),
+  code: Yup.string().required("El código es obligatorio"),
 });

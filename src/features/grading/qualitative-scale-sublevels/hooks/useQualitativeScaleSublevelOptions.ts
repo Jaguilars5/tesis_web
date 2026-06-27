@@ -44,7 +44,7 @@ export const useQualitativeScaleSublevelOptions = () => {
       qualitativeScaleService.list({ page: 1, pageSize: 100 }),
       academicSubLevelService.list({ page: 1, pageSize: 100 }),
     ])
-      .then(([scales, sublevels]) => {
+      .then(([{ items: scales }, sublevels]) => {
         if (cancelled) return;
         dispatch({
           type: "success",

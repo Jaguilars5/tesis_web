@@ -14,7 +14,7 @@ export default function AttendanceSummaryPage() {
   const loadSummary = useCallback(async () => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
-      const attendances = await attendanceService.list({ page: 1, pageSize: 100, ordering: "-attendance_date" });
+      const { items: attendances } = await attendanceService.list({ page: 1, pageSize: 100, ordering: "-attendance_date" });
       const present = attendances.filter((a) => a.attendance_status_name === "Presente").length;
       const absent = attendances.filter((a) => a.attendance_status_name === "Ausente").length;
       const late = attendances.filter((a) => a.attendance_status_name === "Tardanza").length;

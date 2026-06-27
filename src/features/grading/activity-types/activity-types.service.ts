@@ -1,5 +1,5 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
-import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
+import type { PaginatedData, PaginatedResult, ResponseApi } from "@shared/types/api.response.types";
 import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { ACTIVITY_TYPES_ENDPOINTS } from "./activity-types.constants";
 import type {
@@ -13,7 +13,7 @@ import type {
 } from "./activity-types.types";
 
 class ActivityTypeService implements ActivityTypeServiceT {
-  async list(params?: ActivityTypeListParamsT): Promise<ActivityTypeT[]> {
+  async list(params?: ActivityTypeListParamsT): Promise<PaginatedResult<ActivityTypeT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -28,7 +28,7 @@ class ActivityTypeService implements ActivityTypeServiceT {
       >(
         `${ACTIVITY_TYPES_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
       );
-      return data.data.results;
+      return { items: data.data.results, count: data.data.count };
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

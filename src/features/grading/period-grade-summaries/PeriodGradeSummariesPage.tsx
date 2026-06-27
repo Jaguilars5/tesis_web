@@ -16,6 +16,7 @@ import type { PeriodGradeSummaryT } from "./period-grade-summaries.types";
 export default function PeriodGradeSummariesPage() {
   const {
     periodGradeSummaries,
+    totalCount,
     isLoading,
     loadPeriodGradeSummaries,
     createPeriodGradeSummary,
@@ -99,6 +100,7 @@ export default function PeriodGradeSummariesPage() {
 
       <PeriodGradeSummariesTable
         periodGradeSummaries={periodGradeSummaries}
+        totalCount={totalCount}
         isLoading={isLoading}
         loadPeriodGradeSummaries={loadPeriodGradeSummaries}
         onEdit={openModal}

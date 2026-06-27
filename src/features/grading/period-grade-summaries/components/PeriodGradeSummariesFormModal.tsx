@@ -42,7 +42,7 @@ const getInitialValues = (
       formative_avg: editing.formative_avg,
       summative_avg: editing.summative_avg,
       final_avg_truncated: editing.final_avg_truncated,
-      requires_recovery: editing.requires_recovery,
+      is_failing: editing.is_failing,
       enrollment: editing.enrollment,
       subject_offering: editing.subject_offering,
       academic_period: editing.academic_period,
@@ -53,7 +53,7 @@ const getInitialValues = (
     formative_avg: 0,
     summative_avg: 0,
     final_avg_truncated: 0,
-    requires_recovery: false,
+    is_failing: false,
     enrollment: 0,
     subject_offering: 0,
     academic_period: 0,
@@ -251,15 +251,15 @@ export const PeriodGradeSummariesFormModal: React.FC<Props> = ({
               }
             />
             <CustomCheckbox
-              name="requires_recovery"
-              checked={formik.values.requires_recovery}
+              name="is_failing"
+              checked={formik.values.is_failing}
               onChange={() =>
                 formik.setFieldValue(
-                  "requires_recovery",
-                  !formik.values.requires_recovery,
+                  "is_failing",
+                  !formik.values.is_failing,
                 )
               }
-              label="Requiere Recuperación"
+              label="Está Reprobando"
               className={checkboxClassname}
             />
           </div>
