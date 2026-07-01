@@ -43,7 +43,7 @@ export const usePermissionForm = ({
 
       if (editingItem) {
         const result = await unwrapMutation(
-          { id: editingItem.id, data: values },
+          { id: editingItem.id, data: { description: values.description } },
           update,
         );
         if (result.ok) {

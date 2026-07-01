@@ -3,8 +3,7 @@ export interface AttendanceRecord { id: number; enrollment: number; enrollment_n
 export interface AttendanceSummary { present: number; absent: number; late: number; total: number; }
 export interface GradeActivity { evaluative_activity_id: number; evaluative_activity_title: string; activity_type_name: string; max_score: number; score: number | null; qualitative_scale_name: string | null; due_date: string; }
 export interface SubjectGrades { subject: string; subject_offering: number; activities: GradeActivity[]; }
-export interface StudentNoteRaw { id: number; enrollment_name: string; evaluative_activity_title: string; numeric_score: number | null; }
-export interface EvaluativeActivityRaw { id: number; block_component_name: string; title: string; activity_type: number | null; max_score: string; due_date: string; internal_weight: string; }
+export interface StudentNoteRaw { id: number; enrollment: number; evaluative_activity: number; enrollment_name: string; evaluative_activity_title: string; numeric_score: number | null; subject_offering: number | null; subject_offering_name: string | null; activity_type: number | null; activity_type_name: string | null; max_score: string | null; academic_period: number | null; academic_period_name: string | null; }
 export interface PeriodGradeSummaryRaw { id: number; enrollment_name: string; subject_offering_name: string; formative_avg: number; summative_avg: number; final_avg_truncated: number; qualitative_scale_name: string; is_failing: boolean; }
 export interface BehaviorEvaluationRaw { id: number; enrollment_name: string; academic_period_name: string; final_scale: number | null; calculated_scale: number; final_scale_name: string | null; calculated_scale_name: string; general_observation: string; evaluation_date: string; }
 export interface ConductIncidentRaw { id: number; enrollment_name: string; incident_type_name: string; severity_name: string; incident_date: string; description: string; }

@@ -25,6 +25,7 @@ export interface AcademicGradeListParamsT {
   search?: string;
   filters?: {
     academic_sublevel?: number;
+    is_active?: boolean;
   };
   ordering?: AcademicGradeOrderingT;
 }

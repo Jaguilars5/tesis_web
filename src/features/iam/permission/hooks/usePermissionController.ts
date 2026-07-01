@@ -8,7 +8,6 @@ import {
   loadError,
   entityCreated,
   entityUpdated,
-  entityDeleted,
   mutationError,
   selectPermissions,
   selectPermissionsStatus,
@@ -16,12 +15,10 @@ import {
 } from "../permission.slice";
 import type {
   PermissionCreateParamsT,
-  PermissionDeleteParamsT,
   PermissionListParamsT,
   PermissionT,
   PermissionUpdateParamsT,
 } from "../permission.types";
-import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export const usePermissionController = () => {
   const dispatch = useAppDispatch();
@@ -74,23 +71,6 @@ export const usePermissionController = () => {
     [dispatch],
   );
 
-  const deletePermission = useCallback(
-    async (params: PermissionDeleteParamsT): Promise<SoftDeleteResponseT> => {
-      try {
-        const response = await permissionService.softDelete(params);
-        if (response.is_active === false) {
-          dispatch(entityDeleted(response.id));
-        }
-        return response;
-      } catch (err) {
-        const rejectValue = toRejectValue(err);
-        dispatch(mutationError(rejectValue.msg));
-        throw rejectValue;
-      }
-    },
-    [dispatch],
-  );
-
   return {
     permissions,
     isLoading: status === "loading",
@@ -98,7 +78,6 @@ export const usePermissionController = () => {
     loadPermissions,
     createPermission,
     updatePermission,
-    deletePermission,
   };
 };
 

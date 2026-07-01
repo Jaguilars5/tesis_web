@@ -23,6 +23,9 @@ export interface AcademicLevelListParamsT {
   pageSize?: number;
   search?: string;
   ordering?: AcademicLevelOrderingT;
+  filters?: {
+    is_active?: boolean;
+  };
 }
 
 export type AcademicLevelCreateParamsT = AcademicLevelFormValues;

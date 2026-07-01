@@ -26,7 +26,10 @@ const academicPeriodSlice = createSlice({
       state.status = "loading";
       state.error = null;
     },
-    loadSuccess(state, action: PayloadAction<{ items: AcademicPeriodT[]; count: number }>) {
+    loadSuccess(
+      state,
+      action: PayloadAction<{ items: AcademicPeriodT[]; count: number }>,
+    ) {
       state.academicPeriods = action.payload.items;
       state.totalCount = action.payload.count;
       state.status = "succeeded";
@@ -86,7 +89,8 @@ export const selectAcademicPeriodsStatus = (state: RootState): RequestStatusT =>
 export const selectAcademicPeriodError = (state: RootState): string | null =>
   state.academic.academicPeriods.error;
 
-export const selectAcademicPeriodTotalCount = (state: RootState): number => state.academic.academicPeriods.totalCount;
+export const selectAcademicPeriodTotalCount = (state: RootState): number =>
+  state.academic.academicPeriods.totalCount;
 
 export const academicPeriodsReducer = academicPeriodSlice.reducer;
 

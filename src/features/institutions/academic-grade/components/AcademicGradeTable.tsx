@@ -52,14 +52,36 @@ export const AcademicGradeTable: React.FC<AcademicGradeTableProps> = ({
   const [academicSubLevel, setAcademicSubLevel] = useState<number | undefined>(
     undefined,
   );
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
+    undefined,
+  );
   const [hasSearched, setHasSearched] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const fetchData = useCallback(
-    (params?: AcademicGradeListParamsT) => {
-      loadAcademicGrades(params);
+  const buildParams = useCallback(
+    (overrides?: Partial<AcademicGradeListParamsT>): AcademicGradeListParamsT => {
+      const filters: AcademicGradeListParamsT["filters"] = {};
+      const sublevel = overrides?.filters?.academic_sublevel ?? academicSubLevel;
+      const active = overrides?.filters?.is_active ?? isActiveFilter;
+      if (sublevel) filters.academic_sublevel = sublevel;
+      if (active !== undefined) filters.is_active = active;
+
+      return {
+        page: overrides?.page ?? page,
+        pageSize: overrides?.pageSize ?? pageSize,
+        search: (overrides?.search ?? search) || undefined,
+        ordering: overrides?.ordering ?? ordering,
+        ...(Object.keys(filters).length > 0 ? { filters } : {}),
+      };
     },
-    [loadAcademicGrades],
+    [search, page, pageSize, ordering, academicSubLevel, isActiveFilter],
+  );
+
+  const fetchData = useCallback(
+    (overrides?: Partial<AcademicGradeListParamsT>) => {
+      loadAcademicGrades(buildParams(overrides));
+    },
+    [loadAcademicGrades, buildParams],
   );
 
   useEffect(() => {
@@ -84,7 +106,7 @@ export const AcademicGradeTable: React.FC<AcademicGradeTableProps> = ({
     (value: AcademicGradeOrderingT) => {
       setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: value });
+      fetchData({ ordering: value });
     },
     [fetchData],
   );
@@ -93,7 +115,17 @@ export const AcademicGradeTable: React.FC<AcademicGradeTableProps> = ({
     (value: number) => {
       setAcademicSubLevel(value);
       setPage(1);
-      fetchData({ page: 1, filters: { academic_sublevel: value } });
+      fetchData({ filters: { academic_sublevel: value } });
+    },
+    [fetchData],
+  );
+
+  const handleIsActiveChange = useCallback(
+    (value: string) => {
+      const parsed = value === "" ? undefined : value === "true";
+      setIsActiveFilter(parsed);
+      setPage(1);
+      fetchData({ filters: { is_active: parsed } });
     },
     [fetchData],
   );
@@ -150,6 +182,18 @@ export const AcademicGradeTable: React.FC<AcademicGradeTableProps> = ({
           onChange={(option) =>
             handleAcademicSubLevelChange(option.value as number)
           }
+          className={filterSelectClassname}
+        />
+        <CustomSelect
+          name="is_active"
+          label=""
+          placeholder="Estado"
+          value={isActiveFilter === undefined ? "" : String(isActiveFilter)}
+          options={[
+            { label: "Activos", value: "true" },
+            { label: "Inactivos", value: "false" },
+          ]}
+          onChange={(option) => handleIsActiveChange(option.value as string)}
           className={filterSelectClassname}
         />
       </div>

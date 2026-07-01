@@ -35,10 +35,17 @@ class AcademicLevelService implements AcademicLevelServiceT {
       const orderingQuery = params?.ordering
         ? `&ordering=${encodeURIComponent(params.ordering)}`
         : "";
+      const filtersQuery = params?.filters
+        ? `&${Object.entries(params.filters)
+            .map(
+              ([key, value]) => `${key}=${encodeURIComponent(String(value))}`,
+            )
+            .join("&")}`
+        : "";
       const { data } = await apiClient.get<
         ResponseApi<PaginatedData<AcademicLevelT>>
       >(
-        `${ACADEMIC_LEVEL_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+        `${ACADEMIC_LEVEL_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
       return data.data.results;
     } catch (error) {

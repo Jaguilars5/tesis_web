@@ -49,14 +49,34 @@ export const SchoolYearTable = ({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] = useState<SchoolYearOrderingT>("start_date");
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
+    undefined,
+  );
   const [hasSearched, setHasSearched] = useState(false);
   const dr = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const fetchData = useCallback(
-    (params?: SchoolYearListParamsT) => {
-      loadSchoolYears(params);
+  const buildParams = useCallback(
+    (overrides?: Partial<SchoolYearListParamsT>): SchoolYearListParamsT => {
+      const filters: SchoolYearListParamsT["filters"] = {};
+      const active = overrides?.filters?.is_active ?? isActiveFilter;
+      if (active !== undefined) filters.is_active = active;
+
+      return {
+        page: overrides?.page ?? page,
+        pageSize: overrides?.pageSize ?? pageSize,
+        search: (overrides?.search ?? search) || undefined,
+        ordering: overrides?.ordering ?? ordering,
+        ...(Object.keys(filters).length > 0 ? { filters } : {}),
+      };
     },
-    [loadSchoolYears],
+    [search, page, pageSize, ordering, isActiveFilter],
+  );
+
+  const fetchData = useCallback(
+    (overrides?: Partial<SchoolYearListParamsT>) => {
+      loadSchoolYears(buildParams(overrides));
+    },
+    [loadSchoolYears, buildParams],
   );
 
   useEffect(() => {
@@ -81,7 +101,17 @@ export const SchoolYearTable = ({
     (value: SchoolYearOrderingT) => {
       setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: value });
+      fetchData({ ordering: value });
+    },
+    [fetchData],
+  );
+
+  const handleIsActiveChange = useCallback(
+    (value: string) => {
+      const parsed = value === "" ? undefined : value === "true";
+      setIsActiveFilter(parsed);
+      setPage(1);
+      fetchData({ filters: { is_active: parsed } });
     },
     [fetchData],
   );
@@ -125,6 +155,18 @@ export const SchoolYearTable = ({
           onChange={(option) =>
             handleOrdering(option.value as SchoolYearOrderingT)
           }
+          className={filterSelectClassname}
+        />
+        <CustomSelect
+          name="is_active"
+          label=""
+          placeholder="Estado"
+          value={isActiveFilter === undefined ? "" : String(isActiveFilter)}
+          options={[
+            { label: "Activos", value: "true" },
+            { label: "Inactivos", value: "false" },
+          ]}
+          onChange={(option) => handleIsActiveChange(option.value as string)}
           className={filterSelectClassname}
         />
       </div>

@@ -106,7 +106,11 @@ export const useTeacherDashboard = () => {
             teacherSubjectSectionService.list({
               page: 1,
               pageSize: 100,
-              filters: { user: user.id, is_active: true },
+              filters: {
+                user: user.id,
+                is_active: true,
+                school_year_is_active: true,
+              },
             }),
             evaluativeActivityService.list({ page: 1, pageSize: 100 }),
             classScheduleService.list({ page: 1, pageSize: 100 }),

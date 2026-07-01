@@ -42,12 +42,6 @@ const permissionSlice = createSlice({
       if (index !== -1) state.permissions[index] = action.payload;
       state.status = "succeeded";
     },
-    entityDeleted(state, action: PayloadAction<number>) {
-      state.permissions = state.permissions.filter(
-        (item) => item.id !== action.payload,
-      );
-      state.status = "succeeded";
-    },
     mutationError(state, action: PayloadAction<string>) {
       state.status = "failed";
       state.error = action.payload;
@@ -64,7 +58,6 @@ export const {
   loadError,
   entityCreated,
   entityUpdated,
-  entityDeleted,
   mutationError,
   clearPermissionError,
 } = permissionSlice.actions;

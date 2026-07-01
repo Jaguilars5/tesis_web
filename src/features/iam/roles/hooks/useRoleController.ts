@@ -8,7 +8,6 @@ import {
   loadError,
   entityCreated,
   entityUpdated,
-  entityDeleted,
   mutationError,
   selectRoles,
   selectRolesStatus,
@@ -17,12 +16,10 @@ import {
 import type {
   RoleAssignPermissionsDataT,
   RoleCreateParamsT,
-  RoleDeleteParamsT,
   RoleListParamsT,
   RoleT,
   RoleUpdateParamsT,
 } from "../roles.types";
-import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 
 export const useRoleController = () => {
   const dispatch = useAppDispatch();
@@ -75,23 +72,6 @@ export const useRoleController = () => {
     [dispatch],
   );
 
-  const deleteRole = useCallback(
-    async (params: RoleDeleteParamsT): Promise<SoftDeleteResponseT> => {
-      try {
-        const response = await roleService.softDelete(params);
-        if (response.is_active === false) {
-          dispatch(entityDeleted(response.id));
-        }
-        return response;
-      } catch (err) {
-        const rejectValue = toRejectValue(err);
-        dispatch(mutationError(rejectValue.msg));
-        throw rejectValue;
-      }
-    },
-    [dispatch],
-  );
-
   const assignPermissions = useCallback(
     async (id: number, payload: RoleAssignPermissionsDataT): Promise<void> => {
       try {
@@ -111,7 +91,6 @@ export const useRoleController = () => {
     loadRoles,
     createRole,
     updateRole,
-    deleteRole,
     assignPermissions,
   };
 };

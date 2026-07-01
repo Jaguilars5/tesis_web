@@ -1,4 +1,4 @@
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   filterSelectClassname,
@@ -45,9 +45,7 @@ interface Props {
   loadData: (params?: PermissionListParamsT) => void;
   onEdit: (entity: PermissionT) => void;
   onView: (entity: PermissionT) => void;
-  onDelete: (entity: PermissionT) => void;
   canEdit?: boolean;
-  canDelete?: boolean;
 }
 
 export const PermissionTable: React.FC<Props> = ({
@@ -56,9 +54,7 @@ export const PermissionTable: React.FC<Props> = ({
   loadData,
   onEdit,
   onView,
-  onDelete,
   canEdit = true,
-  canDelete = true,
 }) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -220,16 +216,6 @@ export const PermissionTable: React.FC<Props> = ({
                 title="Editar"
               >
                 <Pencil className="size-4" />
-              </button>
-            )}
-            {canDelete && (
-              <button
-                type="button"
-                onClick={() => onDelete(entity)}
-                className="inline-flex items-center justify-center rounded-md p-2 text-red-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                title="Eliminar"
-              >
-                <Trash2 className="size-4" />
               </button>
             )}
           </div>

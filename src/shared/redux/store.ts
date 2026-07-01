@@ -46,6 +46,7 @@ import {
   specialNeedsTypeReducer,
   studentReducer,
 } from "@features/students";
+import { notificationReducer } from "@features/notifications";
 import { teacherReducer } from "@features/teacher";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 
@@ -116,6 +117,7 @@ export const store = configureStore({
     attendance: attendanceCombinedReducer,
     behavior: behaviorReducer,
     teacher: teacherReducer,
+    notifications: notificationReducer,
     iam: combineReducers({
       permissions: permissionReducer,
       roles: roleReducer,

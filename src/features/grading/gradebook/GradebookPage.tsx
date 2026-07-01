@@ -3,6 +3,8 @@ import { CheckCircle, Loader2, Save, Search, Users } from "lucide-react";
 import { selectClassname } from "@app/styles/styles";
 import { CustomSelect } from "@shared/components/Form";
 
+import { ExtendDueDateModal } from "./components/ExtendDueDateModal";
+import { GradebookGradingBanner } from "./components/GradebookGradingBanner";
 import { GradebookRoster } from "./components/GradebookRoster";
 import { useGradebook } from "./hooks/useGradebook";
 
@@ -15,21 +17,32 @@ export default function GradebookPage() {
     error,
     success,
     teacherSubjectSectionId,
+    academicPeriodId,
     evaluativeActivityId,
     sectionOptions,
+    periodOptions,
     activityOptions,
     maxScore,
+    gradingContext,
     gradedCount,
     isLoading,
+    loadingPeriods,
     loadingActivities,
     canLoad,
     canSave,
+    extendDueDateOpen,
+    extendingDueDate,
+    extendDueDateError,
     setTeacherSubjectSectionId,
+    setAcademicPeriodId,
     setEvaluativeActivityId,
     updateScore,
     updateObservation,
     loadRoster,
     saveGrades,
+    openExtendDueDate,
+    closeExtendDueDate,
+    extendDueDate,
   } = useGradebook();
 
   return (
@@ -40,7 +53,8 @@ export default function GradebookPage() {
             Libro de Calificaciones
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Seleccione la clase y la actividad para registrar las calificaciones
+            Seleccione la clase, el período y la actividad para registrar
+            calificaciones
           </p>
         </div>
         {loaded && (
@@ -65,6 +79,11 @@ export default function GradebookPage() {
               type="button"
               onClick={saveGrades}
               disabled={!canSave || saving}
+              title={
+                !canSave && loaded
+                  ? "No hay cambios válidos para guardar o el período no permite calificar"
+                  : undefined
+              }
               className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving ? (
@@ -109,6 +128,22 @@ export default function GradebookPage() {
               className={selectClassname}
             />
           </div>
+          <div className="min-w-40 flex-1">
+            <CustomSelect
+              label="Período"
+              name="academic_period"
+              placeholder={
+                loadingPeriods ? "Cargando..." : "Seleccionar Período..."
+              }
+              value={academicPeriodId ? String(academicPeriodId) : ""}
+              onChange={(o) =>
+                setAcademicPeriodId(o.value ? Number(o.value) : null)
+              }
+              options={periodOptions}
+              disabled={loadingPeriods}
+              className={selectClassname}
+            />
+          </div>
           <div className="min-w-48 flex-1">
             <CustomSelect
               label="Actividad"
@@ -116,16 +151,25 @@ export default function GradebookPage() {
               placeholder={
                 loadingActivities
                   ? "Cargando..."
-                  : teacherSubjectSectionId
-                    ? "Seleccionar Actividad..."
-                    : "Seleccione una clase primero"
+                  : !teacherSubjectSectionId
+                    ? "Seleccione una clase primero"
+                    : !academicPeriodId
+                      ? "Seleccione un período primero"
+                      : activityOptions.length === 0
+                        ? "Sin actividades en este período"
+                        : "Seleccionar Actividad..."
               }
               value={evaluativeActivityId ? String(evaluativeActivityId) : ""}
               onChange={(o) =>
                 setEvaluativeActivityId(o.value ? Number(o.value) : null)
               }
               options={activityOptions}
-              disabled={!teacherSubjectSectionId || loadingActivities}
+              disabled={
+                !teacherSubjectSectionId ||
+                !academicPeriodId ||
+                loadingActivities ||
+                activityOptions.length === 0
+              }
               className={selectClassname}
             />
           </div>
@@ -143,19 +187,43 @@ export default function GradebookPage() {
             {loadingRoster ? "Cargando..." : "Cargar"}
           </button>
         </div>
+
+        {loaded && gradingContext && (
+          <div className="border-b border-slate-200 px-4 py-3">
+            <GradebookGradingBanner
+              gradingContext={gradingContext}
+              roster={roster}
+              onExtendDueDate={openExtendDueDate}
+            />
+          </div>
+        )}
+
         {loaded ? (
           <GradebookRoster
             roster={roster}
             maxScore={maxScore}
+            gradingContext={gradingContext}
             updateScore={updateScore}
             updateObservation={updateObservation}
           />
         ) : (
           <div className="py-16 text-center text-sm text-slate-400">
-            Seleccione la clase y la actividad, luego haga clic en "Cargar"
+            Seleccione la clase, el período y la actividad, luego haga clic en
+            &quot;Cargar&quot;
           </div>
         )}
       </div>
+
+      {gradingContext && (
+        <ExtendDueDateModal
+          isOpen={extendDueDateOpen}
+          gradingContext={gradingContext}
+          saving={extendingDueDate}
+          error={extendDueDateError}
+          onClose={closeExtendDueDate}
+          onSubmit={extendDueDate}
+        />
+      )}
     </div>
   );
 }

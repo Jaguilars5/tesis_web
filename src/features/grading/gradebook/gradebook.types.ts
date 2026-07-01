@@ -3,14 +3,30 @@ export interface GradeRosterEntryT {
   studentName: string;
   noteId: number | null;
   numericScore: number | null;
+  /** Nota al cargar el listado; define si ya estaba registrada. */
+  originalNumericScore: number | null;
   teacherObservation: string;
+  originalTeacherObservation: string;
+}
+
+export interface GradingContextT {
+  activityId: number;
+  activityTitle: string;
+  dueDate: string;
+  periodId: number;
+  periodName: string;
+  periodStartDate: string;
+  periodEndDate: string;
+  gradesLocked: boolean;
 }
 
 export interface GradebookStateT {
   teacherSubjectSectionId: number | null;
+  academicPeriodId: number | null;
   evaluativeActivityId: number | null;
   roster: GradeRosterEntryT[];
   maxScore: number | null;
+  gradingContext: GradingContextT | null;
   loadingRoster: boolean;
   saving: boolean;
   loaded: boolean;
@@ -36,6 +52,14 @@ export interface TakeByActivityResponseT {
     id: number;
     title: string;
     max_score: string;
+    due_date?: string;
+  };
+  academic_period?: {
+    id: number;
+    name: string;
+    start_date: string;
+    end_date: string;
+    grades_locked: boolean;
   };
   students: TakeByActivityStudentT[];
 }
@@ -52,10 +76,23 @@ export interface TakeByActivitySavePayloadT {
   records: TakeByActivityRecordT[];
 }
 
+export interface TakeByActivitySaveErrorT {
+  index: number;
+  error: string;
+  record: TakeByActivityRecordT;
+}
+
+export interface TakeByActivitySaveResultT {
+  created?: unknown[];
+  errors?: TakeByActivitySaveErrorT[];
+}
+
 export interface GradebookServiceT {
   getRoster(params: {
     evaluativeActivityId: number;
     teacherSubjectSectionId: number;
   }): Promise<TakeByActivityResponseT>;
-  saveGrades(payload: TakeByActivitySavePayloadT): Promise<unknown>;
+  saveGrades(
+    payload: TakeByActivitySavePayloadT,
+  ): Promise<TakeByActivitySaveResultT | unknown[]>;
 }

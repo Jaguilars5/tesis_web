@@ -25,10 +25,10 @@ export interface SectionFormValues {
 export type SectionOrderingT =
   | "parallel"
   | "-parallel"
-  | "school_year_name"
-  | "-school_year_name"
-  | "academic_grade_name"
-  | "-academic_grade_name";
+  | "school_year__start_date"
+  | "-school_year__start_date"
+  | "academic_grade__name"
+  | "-academic_grade__name";
 
 export interface SectionListParamsT {
   page?: number;
@@ -37,6 +37,7 @@ export interface SectionListParamsT {
   filters?: {
     school_year?: number;
     academic_grade?: number;
+    is_active?: boolean;
   };
   ordering?: SectionOrderingT;
 }

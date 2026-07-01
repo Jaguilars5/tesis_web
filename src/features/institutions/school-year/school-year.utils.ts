@@ -1,4 +1,7 @@
 import * as Yup from "yup";
+
+const todayStr = new Date().toISOString().split("T")[0];
+
 export const schoolYearSchema = Yup.object({
   start_date: Yup.string()
     .required("La fecha de inicio es obligatoria")
@@ -6,7 +9,7 @@ export const schoolYearSchema = Yup.object({
       "start_date_after_today",
       "La fecha de inicio no puede ser anterior a la fecha actual",
       function (value) {
-        return value >= new Date().toISOString();
+        return value >= todayStr;
       },
     ),
   end_date: Yup.string()

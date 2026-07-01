@@ -1,8 +1,9 @@
 import { createContext, useEffect, type ReactNode } from "react";
 import type { Socket } from "socket.io-client";
 
-import { useAppDispatch } from "../redux/hooks";
+import { incrementUnread } from "@features/notifications/notification.slice";
 import { addCompletedTaskId } from "@features/analytics/risk-score.slice";
+import { useAppDispatch } from "../redux/hooks";
 import { useSocket } from "../hooks/useSocket";
 
 export interface SocketContextValue {
@@ -21,11 +22,21 @@ function GlobalTaskListener({ socket }: { socket: Socket | null }) {
 
   useEffect(() => {
     if (!socket) return;
-    const handler = (data: { task_id: string }) => {
+
+    const taskHandler = (data: { task_id: string }) => {
       dispatch(addCompletedTaskId(data.task_id));
     };
-    socket.on("task_completed", handler);
-    return () => { socket.off("task_completed", handler); };
+    const notificationHandler = () => {
+      dispatch(incrementUnread());
+    };
+
+    socket.on("task_completed", taskHandler);
+    socket.on("notification", notificationHandler);
+
+    return () => {
+      socket.off("task_completed", taskHandler);
+      socket.off("notification", notificationHandler);
+    };
   }, [socket, dispatch]);
 
   return null;

@@ -46,17 +46,11 @@ class AcademicSubLevelService implements AcademicSubLevelServiceT {
             )
             .join("&")}`
         : "";
-
-      console.log(
-        "URL",
-        `${ACADEMIC_SUBLEVEL_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
-      );
       const { data } = await apiClient.get<
         ResponseApi<PaginatedData<AcademicSubLevelT>>
       >(
         `${ACADEMIC_SUBLEVEL_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      console.log("DATA", data.data.results);
       return data.data.results;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });

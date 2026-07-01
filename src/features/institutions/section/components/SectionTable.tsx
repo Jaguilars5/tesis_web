@@ -20,10 +20,10 @@ import type {
 const OrderingOptions: { label: string; value: SectionOrderingT }[] = [
   { label: "Paralelo (A-Z)", value: "parallel" },
   { label: "Paralelo (Z-A)", value: "-parallel" },
-  { label: "Año (A-Z)", value: "school_year_name" },
-  { label: "Año (Z-A)", value: "-school_year_name" },
-  { label: "Grado (A-Z)", value: "academic_grade_name" },
-  { label: "Grado (Z-A)", value: "-academic_grade_name" },
+  { label: "Año (A-Z)", value: "school_year__start_date" },
+  { label: "Año (Z-A)", value: "-school_year__start_date" },
+  { label: "Grado (A-Z)", value: "academic_grade__name" },
+  { label: "Grado (Z-A)", value: "-academic_grade__name" },
 ];
 
 interface SectionTableProps {
@@ -59,6 +59,9 @@ export const SectionTable: React.FC<SectionTableProps> = ({
   const [academicGrade, setAcademicGrade] = useState<number | undefined>(
     undefined,
   );
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
+    undefined,
+  );
   const [hasSearched, setHasSearched] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -66,6 +69,7 @@ export const SectionTable: React.FC<SectionTableProps> = ({
     (overrides?: {
       school_year?: number;
       academic_grade?: number;
+      is_active?: boolean;
     }): SectionListParamsT["filters"] => {
       const nextSchoolYear =
         overrides?.school_year !== undefined
@@ -75,12 +79,17 @@ export const SectionTable: React.FC<SectionTableProps> = ({
         overrides?.academic_grade !== undefined
           ? overrides.academic_grade
           : academicGrade;
+      const nextActive =
+        overrides?.is_active !== undefined
+          ? overrides.is_active
+          : isActiveFilter;
       const filters: NonNullable<SectionListParamsT["filters"]> = {};
       if (nextSchoolYear) filters.school_year = nextSchoolYear;
       if (nextAcademicGrade) filters.academic_grade = nextAcademicGrade;
+      if (nextActive !== undefined) filters.is_active = nextActive;
       return Object.keys(filters).length > 0 ? filters : undefined;
     },
-    [schoolYear, academicGrade],
+    [schoolYear, academicGrade, isActiveFilter],
   );
 
   const fetchData = useCallback(
@@ -150,6 +159,20 @@ export const SectionTable: React.FC<SectionTableProps> = ({
         ordering,
         search: search || undefined,
         filters: buildFilters({ academic_grade: value ?? 0 }),
+      });
+    },
+    [fetchData, ordering, search, buildFilters],
+  );
+
+  const handleIsActiveChange = useCallback(
+    (value: string) => {
+      const parsed = value === "" ? undefined : value === "true";
+      setIsActiveFilter(parsed);
+      setPage(1);
+      fetchData({
+        ordering,
+        search: search || undefined,
+        filters: buildFilters({ is_active: parsed }),
       });
     },
     [fetchData, ordering, search, buildFilters],
@@ -226,6 +249,18 @@ export const SectionTable: React.FC<SectionTableProps> = ({
           onChange={(option) =>
             handleOrdering(option.value as SectionOrderingT)
           }
+          className={filterSelectClassname}
+        />
+        <CustomSelect
+          name="is_active"
+          label=""
+          placeholder="Estado"
+          value={isActiveFilter === undefined ? "" : String(isActiveFilter)}
+          options={[
+            { label: "Activos", value: "true" },
+            { label: "Inactivos", value: "false" },
+          ]}
+          onChange={(option) => handleIsActiveChange(option.value as string)}
           className={filterSelectClassname}
         />
       </div>

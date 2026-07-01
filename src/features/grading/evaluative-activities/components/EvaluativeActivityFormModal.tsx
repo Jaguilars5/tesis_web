@@ -1,9 +1,11 @@
 import { useFormik } from "formik";
 import { X } from "lucide-react";
 
+import { getTodayLocal } from "@features/academic/academic-period/academic-period.utils";
 import { inputClassname, selectClassname } from "@app/styles/styles";
 import { CustomInput, CustomSelect } from "@shared/components/Form";
 import { ErrrosInForm } from "@shared/components/ErrrosInForm";
+import { useBlockComponentOptions } from "@features/grading/block-components/hooks/useBlockComponentOptions";
 
 import { evaluativeActivitySchema } from "../evaluative-activities.utils";
 
@@ -27,12 +29,6 @@ const getFieldLabel = (field: string): string => {
   return labels[field] || field;
 };
 
-interface BlockComponentOption {
-  label: string;
-  value: string;
-  internalWeight: string;
-}
-
 interface EvaluativeActivityFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,9 +38,6 @@ interface EvaluativeActivityFormModalProps {
   activityTypeOptions: { label: string; value: string }[];
   onSubmit: (values: EvaluativeActivityFormValues) => Promise<void>;
   submitErrors?: SubmitErrorState;
-  blockComponentOptions?: BlockComponentOption[];
-  blockComponentsLoading?: boolean;
-  blockComponentsError?: string | null;
 }
 
 export const EvaluativeActivityFormModal: React.FC<
@@ -58,9 +51,6 @@ export const EvaluativeActivityFormModal: React.FC<
   activityTypeOptions,
   onSubmit,
   submitErrors = { general: [], validation: {} },
-  blockComponentOptions = [],
-  blockComponentsLoading = false,
-  blockComponentsError = null,
 }) => {
   const getInitialValues = (): EvaluativeActivityFormValues => {
     if (editingEvaluativeActivity) {
@@ -91,6 +81,37 @@ export const EvaluativeActivityFormModal: React.FC<
     validationSchema: evaluativeActivitySchema,
     onSubmit,
   });
+
+  const selectedTssId = formik.values.teacher_subject_section || null;
+  const referenceDate = formik.values.due_date || getTodayLocal();
+  const {
+    blockComponentOptions,
+    blockComponentsLoading,
+    blockComponentsError,
+    academicPeriodName,
+  } = useBlockComponentOptions(
+    !isEdit ? selectedTssId : null,
+    !isEdit ? referenceDate : null,
+  );
+
+  const canLoadBlocks = Boolean(selectedTssId);
+
+  const resetBlockSelection = () => {
+    formik.setFieldValue("block_component", 0);
+    formik.setFieldValue("internal_weight", "0");
+  };
+
+  const handleTeacherSubjectSectionChange = (option: {
+    value: string | number;
+  }) => {
+    formik.setFieldValue("teacher_subject_section", Number(option.value));
+    resetBlockSelection();
+  };
+
+  const handleDueDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    formik.handleChange(e);
+    resetBlockSelection();
+  };
 
   const handleBlockComponentChange = (option: { value: string | number }) => {
     const v = String(option.value);
@@ -143,12 +164,11 @@ export const EvaluativeActivityFormModal: React.FC<
             className={inputClassname}
           />
           <CustomSelect
-            label="Docente-Materia"
+            label="Asignatura"
+            placeholder="Seleccionar Asignatura..."
             name="teacher_subject_section"
             value={String(formik.values.teacher_subject_section)}
-            onChange={(o) =>
-              formik.setFieldValue("teacher_subject_section", Number(o.value))
-            }
+            onChange={handleTeacherSubjectSectionChange}
             options={teacherSubjectSectionOptions}
             className={selectClassname}
             error={
@@ -172,7 +192,18 @@ export const EvaluativeActivityFormModal: React.FC<
                     : undefined
                 }
               />
-              {blockComponentsLoading && (
+              {!canLoadBlocks && (
+                <p className="mt-1 text-xs text-slate-400">
+                  Seleccione Docente-Materia para ver los bloques disponibles.
+                </p>
+              )}
+              {canLoadBlocks && academicPeriodName && (
+                <p className="mt-1 text-xs text-slate-500">
+                  Período: <strong>{academicPeriodName}</strong>
+                  {!formik.values.due_date && " (fecha actual)"}
+                </p>
+              )}
+              {canLoadBlocks && blockComponentsLoading && (
                 <p className="mt-1 text-xs text-slate-400">
                   Cargando bloques...
                 </p>
@@ -182,11 +213,12 @@ export const EvaluativeActivityFormModal: React.FC<
                   {blockComponentsError}
                 </p>
               )}
-              {!blockComponentsLoading &&
+              {canLoadBlocks &&
+                !blockComponentsLoading &&
                 !blockComponentsError &&
                 blockComponentOptions.length === 0 && (
                   <p className="mt-1 text-xs text-amber-600">
-                    No hay bloques configurados.
+                    No hay bloques configurados para este período.
                   </p>
                 )}
               {formik.values.internal_weight &&
@@ -235,7 +267,7 @@ export const EvaluativeActivityFormModal: React.FC<
               type="date"
               value={formik.values.due_date}
               onBlur={formik.handleBlur}
-              onChange={formik.handleChange}
+              onChange={handleDueDateChange}
               error={
                 formik.touched.due_date ? formik.errors.due_date : undefined
               }

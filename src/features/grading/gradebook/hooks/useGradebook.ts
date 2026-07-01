@@ -3,13 +3,26 @@ import { useSearchParams } from "react-router-dom";
 
 import { UserRoleEnum } from "@features/auth";
 import { selectAuthUser } from "@features/auth/auth.slice";
-import { teacherSubjectSectionService } from "@features/academic/teacher-subject-section";
+import {
+  findAcademicPeriodByDate,
+  getTodayLocal,
+} from "@features/academic/academic-period/academic-period.utils";
+import { useAcademicPeriodOptions } from "@shared/hooks/useAcademicPeriodOptions";
+import { useTeacherSubjectSectionOptions } from "@shared/hooks/useTeacherSubjectSectionOptions";
 import { useAppSelector } from "@shared/redux/hooks";
 
 import { evaluativeActivityService } from "../../evaluative-activities/evaluative-activities.service";
 import { gradebookService } from "../gradebook.service";
+import { resolveGradingContext } from "../gradebook.resolve-context";
+import {
+  canEditStudentScore,
+  formatSaveErrors,
+  getGlobalGradingLockReason,
+  hasInvalidRosterScores,
+  isPartialSaveResult,
+  rosterHasChanges,
+} from "../gradebook.utils";
 
-import type { TeacherSubjectSectionListParamsT } from "@features/academic/teacher-subject-section/teacher-subject-section.types";
 import type {
   GradebookStateT,
   GradeRosterEntryT,
@@ -22,9 +35,11 @@ interface OptionT {
 
 const initialState: GradebookStateT = {
   teacherSubjectSectionId: null,
+  academicPeriodId: null,
   evaluativeActivityId: null,
   roster: [],
   maxScore: null,
+  gradingContext: null,
   loadingRoster: false,
   saving: false,
   loaded: false,
@@ -35,48 +50,37 @@ const initialState: GradebookStateT = {
 export const useGradebook = () => {
   const user = useAppSelector(selectAuthUser);
   const [searchParams] = useSearchParams();
+  const { academicPeriodOptions, loading: loadingPeriods } =
+    useAcademicPeriodOptions();
   const [state, setState] = useState<GradebookStateT>(initialState);
 
-  const [sectionOptions, setSectionOptions] = useState<OptionT[]>([]);
-  const [loadingSections, setLoadingSections] = useState(true);
+  const {
+    teacherSubjectSectionOptions: sectionOptions,
+    loading: loadingSections,
+  } = useTeacherSubjectSectionOptions();
 
   const [activityOptions, setActivityOptions] = useState<OptionT[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
+
+  const [extendDueDateOpen, setExtendDueDateOpen] = useState(false);
+  const [extendingDueDate, setExtendingDueDate] = useState(false);
+  const [extendDueDateError, setExtendDueDateError] = useState<string | null>(
+    null,
+  );
 
   const didInitFromParams = useRef(false);
   const autoLoadPending = useRef(false);
 
   useEffect(() => {
-    let cancelled = false;
-    setLoadingSections(true);
-    const params: TeacherSubjectSectionListParamsT = {
-      page: 1,
-      pageSize: 100,
-    };
-    if (user?.role === UserRoleEnum.TEACHER) {
-      params.filters = { user: user.id, is_active: true };
+    if (academicPeriodOptions.length > 0 && state.academicPeriodId === null) {
+      const today = getTodayLocal();
+      const matched = findAcademicPeriodByDate(academicPeriodOptions, today);
+      const targetId = matched
+        ? Number(matched.value)
+        : Number(academicPeriodOptions[0].value);
+      setState((prev) => ({ ...prev, academicPeriodId: targetId }));
     }
-    teacherSubjectSectionService
-      .list(params)
-      .then(({ items }) => {
-        if (cancelled) return;
-        setSectionOptions(
-          items.map((i) => ({
-            label: `${i.subject_offering_name} - ${i.subject_offering_section_name ?? ""}`,
-            value: String(i.id),
-          })),
-        );
-      })
-      .catch(() => {
-        if (!cancelled) setSectionOptions([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingSections(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
+  }, [academicPeriodOptions, state.academicPeriodId]);
 
   useEffect(() => {
     if (didInitFromParams.current) return;
@@ -111,31 +115,70 @@ export const useGradebook = () => {
       teacherSubjectSectionId: id,
       evaluativeActivityId: null,
       roster: [],
+      gradingContext: null,
       loaded: false,
       success: false,
     }));
     setActivityOptions([]);
-    setLoadingActivities(!!id);
+  }, []);
+
+  const setAcademicPeriodId = useCallback((id: number | null) => {
+    setState((prev) => ({
+      ...prev,
+      academicPeriodId: id,
+      evaluativeActivityId: null,
+      roster: [],
+      gradingContext: null,
+      loaded: false,
+      success: false,
+    }));
+    setActivityOptions([]);
   }, []);
 
   useEffect(() => {
     const id = state.teacherSubjectSectionId;
-    if (!id) return;
+    const periodId = state.academicPeriodId;
+    if (!id || !periodId) {
+      setActivityOptions([]);
+      setLoadingActivities(false);
+      return;
+    }
     let cancelled = false;
+    setLoadingActivities(true);
     evaluativeActivityService
       .list({
         page: 1,
         pageSize: 100,
-        filters: { teacher_subject_section: id },
+        filters: {
+          teacher_subject_section: id,
+          academic_period: periodId,
+        },
       })
       .then((items) => {
         if (cancelled) return;
+        const safeItems = Array.isArray(items) ? items : [];
         setActivityOptions(
-          items.map((a) => ({ label: a.title, value: String(a.id) })),
+          safeItems
+            .filter((a) => a?.id != null)
+            .map((a) => ({
+              label: a.due_date
+                ? `${a.title} (entrega: ${a.due_date})`
+                : a.title,
+              value: String(a.id),
+            })),
         );
       })
-      .catch(() => {
-        if (!cancelled) setActivityOptions([]);
+      .catch((err) => {
+        if (!cancelled) {
+          setActivityOptions([]);
+          setState((prev) => ({
+            ...prev,
+            error:
+              err instanceof Error
+                ? err.message
+                : "Error al cargar actividades evaluativas",
+          }));
+        }
       })
       .finally(() => {
         if (!cancelled) setLoadingActivities(false);
@@ -143,13 +186,14 @@ export const useGradebook = () => {
     return () => {
       cancelled = true;
     };
-  }, [state.teacherSubjectSectionId]);
+  }, [state.teacherSubjectSectionId, state.academicPeriodId]);
 
   const setEvaluativeActivityId = useCallback((id: number | null) => {
     setState((prev) => ({
       ...prev,
       evaluativeActivityId: id,
       roster: [],
+      gradingContext: null,
       loaded: false,
       success: false,
     }));
@@ -157,12 +201,22 @@ export const useGradebook = () => {
 
   const updateScore = useCallback(
     (enrollmentId: number, numericScore: number | null) => {
-      setState((prev) => ({
-        ...prev,
-        roster: prev.roster.map((e) =>
-          e.enrollmentId === enrollmentId ? { ...e, numericScore } : e,
-        ),
-      }));
+      setState((prev) => {
+        const entry = prev.roster.find((e) => e.enrollmentId === enrollmentId);
+        if (
+          entry &&
+          !canEditStudentScore(entry, prev.gradingContext).allowed &&
+          entry.originalNumericScore !== null
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          roster: prev.roster.map((e) =>
+            e.enrollmentId === enrollmentId ? { ...e, numericScore } : e,
+          ),
+        };
+      });
     },
     [],
   );
@@ -197,22 +251,35 @@ export const useGradebook = () => {
         teacherSubjectSectionId,
       });
 
-      const maxScore = response.evaluative_activity.max_score
+      const maxScore = response.evaluative_activity?.max_score
         ? Number(response.evaluative_activity.max_score)
         : null;
 
-      const roster: GradeRosterEntryT[] = response.students.map((s) => ({
-        enrollmentId: s.enrollment_id,
-        studentName: s.student_name,
-        noteId: s.note?.id ?? null,
-        numericScore: s.note?.numeric_score ?? null,
-        teacherObservation: s.note?.teacher_observation ?? "",
-      }));
+      const gradingContext = await resolveGradingContext(
+        evaluativeActivityId,
+        response.evaluative_activity,
+        response.academic_period,
+      );
+
+      const roster: GradeRosterEntryT[] = (response.students ?? []).map((s) => {
+        const score = s.note?.numeric_score ?? null;
+        const observation = s.note?.teacher_observation ?? "";
+        return {
+          enrollmentId: s.enrollment_id,
+          studentName: s.student_name,
+          noteId: s.note?.id ?? null,
+          numericScore: score,
+          originalNumericScore: score,
+          teacherObservation: observation,
+          originalTeacherObservation: observation,
+        };
+      });
 
       setState((prev) => ({
         ...prev,
         roster,
         maxScore,
+        gradingContext,
         loadingRoster: false,
         loaded: true,
       }));
@@ -238,8 +305,33 @@ export const useGradebook = () => {
   }, [state.teacherSubjectSectionId, state.evaluativeActivityId, loadRoster]);
 
   const saveGrades = useCallback(async () => {
-    const { evaluativeActivityId, teacherSubjectSectionId, roster } = state;
+    const { evaluativeActivityId, teacherSubjectSectionId, roster, gradingContext } =
+      state;
     if (!evaluativeActivityId || !teacherSubjectSectionId) return;
+
+    if (getGlobalGradingLockReason(gradingContext)) {
+      setState((prev) => ({
+        ...prev,
+        error:
+          "No se pueden guardar calificaciones: el período no está habilitado.",
+      }));
+      return;
+    }
+
+    const blockedChanges = roster.filter((entry) => {
+      const scoreChanged =
+        entry.numericScore !== entry.originalNumericScore &&
+        !(entry.numericScore === null && entry.originalNumericScore === null);
+      return scoreChanged && !canEditStudentScore(entry, gradingContext).allowed;
+    });
+    if (blockedChanges.length > 0) {
+      setState((prev) => ({
+        ...prev,
+        error:
+          "Hay cambios de nota bloqueados por la fecha de entrega. Extienda el plazo o revierta esos valores.",
+      }));
+      return;
+    }
 
     const records = roster
       .filter((e) => e.numericScore !== null || e.teacherObservation)
@@ -252,7 +344,16 @@ export const useGradebook = () => {
     if (records.length === 0) {
       setState((prev) => ({
         ...prev,
-        error: "Ingrese al menos una calificaci\u00f3n antes de guardar.",
+        error: "Ingrese al menos una calificación antes de guardar.",
+      }));
+      return;
+    }
+
+    if (hasInvalidRosterScores(roster, state.maxScore)) {
+      setState((prev) => ({
+        ...prev,
+        error:
+          "Hay notas fuera del rango permitido. Revise los valores ingresados.",
       }));
       return;
     }
@@ -265,11 +366,25 @@ export const useGradebook = () => {
     }));
 
     try {
-      await gradebookService.saveGrades({
+      const result = await gradebookService.saveGrades({
         evaluative_activity_id: evaluativeActivityId,
         teacher_subject_section_id: teacherSubjectSectionId,
         records,
       });
+
+      if (isPartialSaveResult(result) && result.errors?.length) {
+        const detail = formatSaveErrors(result);
+        setState((prev) => ({
+          ...prev,
+          saving: false,
+          error: detail || "Algunos registros no pudieron guardarse.",
+          success: Boolean(result.created?.length),
+        }));
+        if (result.created?.length) {
+          await loadRoster();
+        }
+        return;
+      }
 
       setState((prev) => ({
         ...prev,
@@ -293,8 +408,41 @@ export const useGradebook = () => {
     state.evaluativeActivityId,
     state.teacherSubjectSectionId,
     state.roster,
+    state.maxScore,
+    state.gradingContext,
     loadRoster,
   ]);
+
+  const extendDueDate = useCallback(
+    async (dueDate: string, reason: string) => {
+      const { gradingContext } = state;
+      if (!gradingContext) return;
+
+      setExtendingDueDate(true);
+      setExtendDueDateError(null);
+
+      try {
+        await evaluativeActivityService.update({
+          id: gradingContext.activityId,
+          data: {
+            due_date: dueDate,
+            due_date_change_reason: reason,
+          },
+        });
+        setExtendDueDateOpen(false);
+        await loadRoster();
+      } catch (err) {
+        setExtendDueDateError(
+          err instanceof Error
+            ? err.message
+            : "No se pudo actualizar la fecha de entrega",
+        );
+      } finally {
+        setExtendingDueDate(false);
+      }
+    },
+    [state.gradingContext, loadRoster],
+  );
 
   const gradedCount = state.roster.filter(
     (e) => e.numericScore !== null,
@@ -302,22 +450,44 @@ export const useGradebook = () => {
   const canLoad = !!(
     state.teacherSubjectSectionId && state.evaluativeActivityId
   );
-  const canSave = state.loaded && !state.saving;
+  const periodBlocked = !!getGlobalGradingLockReason(state.gradingContext);
+  const hasChanges = rosterHasChanges(state.roster);
+  const canSave =
+    state.loaded &&
+    !state.saving &&
+    !periodBlocked &&
+    !hasInvalidRosterScores(state.roster, state.maxScore) &&
+    hasChanges;
 
   return {
     ...state,
     sectionOptions,
+    periodOptions: academicPeriodOptions.map((p) => ({
+      label: p.label,
+      value: p.value,
+    })),
     activityOptions,
     gradedCount,
     isLoading: loadingSections,
+    loadingPeriods,
     loadingActivities,
     canLoad,
     canSave,
+    extendDueDateOpen,
+    extendingDueDate,
+    extendDueDateError,
     setTeacherSubjectSectionId,
+    setAcademicPeriodId,
     setEvaluativeActivityId,
     updateScore,
     updateObservation,
     loadRoster,
     saveGrades,
+    openExtendDueDate: () => {
+      setExtendDueDateError(null);
+      setExtendDueDateOpen(true);
+    },
+    closeExtendDueDate: () => setExtendDueDateOpen(false),
+    extendDueDate,
   };
 };

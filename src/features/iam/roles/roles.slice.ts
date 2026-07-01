@@ -42,12 +42,6 @@ const roleSlice = createSlice({
       if (index !== -1) state.roles[index] = action.payload;
       state.status = "succeeded";
     },
-    entityDeleted(state, action: PayloadAction<number>) {
-      state.roles = state.roles.filter(
-        (item) => item.id !== action.payload,
-      );
-      state.status = "succeeded";
-    },
     mutationError(state, action: PayloadAction<string>) {
       state.status = "failed";
       state.error = action.payload;
@@ -64,7 +58,6 @@ export const {
   loadError,
   entityCreated,
   entityUpdated,
-  entityDeleted,
   mutationError,
   clearRoleError,
 } = roleSlice.actions;

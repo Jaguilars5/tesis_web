@@ -183,7 +183,6 @@ export const AcademicPeriodFormModal: React.FC<
   const handleUpdateSubmit = useCallback(async () => {
     if (submittingRef.current) return;
 
-    // Validación manual de campos requeridos
     const values = editFormik.values;
     const validationErrors: string[] = [];
 
@@ -240,7 +239,6 @@ export const AcademicPeriodFormModal: React.FC<
     }
     setWeightError(null);
 
-    // Validación manual de campos requeridos
     const validationErrors: string[] = [];
     cards.forEach((card, index) => {
       const cardNum = index + 1;
@@ -503,10 +501,7 @@ export const AcademicPeriodFormModal: React.FC<
                   name="is_active"
                   checked={editFormik.values.is_active}
                   onChange={(e) =>
-                    editFormik.setFieldValue(
-                      "is_active",
-                      e.target.checked,
-                    )
+                    editFormik.setFieldValue("is_active", e.target.checked)
                   }
                   onBlur={editFormik.handleBlur}
                   label="Activo"

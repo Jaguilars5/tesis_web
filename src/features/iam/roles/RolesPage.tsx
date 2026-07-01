@@ -5,7 +5,6 @@ import { useAppSelector } from "@shared/redux/hooks";
 import { hasPermission } from "@shared/utils/permissions";
 import { useRoleController } from "./hooks/useRoleController";
 import { useRoleForm } from "./hooks/useRoleForm";
-import { RolesDeleteModal } from "./components/RolesDeleteModal";
 import { RolesFormModal } from "./components/RolesFormModal";
 import { RolesTable } from "./components/RolesTable";
 import { RolesViewModal } from "./components/RolesViewModal";
@@ -19,7 +18,6 @@ export default function RolesPage() {
     loadRoles,
     createRole,
     updateRole,
-    deleteRole,
     assignPermissions,
   } = useRoleController();
 
@@ -27,21 +25,16 @@ export default function RolesPage() {
     isOpen,
     isEdit,
     editingItem,
-    submitErrors,
     openModal,
     closeModal,
-    handleSubmit,
   } = useRoleForm({ create: createRole, update: updateRole });
 
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [deletingItem, setDeletingItem] = useState<RoleT | null>(null);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const userPermissions = useAppSelector(selectUserPermissions);
   const canCreate = hasPermission(userPermissions, ROLE_PERMISSIONS.CREATE);
   const canEdit = hasPermission(userPermissions, ROLE_PERMISSIONS.UPDATE);
-  const canDelete = hasPermission(userPermissions, ROLE_PERMISSIONS.DELETE);
 
   const openViewModal = useCallback((entity: RoleT) => {
     setViewingId(entity.id);
@@ -51,16 +44,6 @@ export default function RolesPage() {
   const closeViewModal = useCallback(() => {
     setIsViewOpen(false);
     setViewingId(null);
-  }, []);
-
-  const openDeleteModal = useCallback((entity: RoleT) => {
-    setDeletingItem(entity);
-    setIsDeleteOpen(true);
-  }, []);
-
-  const closeDeleteModal = useCallback(() => {
-    setIsDeleteOpen(false);
-    setDeletingItem(null);
   }, []);
 
   return (
@@ -90,9 +73,7 @@ export default function RolesPage() {
         loadData={loadRoles}
         onEdit={openModal}
         onView={openViewModal}
-        onDelete={openDeleteModal}
         canEdit={canEdit}
-        canDelete={canDelete}
       />
 
       <RolesFormModal
@@ -101,9 +82,8 @@ export default function RolesPage() {
         onClose={closeModal}
         isEdit={isEdit}
         editingItem={editingItem}
-        onSubmit={handleSubmit}
-        submitErrors={submitErrors}
-        roleId={editingItem?.id ?? null}
+        createRole={createRole}
+        updateRole={updateRole}
         assignPermissions={assignPermissions}
       />
 
@@ -111,13 +91,6 @@ export default function RolesPage() {
         isOpen={isViewOpen}
         entityId={viewingId}
         onClose={closeViewModal}
-      />
-
-      <RolesDeleteModal
-        isOpen={isDeleteOpen}
-        entity={deletingItem}
-        onClose={closeDeleteModal}
-        onSoftDelete={deleteRole}
       />
     </div>
   );

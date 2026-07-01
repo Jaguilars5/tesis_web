@@ -216,7 +216,9 @@ export const AcademicPeriodTable: React.FC<AcademicPeriodTableProps> = ({
           value={schoolYear ? String(schoolYear) : ""}
           options={schoolYearOptions}
           onChange={(option) =>
-            handleSchoolYearChange(option.value ? Number(option.value) : undefined)
+            handleSchoolYearChange(
+              option.value ? Number(option.value) : undefined,
+            )
           }
           className={filterSelectClassname}
         />
@@ -228,7 +230,9 @@ export const AcademicPeriodTable: React.FC<AcademicPeriodTableProps> = ({
           value={periodType ? String(periodType) : ""}
           options={periodTypeOptions}
           onChange={(option) =>
-            handlePeriodTypeChange(option.value ? Number(option.value) : undefined)
+            handlePeriodTypeChange(
+              option.value ? Number(option.value) : undefined,
+            )
           }
           className={filterSelectClassname}
         />

@@ -46,9 +46,18 @@ export default function AcademicPeriodsPage() {
   });
 
   const permissions = useAppSelector(selectUserPermissions);
-  const canCreate = hasPermission(permissions, ACADEMIC_PERIOD_PERMISSIONS.CREATE);
-  const canEdit = hasPermission(permissions, ACADEMIC_PERIOD_PERMISSIONS.UPDATE);
-  const canDelete = hasPermission(permissions, ACADEMIC_PERIOD_PERMISSIONS.DELETE);
+  const canCreate = hasPermission(
+    permissions,
+    ACADEMIC_PERIOD_PERMISSIONS.CREATE,
+  );
+  const canEdit = hasPermission(
+    permissions,
+    ACADEMIC_PERIOD_PERMISSIONS.UPDATE,
+  );
+  const canDelete = hasPermission(
+    permissions,
+    ACADEMIC_PERIOD_PERMISSIONS.DELETE,
+  );
 
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);

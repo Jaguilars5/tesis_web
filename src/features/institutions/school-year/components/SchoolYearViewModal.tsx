@@ -2,7 +2,7 @@ import { BookOpen, Calendar, X } from "lucide-react";
 import { useEffect, useReducer } from "react";
 import { schoolYearService } from "../school-year.service";
 import type { SchoolYearT } from "../school-year.types";
-import { DetailRow } from "../../../../shared/components/DetailRow";
+import { DetailRow } from "@shared/components/DetailRow";
 
 interface SchoolYearViewModalState {
   data: SchoolYearT | null;

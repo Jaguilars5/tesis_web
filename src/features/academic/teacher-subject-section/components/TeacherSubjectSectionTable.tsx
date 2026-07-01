@@ -2,13 +2,13 @@ import { ChevronDown, ChevronRight, Eye, Pencil, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
+  filterSelectClassname,
   tableClassname,
   tableColumnsClassname,
   tableFirstColumnClassname,
 } from "@app/styles/styles";
 import { Badge } from "@shared/components/Badge";
-import { SearchInput } from "@shared/components/Form";
-import { CustomSelect } from "@shared/components/Form/CustomSelect/CustomSelect";
+import { CustomSelect, SearchInput } from "@shared/components/Form";
 import { Pagination } from "@shared/components/Pagination";
 import { CustomTable } from "@shared/components/Table";
 
@@ -68,6 +68,7 @@ const groupByUser = (rows: TeacherSubjectSectionT[]): GroupedRow[] => {
     const existing = map.get(row.user);
     if (existing) {
       existing.assignments.push(row);
+      existing.total += 1;
       if (row.is_active) existing.active += 1;
     } else {
       map.set(row.user, {
@@ -82,13 +83,6 @@ const groupByUser = (rows: TeacherSubjectSectionT[]): GroupedRow[] => {
   return Array.from(map.values()).sort((a, b) =>
     a.userName.localeCompare(b.userName),
   );
-};
-
-const selectClassNames = {
-  container: "min-w-40",
-  label: "mb-1 block text-xs font-medium text-slate-600",
-  select:
-    "block w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 shadow-sm transition focus:border-primary focus:ring-1 focus:ring-primary",
 };
 
 export const TeacherSubjectSectionTable = ({
@@ -202,8 +196,8 @@ export const TeacherSubjectSectionTable = ({
   );
 
   const handleOrderingChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const newOrdering = e.target.value as TeacherSubjectSectionOrderingT;
+    (option: SelectOptionT) => {
+      const newOrdering = String(option.value) as TeacherSubjectSectionOrderingT;
       setOrdering(newOrdering);
       setPage(1);
       fetchData({ page: 1, ordering: newOrdering });
@@ -354,95 +348,85 @@ export const TeacherSubjectSectionTable = ({
 
   return (
     <div className="overflow-visible rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-4 border-b border-slate-200 bg-slate-50/50 px-4 py-4 lg:flex-row lg:flex-wrap lg:items-end">
-        <div className="min-w-50 flex-1">
-          <SearchInput
-            name="search"
-            type="text"
-            onChange={handleSearchChange}
-            value={search}
-            className="relative w-full"
-            placeholder="Filtrar por nombre, materia, sección..."
-          />
-        </div>
+      <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-slate-50/50 px-4 py-3">
+        <SearchInput
+          name="search"
+          type="text"
+          onChange={handleSearchChange}
+          value={search}
+          className="relative min-w-50 flex-1"
+          placeholder="Filtrar por nombre, materia, sección..."
+        />
 
-        <div className="flex flex-wrap items-end gap-3">
-          <CustomSelect
-            name="filter-school-year"
-            label="Año lectivo"
-            placeholder="Todos"
-            value={schoolYearFilter as string | number}
-            options={schoolYearOptions}
-            onChange={makeFilterHandler("school_year")}
-            className={selectClassNames}
-          />
-          <CustomSelect
-            name="filter-grade"
-            label="Grado"
-            placeholder="Todos"
-            value={gradeFilter as string | number}
-            options={gradeOptions}
-            onChange={makeFilterHandler("academic_grade")}
-            className={selectClassNames}
-          />
-          <CustomSelect
-            name="filter-section"
-            label="Sección"
-            placeholder="Todas"
-            value={sectionFilter as string | number}
-            options={sectionOptions}
-            onChange={makeFilterHandler("section")}
-            className={selectClassNames}
-          />
-          <CustomSelect
-            name="filter-subject"
-            label="Materia"
-            placeholder="Todas"
-            value={subjectFilter as string | number}
-            options={subjectOptions}
-            onChange={makeFilterHandler("subject")}
-            className={selectClassNames}
-          />
-          <CustomSelect
-            name="filter-teacher"
-            label="Docente"
-            placeholder="Todos"
-            value={teacherFilter as string | number}
-            options={teacherOptions}
-            onChange={makeFilterHandler("user")}
-            className={selectClassNames}
-          />
-          <CustomSelect
-            name="filter-status"
-            label="Estado"
-            placeholder="Todos"
-            value={statusFilter as string}
-            options={statusOptions}
-            onChange={makeFilterHandler("is_active")}
-            className={selectClassNames}
-          />
-          <div className="flex flex-col">
-            <label
-              htmlFor="ordering"
-              className="mb-1 block text-xs font-medium text-slate-600"
-            >
-              Ordenar
-            </label>
-            <select
-              id="ordering"
-              value={ordering}
-              onChange={handleOrderingChange}
-              className="block rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary"
-              aria-label="Ordenar por"
-            >
-              {ORDERING_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <CustomSelect
+          name="ordering"
+          label=""
+          placeholder="Ordenar por"
+          value={ordering}
+          options={ORDERING_OPTIONS}
+          onChange={handleOrderingChange}
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="filter-school-year"
+          label=""
+          placeholder="Año lectivo"
+          value={schoolYearFilter as string | number}
+          options={schoolYearOptions}
+          onChange={makeFilterHandler("school_year")}
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="filter-grade"
+          label=""
+          placeholder="Grado"
+          value={gradeFilter as string | number}
+          options={gradeOptions}
+          onChange={makeFilterHandler("academic_grade")}
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="filter-section"
+          label=""
+          placeholder="Sección"
+          value={sectionFilter as string | number}
+          options={sectionOptions}
+          onChange={makeFilterHandler("section")}
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="filter-subject"
+          label=""
+          placeholder="Materia"
+          value={subjectFilter as string | number}
+          options={subjectOptions}
+          onChange={makeFilterHandler("subject")}
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="filter-teacher"
+          label=""
+          placeholder="Docente"
+          value={teacherFilter as string | number}
+          options={teacherOptions}
+          onChange={makeFilterHandler("user")}
+          className={filterSelectClassname}
+        />
+
+        <CustomSelect
+          name="filter-status"
+          label=""
+          placeholder="Estado"
+          value={statusFilter as string}
+          options={statusOptions}
+          onChange={makeFilterHandler("is_active")}
+          className={filterSelectClassname}
+        />
       </div>
 
       <CustomTable<GroupedRow>

@@ -1,21 +1,24 @@
 import { useEffect, useReducer } from "react";
 
-interface Option {
+export interface CatalogOption {
   label: string;
   value: string;
 }
 
-interface CatalogState {
-  options: Option[];
+interface CatalogState<O extends CatalogOption> {
+  options: O[];
   loading: boolean;
 }
 
-type CatalogAction =
+type CatalogAction<O extends CatalogOption> =
   | { type: "loading" }
-  | { type: "success"; options: Option[] }
+  | { type: "success"; options: O[] }
   | { type: "error" };
 
-function catalogReducer(state: CatalogState, action: CatalogAction): CatalogState {
+function catalogReducer<O extends CatalogOption>(
+  state: CatalogState<O>,
+  action: CatalogAction<O>,
+): CatalogState<O> {
   switch (action.type) {
     case "loading":
       return { ...state, loading: true };
@@ -30,12 +33,15 @@ function catalogReducer(state: CatalogState, action: CatalogAction): CatalogStat
 
 type Loader<T> = () => Promise<T[]>;
 
-export const useCatalogOptions = <T,>(
+export const useCatalogOptions = <T, O extends CatalogOption = CatalogOption>(
   loader: Loader<T>,
   deps: ReadonlyArray<unknown>,
-  map: (item: T) => Option,
+  map: (item: T) => O,
 ) => {
-  const [state, dispatch] = useReducer(catalogReducer, { options: [], loading: true });
+  const [state, dispatch] = useReducer(
+    catalogReducer<O>,
+    { options: [], loading: true },
+  );
 
   useEffect(() => {
     let cancelled = false;

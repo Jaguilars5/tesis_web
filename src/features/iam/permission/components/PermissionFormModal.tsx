@@ -80,7 +80,9 @@ export const PermissionFormModal: React.FC<Props> = ({
           </button>
         </div>
 
-        <ErrrosInForm submitErrors={submitErrors} getFieldLabel={getFieldLabel} />
+        {(submitErrors.general.length > 0 || Object.keys(submitErrors.validation).length > 0) && (
+          <ErrrosInForm submitErrors={submitErrors} getFieldLabel={getFieldLabel} />
+        )}
 
         <form onSubmit={formik.handleSubmit} className="space-y-4 p-5">
           <CustomInput
@@ -92,7 +94,7 @@ export const PermissionFormModal: React.FC<Props> = ({
             type="text"
             error={formik.touched.code ? formik.errors.code : undefined}
             className={inputClassname}
-            disabled={formik.isSubmitting}
+            disabled={formik.isSubmitting || isEdit}
           />
           <CustomInput
             label="Descripción"
@@ -116,7 +118,7 @@ export const PermissionFormModal: React.FC<Props> = ({
             type="text"
             error={formik.touched.module ? formik.errors.module : undefined}
             className={inputClassname}
-            disabled={formik.isSubmitting}
+            disabled={formik.isSubmitting || isEdit}
           />
 
           <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">

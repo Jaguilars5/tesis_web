@@ -40,10 +40,17 @@ class SchoolYearService implements SchoolYearServiceT {
       const orderingQuery = params?.ordering
         ? `&ordering=${encodeURIComponent(params.ordering)}`
         : "";
+      const filtersQuery = params?.filters
+        ? `&${Object.entries(params.filters)
+            .map(
+              ([key, value]) => `${key}=${encodeURIComponent(String(value))}`,
+            )
+            .join("&")}`
+        : "";
       const { data } = await apiClient.get<
         ResponseApi<PaginatedData<SchoolYearT>>
       >(
-        `${SCHOOL_YEAR_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}`,
+        `${SCHOOL_YEAR_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
       return data.data.results;
     } catch (error) {
@@ -84,7 +91,6 @@ class SchoolYearService implements SchoolYearServiceT {
         SCHOOL_YEAR_ENDPOINTS.SOFT_DELETE(params.id),
         body,
       );
-      console.log(data.data);
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });

@@ -92,7 +92,7 @@ export const UsersViewModal: React.FC<Props> = ({
               <DetailRow icon={<FileText className="size-4" />} label="Nombre Completo" value={`${state.data.names} ${state.data.last_names}`} />
               <DetailRow icon={<Hash className="size-4" />} label="Documento" value={state.data.dni} />
               <DetailRow icon={<Mail className="size-4" />} label="Email" value={state.data.email} />
-              <DetailRow icon={<FileText className="size-4" />} label="Rol" value={state.data.role_name ?? String(state.data.role)} />
+              <DetailRow icon={<FileText className="size-4" />} label="Rol" value={state.data.role ?? "—"} />
               <div className="flex items-start gap-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                   <span className="size-2 rounded-full bg-current" />

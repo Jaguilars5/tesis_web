@@ -1,11 +1,9 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
-import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { ROLE_ENDPOINTS } from "./roles.constants";
 import type {
   RoleAssignPermissionsDataT,
   RoleCreateDataT,
-  RoleDeleteParamsT,
   RoleGetParamsT,
   RoleListParamsT,
   RoleServiceT,
@@ -62,19 +60,6 @@ class RoleService implements RoleServiceT {
       const { data } = await apiClient.patch<ResponseApi<RoleT>>(
         ROLE_ENDPOINTS.UPDATE(params.id),
         params.data,
-      );
-      return data.data;
-    } catch (error) {
-      throw new Error(getApiErrorMessage(error), { cause: error });
-    }
-  }
-
-  async softDelete(params: RoleDeleteParamsT): Promise<SoftDeleteResponseT> {
-    try {
-      const body = params.confirm ? { confirm: true } : undefined;
-      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
-        ROLE_ENDPOINTS.SOFT_DELETE(params.id),
-        body,
       );
       return data.data;
     } catch (error) {

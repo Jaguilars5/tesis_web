@@ -5,6 +5,7 @@ import type {
   GradebookServiceT,
   TakeByActivityResponseT,
   TakeByActivitySavePayloadT,
+  TakeByActivitySaveResultT,
 } from "./gradebook.types";
 
 class GradebookService implements GradebookServiceT {
@@ -22,15 +23,22 @@ class GradebookService implements GradebookServiceT {
           },
         },
       );
+      if (!data?.data) {
+        throw new Error("Respuesta inválida al cargar el listado de calificaciones.");
+      }
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
   }
 
-  async saveGrades(payload: TakeByActivitySavePayloadT): Promise<unknown> {
+  async saveGrades(
+    payload: TakeByActivitySavePayloadT,
+  ): Promise<TakeByActivitySaveResultT | unknown[]> {
     try {
-      const { data } = await apiClient.post<ResponseApi<unknown>>(
+      const { data } = await apiClient.post<
+        ResponseApi<TakeByActivitySaveResultT | unknown[]>
+      >(
         GRADEBOOK_ENDPOINTS.TAKE_BY_ACTIVITY,
         payload,
       );

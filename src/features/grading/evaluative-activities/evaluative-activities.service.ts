@@ -41,7 +41,11 @@ class EvaluativeActivityService implements EvaluativeActivityServiceT {
       >(
         `${EVALUATIVE_ACTIVITY_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
-      return data.data.results;
+      const payload = data.data;
+      if (Array.isArray(payload)) {
+        return payload;
+      }
+      return payload?.results ?? [];
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }

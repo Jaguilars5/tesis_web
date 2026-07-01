@@ -6,7 +6,6 @@ import type {
   BehaviorEvaluationRaw,
   ConductIncidentRaw,
   EnrollmentInfo,
-  EvaluativeActivityRaw,
   PeriodGradeSummaryRaw,
   StudentNoteRaw,
 } from "./student.types";
@@ -58,31 +57,21 @@ class StudentService {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
   }
-  async getIncidents(): Promise<ConductIncidentRaw[]> {
+  async getIncidents(enrollmentId: number): Promise<ConductIncidentRaw[]> {
     try {
       const { data } = await apiClient.get<
         ResponseApi<{ results: ConductIncidentRaw[] }>
-      >(`${BEHAVIOR_API.BASE}conduct-incidents/`);
+      >(`${BEHAVIOR_API.BASE}conduct-incidents/?enrollment=${enrollmentId}`);
       return data.data.results ?? [];
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });
     }
   }
-  async getStudentNotes(): Promise<StudentNoteRaw[]> {
+  async getStudentNotes(enrollmentId: number): Promise<StudentNoteRaw[]> {
     try {
       const { data } = await apiClient.get<
         ResponseApi<{ results: StudentNoteRaw[] }>
-      >(`${GRADING_API.BASE}student-notes/`);
-      return data.data.results ?? [];
-    } catch (error) {
-      throw new Error(getApiErrorMessage(error), { cause: error });
-    }
-  }
-  async getEvaluativeActivities(): Promise<EvaluativeActivityRaw[]> {
-    try {
-      const { data } = await apiClient.get<
-        ResponseApi<{ results: EvaluativeActivityRaw[] }>
-      >(`${GRADING_API.BASE}evaluative-activities/`);
+      >(`${GRADING_API.BASE}student-notes/?enrollment=${enrollmentId}&page_size=100`);
       return data.data.results ?? [];
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });

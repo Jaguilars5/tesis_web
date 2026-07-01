@@ -40,6 +40,20 @@ class BlockComponentService implements BlockComponentServiceT {
     }
   }
 
+  async listByTeacherSubjectSection(
+    teacherSubjectSectionId: number,
+    academicPeriodId: number,
+  ): Promise<BlockComponentT[]> {
+    try {
+      const { data } = await apiClient.get<ResponseApi<BlockComponentT[]>>(
+        `${BLOCK_COMPONENTS_ENDPOINTS.BY_TEACHER_SUBJECT_SECTION}?teacher_subject_section=${teacherSubjectSectionId}&academic_period=${academicPeriodId}`,
+      );
+      return data.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error), { cause: error });
+    }
+  }
+
   async get(params: BlockComponentGetParamsT): Promise<BlockComponentT> {
     try {
       const { data } = await apiClient.get<ResponseApi<BlockComponentT>>(

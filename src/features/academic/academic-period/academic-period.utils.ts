@@ -52,3 +52,24 @@ export const buildAbbreviation = (name: string): string => {
     .toUpperCase()
     .slice(0, 3);
 };
+
+export interface AcademicPeriodRangeOption {
+  label: string;
+  value: string;
+  startDate: string;
+  endDate: string;
+}
+
+export const getTodayLocal = (): string => new Date().toISOString().slice(0, 10);
+
+export const findAcademicPeriodByDate = (
+  periods: AcademicPeriodRangeOption[],
+  date: string,
+): AcademicPeriodRangeOption | undefined =>
+  periods.find(
+    (p) =>
+      p.startDate &&
+      p.endDate &&
+      date >= p.startDate &&
+      date <= p.endDate,
+  );

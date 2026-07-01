@@ -7,8 +7,8 @@ export interface UserT {
   names: string;
   last_names: string;
   email: string;
-  role: number;
-  role_name?: string;
+  role: string | null;
+  role_id: number | null;
   is_active: boolean;
   created_at: string;
 }

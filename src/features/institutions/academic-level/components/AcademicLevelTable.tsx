@@ -46,13 +46,34 @@ export const AcademicLevelTable: React.FC<AcademicLevelTableProps> = ({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [ordering, setOrdering] = useState<AcademicLevelOrderingT>("name");
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
+    undefined,
+  );
   const [hasSearched, setHasSearched] = useState(false);
   const dr = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const fetchData = useCallback(
-    (params?: AcademicLevelListParamsT) => {
-      loadAcademicLevels(params);
+
+  const buildParams = useCallback(
+    (overrides?: Partial<AcademicLevelListParamsT>): AcademicLevelListParamsT => {
+      const filters: AcademicLevelListParamsT["filters"] = {};
+      const active = overrides?.filters?.is_active ?? isActiveFilter;
+      if (active !== undefined) filters.is_active = active;
+
+      return {
+        page: overrides?.page ?? page,
+        pageSize: overrides?.pageSize ?? pageSize,
+        search: (overrides?.search ?? search) || undefined,
+        ordering: overrides?.ordering ?? ordering,
+        ...(Object.keys(filters).length > 0 ? { filters } : {}),
+      };
     },
-    [loadAcademicLevels],
+    [search, page, pageSize, ordering, isActiveFilter],
+  );
+
+  const fetchData = useCallback(
+    (overrides?: Partial<AcademicLevelListParamsT>) => {
+      loadAcademicLevels(buildParams(overrides));
+    },
+    [loadAcademicLevels, buildParams],
   );
 
   useEffect(() => {
@@ -76,7 +97,16 @@ export const AcademicLevelTable: React.FC<AcademicLevelTableProps> = ({
     (value: AcademicLevelOrderingT) => {
       setOrdering(value);
       setPage(1);
-      fetchData({ page: 1, ordering: value });
+      fetchData({ ordering: value });
+    },
+    [fetchData],
+  );
+  const handleIsActiveChange = useCallback(
+    (value: string) => {
+      const parsed = value === "" ? undefined : value === "true";
+      setIsActiveFilter(parsed);
+      setPage(1);
+      fetchData({ filters: { is_active: parsed } });
     },
     [fetchData],
   );
@@ -125,6 +155,18 @@ export const AcademicLevelTable: React.FC<AcademicLevelTableProps> = ({
           onChange={(option) =>
             handleOrdering(option.value as AcademicLevelOrderingT)
           }
+          className={filterSelectClassname}
+        />
+        <CustomSelect
+          name="is_active"
+          label=""
+          placeholder="Estado"
+          value={isActiveFilter === undefined ? "" : String(isActiveFilter)}
+          options={[
+            { label: "Activos", value: "true" },
+            { label: "Inactivos", value: "false" },
+          ]}
+          onChange={(option) => handleIsActiveChange(option.value as string)}
           className={filterSelectClassname}
         />
       </div>

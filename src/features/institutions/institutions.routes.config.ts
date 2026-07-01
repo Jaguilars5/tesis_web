@@ -24,12 +24,11 @@ export const institutionsRoutes: RoutesConfigItem[] = [
         key: "school-years",
         path: INSTITUTIONS_ROUTES.SCHOOL_YEARS,
         element: lazy(
-          () =>
-            import("@features/institutions/school-year/SchoolYearsPage"),
+          () => import("@features/institutions/school-year/SchoolYearsPage"),
         ),
         permission: [SCHOOL_YEAR_PERMISSIONS.GET],
         roles: [UserRoleEnum.DIRECTOR],
-        title: "Anos Escolares",
+        title: "Años Escolares",
         isVisibleInNavbar: true,
         icon: null,
         order: 2,

@@ -7,8 +7,12 @@ import { useAbsenceTypeOptions } from "@features/attendance/attendance";
 
 import {
   buildValidDateOptions,
+  canEditAttendanceStatus,
   formatAllowedDays,
   getIsoWeekday,
+  getScheduleWindowLockReason,
+  getTodayLocal,
+  isAttendanceStatusChanging,
 } from "../take-attendance.utils";
 import { takeAttendanceService } from "../take-attendance.service";
 
@@ -22,10 +26,11 @@ import type {
 const initialState: TakeAttendanceStateT = {
   teacherSubjectSectionId: null,
   academicPeriodId: null,
-  attendanceDate: new Date().toISOString().split("T")[0],
+  attendanceDate: getTodayLocal(),
   schedules: [],
   allowedDays: [],
   selectedScheduleId: null,
+  scheduleWindow: null,
   loadingSchedule: false,
   roster: [],
   loadingRoster: false,
@@ -49,7 +54,7 @@ export const useTakeAttendanceController = () => {
 
   useEffect(() => {
     if (academicPeriodOptions.length > 0 && state.academicPeriodId === null) {
-      const today = new Date().toISOString().split("T")[0];
+      const today = getTodayLocal();
       const matched = academicPeriodOptions.find(
         (opt) =>
           opt.startDate &&
@@ -159,14 +164,40 @@ export const useTakeAttendanceController = () => {
       enrollmentId: number,
       updates: Partial<Omit<RosterEntryT, "enrollmentId" | "studentName">>,
     ) => {
-      setState((prev) => ({
-        ...prev,
-        roster: prev.roster.map((entry) =>
-          entry.enrollmentId === enrollmentId
-            ? { ...entry, ...updates }
-            : entry,
-        ),
-      }));
+      setState((prev) => {
+        const entry = prev.roster.find((e) => e.enrollmentId === enrollmentId);
+        if (!entry) return prev;
+
+        const affectsStatus =
+          ("attendanceStatusId" in updates &&
+            updates.attendanceStatusId !== entry.attendanceStatusId) ||
+          ("absenceTypeId" in updates &&
+            updates.absenceTypeId !== entry.absenceTypeId);
+
+        if (affectsStatus) {
+          const nextEntry = { ...entry, ...updates };
+          const { allowed, reason } = canEditAttendanceStatus(
+            nextEntry,
+            prev.scheduleWindow,
+          );
+          if (!allowed) {
+            return {
+              ...prev,
+              error: reason ?? "No puede modificar la asistencia fuera de horario.",
+            };
+          }
+        }
+
+        return {
+          ...prev,
+          error: null,
+          roster: prev.roster.map((item) =>
+            item.enrollmentId === enrollmentId
+              ? { ...item, ...updates }
+              : item,
+          ),
+        };
+      });
     },
     [],
   );
@@ -230,7 +261,10 @@ export const useTakeAttendanceController = () => {
   useEffect(() => {
     const validIds = schedulesForDate.map((s) => s.id);
     setState((prev) => {
-      if (prev.selectedScheduleId && validIds.includes(prev.selectedScheduleId)) {
+      if (
+        prev.selectedScheduleId &&
+        validIds.includes(prev.selectedScheduleId)
+      ) {
         return prev;
       }
       const next = validIds.length === 1 ? validIds[0] : null;
@@ -305,13 +339,25 @@ export const useTakeAttendanceController = () => {
         studentName: s.student_name,
         attendanceId: s.attendance?.id ?? null,
         attendanceStatusId: s.attendance?.attendance_status ?? null,
+        originalAttendanceStatusId: s.attendance?.attendance_status ?? null,
         absenceTypeId: s.attendance?.absence_type ?? null,
+        originalAbsenceTypeId: s.attendance?.absence_type ?? null,
         observation: s.attendance?.observation ?? "",
       }));
+
+      const scheduleWindow =
+        response.class_schedule.start_time && response.class_schedule.end_time
+          ? {
+              startTime: response.class_schedule.start_time,
+              endTime: response.class_schedule.end_time,
+              attendanceDate: response.date,
+            }
+          : null;
 
       setState((prev) => ({
         ...prev,
         roster,
+        scheduleWindow,
         loadingRoster: false,
         loaded: true,
       }));
@@ -360,6 +406,34 @@ export const useTakeAttendanceController = () => {
       setState((prev) => ({
         ...prev,
         error: "Marque al menos un estudiante antes de guardar.",
+      }));
+      return;
+    }
+
+    const blocked = roster.filter(
+      (entry) =>
+        isAttendanceStatusChanging(entry) &&
+        !canEditAttendanceStatus(entry, state.scheduleWindow).allowed,
+    );
+    if (blocked.length > 0) {
+      const { reason } = canEditAttendanceStatus(
+        blocked[0],
+        state.scheduleWindow,
+      );
+      setState((prev) => ({
+        ...prev,
+        error:
+          reason ??
+          "No se puede modificar asistencia fuera del horario de clase.",
+      }));
+      return;
+    }
+
+    if (getScheduleWindowLockReason(state.scheduleWindow) === "before_class") {
+      setState((prev) => ({
+        ...prev,
+        error:
+          "La clase aún no ha comenzado. Espere al horario de clase para registrar asistencia.",
       }));
       return;
     }
@@ -417,6 +491,7 @@ export const useTakeAttendanceController = () => {
     state.attendanceDate,
     state.selectedScheduleId,
     state.roster,
+    state.scheduleWindow,
   ]);
 
   const canLoad = !!(
@@ -427,7 +502,10 @@ export const useTakeAttendanceController = () => {
     !state.loadingSchedule &&
     isDateValid
   );
-  const canSave = state.loaded && !state.saving;
+  const canSave =
+    state.loaded &&
+    !state.saving &&
+    getScheduleWindowLockReason(state.scheduleWindow) !== "before_class";
 
   return {
     ...state,

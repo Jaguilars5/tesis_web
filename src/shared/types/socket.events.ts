@@ -7,8 +7,16 @@ export interface TaskCompletedEvent {
   };
 }
 
+export interface NotificationEvent {
+  type: string;
+  title: string;
+  body: string;
+  data: Record<string, unknown>;
+}
+
 export interface SocketEventMap {
   task_completed: TaskCompletedEvent;
+  notification: NotificationEvent;
 }
 
 export type SocketEventName = keyof SocketEventMap;

@@ -11,6 +11,7 @@ import {
 import { CustomSelect } from "@shared/components/Form";
 
 import { AttendanceRoster } from "./components/AttendanceRoster";
+import { AttendanceScheduleBanner } from "./components/AttendanceScheduleBanner";
 import { filterSelectClassname } from "@app/styles/styles";
 import { useTakeAttendanceController } from "./hooks/useTakeAttendanceController";
 
@@ -23,22 +24,20 @@ export default function TakeAttendancePage() {
     error,
     success,
     teacherSubjectSectionId,
-    academicPeriodId,
     attendanceDate,
     selectedScheduleId,
     teacherSubjectSectionOptions,
-    academicPeriodOptions,
     attendanceStatusOptions,
     absenceTypeOptions,
     dateOptions,
     scheduleOptions,
+    scheduleWindow,
     isLoading,
     canLoad,
     canSave,
     dateError,
     allowedDaysLabel,
     setTeacherSubjectSectionId,
-    setAcademicPeriodId,
     setAttendanceDate,
     setSelectedScheduleId,
     updateRosterEntry,
@@ -133,7 +132,7 @@ export default function TakeAttendancePage() {
               teacherSubjectSectionId ? String(teacherSubjectSectionId) : ""
             }
           />
-          <CustomSelect
+          {/* <CustomSelect
             label=""
             name="academic_period"
             placeholder="Seleccionar Período..."
@@ -144,7 +143,7 @@ export default function TakeAttendancePage() {
             className={filterSelectClassname}
             disabled={isLoading}
             value={academicPeriodId ? String(academicPeriodId) : ""}
-          />
+          /> */}
           <CustomSelect
             label=""
             name="attendance_date"
@@ -199,17 +198,30 @@ export default function TakeAttendancePage() {
         {!dateError && allowedDaysLabel && (
           <div className="border-b border-slate-200 bg-slate-50/50 px-4 py-2 text-xs text-slate-500">
             Días con clase para esta sección:{" "}
-            <span className="font-semibold text-slate-700">{allowedDaysLabel}</span>
+            <span className="font-semibold text-slate-700">
+              {allowedDaysLabel}
+            </span>
           </div>
         )}
 
         {loaded ? (
-          <AttendanceRoster
-            roster={roster}
-            attendanceStatusOptions={attendanceStatusOptions}
-            absenceTypeOptions={absenceTypeOptions}
-            updateRosterEntry={updateRosterEntry}
-          />
+          <div className="space-y-0">
+            {scheduleWindow && (
+              <div className="border-b border-slate-200 px-4 py-3">
+                <AttendanceScheduleBanner
+                  scheduleWindow={scheduleWindow}
+                  roster={roster}
+                />
+              </div>
+            )}
+            <AttendanceRoster
+              roster={roster}
+              scheduleWindow={scheduleWindow}
+              attendanceStatusOptions={attendanceStatusOptions}
+              absenceTypeOptions={absenceTypeOptions}
+              updateRosterEntry={updateRosterEntry}
+            />
+          </div>
         ) : (
           <div className="py-16 text-center text-sm text-slate-400">
             Seleccione la clase, período y fecha, luego haga clic en "Cargar"

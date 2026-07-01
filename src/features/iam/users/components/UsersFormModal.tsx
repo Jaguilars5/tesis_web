@@ -49,7 +49,7 @@ const createInitialValues: UserCreateFormValues = {
 
 const buildEditInitialValues = (item: UserT | null): UserEditFormValues => {
   if (!item) return { email: "", role_id: 0 };
-  return { email: item.email, role_id: item.role };
+  return { email: item.email, role_id: item.role_id ?? 0 };
 };
 
 export const UsersFormModal: React.FC<Props> = ({
@@ -124,7 +124,9 @@ export const UsersFormModal: React.FC<Props> = ({
           </button>
         </div>
 
-        <ErrrosInForm submitErrors={submitErrors} getFieldLabel={getFieldLabel} />
+        {(submitErrors.general.length > 0 || Object.keys(submitErrors.validation).length > 0) && (
+          <ErrrosInForm submitErrors={submitErrors} getFieldLabel={getFieldLabel} />
+        )}
 
         {isEdit ? (
           <form onSubmit={editFormik.handleSubmit} className="space-y-4 p-5">

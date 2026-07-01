@@ -26,6 +26,9 @@ export interface SchoolYearListParamsT {
   pageSize?: number;
   search?: string;
   ordering?: SchoolYearOrderingT;
+  filters?: {
+    is_active?: boolean;
+  };
 }
 
 export type SchoolYearCreateParamsT = SchoolYearFormValuesT;

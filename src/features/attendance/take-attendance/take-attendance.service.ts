@@ -15,9 +15,15 @@ export interface GetRosterParamsT {
 class TakeAttendanceService {
   async getRoster(params: GetRosterParamsT): Promise<TakeByScheduleResponseT> {
     try {
-      const { data } = await apiClient.get<ResponseApi<TakeByScheduleResponseT>>(
-        TAKE_ATTENDANCE_ENDPOINTS.GET_ROSTER(params.classScheduleId, params.date),
+      const { data } = await apiClient.get<
+        ResponseApi<TakeByScheduleResponseT>
+      >(
+        TAKE_ATTENDANCE_ENDPOINTS.GET_ROSTER(
+          params.classScheduleId,
+          params.date,
+        ),
       );
+      console.log(data.data);
       return data.data;
     } catch (error) {
       throw new Error(getApiErrorMessage(error), { cause: error });

@@ -32,7 +32,7 @@ export function StudentDashboard({ userName = "" }: StudentDashboardProps) {
         <div className="rounded-xl border border-slate-200 bg-white p-5">
           <h3 className="font-bold text-slate-800">Resumen de Calificaciones</h3>
           {subjects.length === 0 ? <p className="mt-4 text-sm text-slate-400">Sin calificaciones registradas</p> : (
-            <div className="mt-4 space-y-2">{subjects.map((subject) => (<div key={subject.name} className="flex items-center justify-between rounded-lg border border-slate-100 p-3"><span className="text-sm font-medium text-slate-700 truncate">{subject.name}</span><div className="flex items-center gap-2 shrink-0">{subject.average !== null ? <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${averageBadge(subject.average)}`}>{subject.average}</span> : <span className="text-xs text-slate-400">—</span>}{subject.isFailing && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">R</Badge>}</div></div>))}</div>
+            <div className="mt-4 space-y-2">{subjects.map((subject) => (<div key={subject.name} className="flex items-center justify-between rounded-lg border border-slate-100 p-3"><span className="text-sm font-medium text-slate-700 truncate">{subject.name}</span><div className="flex items-center gap-2 shrink-0">{subject.average !== null ? <Badge className={averageBadge(subject.average)}>{subject.average}</Badge> : <span className="text-xs text-slate-400">—</span>}{subject.isFailing && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">R</Badge>}</div></div>))}</div>
           )}
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5">

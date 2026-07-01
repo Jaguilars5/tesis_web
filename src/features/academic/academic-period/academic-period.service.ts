@@ -19,7 +19,9 @@ import type {
 } from "./academic-period.types";
 
 class AcademicPeriodService implements AcademicPeriodServiceT {
-  async list(params?: AcademicPeriodListParamsT): Promise<PaginatedResult<AcademicPeriodT>> {
+  async list(
+    params?: AcademicPeriodListParamsT,
+  ): Promise<PaginatedResult<AcademicPeriodT>> {
     try {
       const page = params?.page ?? 1;
       const pageSize = params?.pageSize ?? 100;
@@ -37,7 +39,9 @@ class AcademicPeriodService implements AcademicPeriodServiceT {
             )
             .join("&")}`
         : "";
-      const { data } = await apiClient.get<ResponseApi<PaginatedData<AcademicPeriodT>>>(
+      const { data } = await apiClient.get<
+        ResponseApi<PaginatedData<AcademicPeriodT>>
+      >(
         `${ACADEMIC_PERIOD_ENDPOINTS.LIST}?page=${page}&page_size=${pageSize}${searchQuery}${orderingQuery}${filtersQuery}`,
       );
       return { items: data.data.results, count: data.data.count };

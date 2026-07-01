@@ -13,6 +13,7 @@ import { behaviorRoutes } from "@features/behavior/behavior.routes.config";
 import { gradingRoutes } from "@features/grading/grading.routes.config";
 import { iamRoutes } from "@features/iam/iam.routes.config";
 import { institutionsRoutes } from "@features/institutions/institutions.routes.config";
+import { representativeRoutes } from "@features/representative/representative.routes.config";
 import { studentsRoutes } from "@features/students/students.routes.config";
 import { ANALYTICS_RISK_PERMISSIONS } from "@features/analytics/analytics.constants";
 import { EARLY_ALERT_PERMISSIONS } from "@features/analytics/early-alerts/early-alerts.constants";
@@ -87,6 +88,7 @@ export const protectedRoutes: RoutesConfigItem[] = [
   ...attendanceRoutes,
   ...behaviorRoutes,
   ...studentsRoutes,
+  ...representativeRoutes,
   ...iamRoutes,
   {
     key: "analytics",

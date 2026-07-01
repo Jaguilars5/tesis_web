@@ -1,9 +1,189 @@
-import { useEffect } from "react"; import { BookOpen, Loader2 } from "lucide-react"; import { tableClassname, tableColumnsClassname } from "@app/styles/styles"; import { CustomSelect } from "@shared/components/Form"; import { CustomTable } from "@shared/components/Table"; import { Pagination } from "@shared/components/Pagination";
-import { useStudentGrades } from "./useStudentGrades"; import { averageBadge, scoreBadge } from "./student.utils";
-import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps"; import type { TableColumnProps } from "@shared/components/Table/tableProps";
-export default function StudentGradesPage() {
-  const { periods, selectedPeriodId, setSelectedPeriodId, subjectOptions, selectedSubject, setSelectedSubject, activityTypeOptions, selectedActivityType, setSelectedActivityType, subjects, page, pageSize, totalPages, totalSubjects, onPageChange, loading, error } = useStudentGrades();
-  useEffect(() => { onPageChange(1); }, [selectedPeriodId, selectedSubject, selectedActivityType]); // eslint-disable-line react-hooks/exhaustive-deps
-  const activityColumns: TableColumnProps<{ title: string; activityTypeName: string; score: number | null; maxScore: number; }>[] = [{ key: "title", label: "Actividad", className: tableColumnsClassname, render: (a) => <span className="font-medium text-slate-700">{a.title}</span> }, { key: "activityTypeName", label: "Tipo", className: tableColumnsClassname, render: (a) => <span className="text-sm text-slate-500">{a.activityTypeName ?? "—"}</span> }, { key: "score", label: "Nota", className: tableColumnsClassname, render: (a) => (<span className="font-semibold">{a.score !== null ? `${a.score} / ${a.maxScore}` : "—"}</span>) }, { key: "score", label: "%", className: tableColumnsClassname, render: (a) => (<span className={`inline-flex min-w-[3rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium ${scoreBadge(a.maxScore > 0 ? (a.score ?? 0) / a.maxScore * 100 : null)}`}>{a.score !== null ? `${Math.round(a.score / a.maxScore * 100)}%` : "—"}</span>) }];
-  return (<div className="space-y-4"><div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center"><div><h1 className="text-2xl font-extrabold text-slate-800">Mis Calificaciones</h1><p className="mt-1 text-sm text-slate-500">Consulta tus notas por período académico, materia y tipo de actividad</p></div></div>{error && <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">{error}</div>}<div className="overflow-visible rounded-xl border border-slate-200 bg-white shadow-sm"><div className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-slate-50/50 px-4 py-3"><CustomSelect label="" name="academic_period" placeholder="Período" value={selectedPeriodId ?? ""} onChange={(opt: SelectOptionT) => setSelectedPeriodId(opt.value ? Number(opt.value) : null)} options={periods} className={{ container: "relative min-w-40 flex-1", label: "sr-only", select: "block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500", error: "mt-1 text-xs text-red-500" }} /><CustomSelect label="" name="subject" placeholder="Todas las materias" value={selectedSubject} onChange={(opt: SelectOptionT) => setSelectedSubject(String(opt.value ?? ""))} options={subjectOptions} className={{ container: "relative min-w-40 flex-1", label: "sr-only", select: "block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500", error: "mt-1 text-xs text-red-500" }} /><CustomSelect label="" name="activity_type" placeholder="Todos los tipos" value={selectedActivityType} onChange={(opt: SelectOptionT) => setSelectedActivityType(String(opt.value ?? ""))} options={activityTypeOptions} className={{ container: "relative min-w-40 flex-1", label: "sr-only", select: "block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500", error: "mt-1 text-xs text-red-500" }} /></div>{loading && (<div className="flex items-center justify-center py-16"><Loader2 className="size-6 animate-spin text-primary" /><span className="ml-2 text-sm text-slate-500">Cargando calificaciones...</span></div>)}{!loading && subjects.length === 0 && (<div className="py-16 text-center text-sm text-slate-400">No hay calificaciones registradas para esta selección</div>)}{!loading && subjects.map((subject) => (<div key={subject.subjectName} className="border-t border-slate-100 first:border-t-0"><div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50/50 px-5 py-3"><div className="flex items-center gap-2"><BookOpen className="size-4 text-primary" /><h3 className="font-semibold text-slate-800">{subject.subjectName}</h3></div><div className="flex flex-wrap items-center gap-2">{subject.average !== null && (<span className={`rounded-full px-3 py-0.5 text-sm font-bold ${averageBadge(subject.average)}`}>{subject.average}/10</span>)}</div></div><div className={`${tableClassname.container} border-0`}><CustomTable columns={activityColumns} data={subject.activities} isLoading={false} emptyMessage="Sin actividades registradas" className={tableClassname} /></div></div>))}{!loading && totalPages > 1 && (<Pagination page={page} pageSize={pageSize} totalItems={totalSubjects} hasNextPage={page < totalPages} onPageChange={onPageChange} onPageSizeChange={() => {}} />)}</div></div>);
+import { Loader2 } from "lucide-react";
+import {
+  filterSelectClassname,
+  tableClassname,
+  tableColumnsClassname,
+  tableFirstColumnClassname,
+} from "@app/styles/styles";
+import { Badge } from "@shared/components/Badge";
+import { CustomSelect } from "@shared/components/Form";
+import { CustomTable } from "@shared/components/Table";
+import { Pagination } from "@shared/components/Pagination";
+import { useStudentGrades, type GradeActivityRow } from "./useStudentGrades";
+import { scoreBadge } from "./student.utils";
+import type { SelectOptionT } from "@shared/components/Form/CustomSelect/CustomSelectProps";
+import type { TableColumnProps } from "@shared/components/Table/tableProps";
+
+interface StudentGradesPageProps {
+  studentId?: number | null;
+  embedded?: boolean;
+}
+
+export default function StudentGradesPage({
+  studentId,
+  embedded = false,
+}: StudentGradesPageProps = {}) {
+  const {
+    periodOptions,
+    selectedPeriodId,
+    setSelectedPeriodId,
+    subjectOptions,
+    selectedSubject,
+    setSelectedSubject,
+    activityTypeOptions,
+    selectedActivityType,
+    setSelectedActivityType,
+    activities,
+    page,
+    pageSize,
+    totalPages,
+    totalActivities,
+    onPageChange,
+    loading,
+    error,
+  } = useStudentGrades(studentId);
+
+  const periodSelectOptions = [
+    { label: "Todos los períodos", value: "" },
+    ...periodOptions,
+  ];
+  const subjectSelectOptions = [
+    { label: "Todas las materias", value: "" },
+    ...subjectOptions,
+  ];
+  const activityTypeSelectOptions = [
+    { label: "Todos los tipos", value: "" },
+    ...activityTypeOptions,
+  ];
+
+  const percentage = (a: GradeActivityRow): number | null =>
+    a.score !== null && a.maxScore > 0 ? (a.score / a.maxScore) * 100 : null;
+
+  const columns: TableColumnProps<GradeActivityRow>[] = [
+    {
+      key: "title",
+      label: "Actividad",
+      className: tableFirstColumnClassname,
+      render: (a) => <span className="font-medium text-slate-700">{a.title}</span>,
+    },
+    {
+      key: "subjectName",
+      label: "Materia",
+      className: tableColumnsClassname,
+      render: (a) => <span className="text-sm text-slate-500">{a.subjectName}</span>,
+    },
+    {
+      key: "activityTypeName",
+      label: "Tipo",
+      className: tableColumnsClassname,
+      render: (a) => <span className="text-sm text-slate-500">{a.activityTypeName}</span>,
+    },
+    {
+      key: "score",
+      label: "Nota",
+      className: tableColumnsClassname,
+      render: (a) => (
+        <span className="font-semibold">
+          {a.score !== null ? `${a.score} / ${a.maxScore}` : "—"}
+        </span>
+      ),
+    },
+    {
+      key: "id",
+      label: "%",
+      className: tableColumnsClassname,
+      render: (a) => {
+        const pct = percentage(a);
+        return (
+          <Badge className={scoreBadge(pct)}>
+            {pct !== null ? `${Math.round(pct)}%` : "—"}
+          </Badge>
+        );
+      },
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {!embedded && (
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-2xl font-extrabold text-slate-800">Mis Calificaciones</h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Consulta tus notas por período académico, materia y tipo de actividad
+            </p>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">{error}</div>
+      )}
+
+      <div className="overflow-visible rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-slate-50/50 px-4 py-3">
+          <CustomSelect
+            label=""
+            name="academic_period"
+            placeholder="Todos los períodos"
+            value={selectedPeriodId ?? ""}
+            onChange={(opt: SelectOptionT) =>
+              setSelectedPeriodId(opt.value ? Number(opt.value) : null)
+            }
+            options={periodSelectOptions}
+            className={filterSelectClassname}
+          />
+          <CustomSelect
+            label=""
+            name="subject"
+            placeholder="Todas las materias"
+            value={selectedSubject}
+            onChange={(opt: SelectOptionT) =>
+              setSelectedSubject(String(opt.value ?? ""))
+            }
+            options={subjectSelectOptions}
+            className={filterSelectClassname}
+          />
+          <CustomSelect
+            label=""
+            name="activity_type"
+            placeholder="Todos los tipos"
+            value={selectedActivityType}
+            onChange={(opt: SelectOptionT) =>
+              setSelectedActivityType(String(opt.value ?? ""))
+            }
+            options={activityTypeSelectOptions}
+            className={filterSelectClassname}
+          />
+        </div>
+
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="size-6 animate-spin text-primary" />
+            <span className="ml-2 text-sm text-slate-500">Cargando calificaciones...</span>
+          </div>
+        )}
+
+        {!loading && (
+          <>
+            <CustomTable<GradeActivityRow>
+              columns={columns}
+              data={activities}
+              isLoading={false}
+              emptyMessage="No hay calificaciones registradas"
+              className={tableClassname}
+            />
+            <Pagination
+              page={page}
+              pageSize={pageSize}
+              totalItems={totalActivities}
+              hasNextPage={page < totalPages}
+              onPageChange={onPageChange}
+              onPageSizeChange={() => {}}
+            />
+          </>
+        )}
+      </div>
+    </div>
+  );
 }

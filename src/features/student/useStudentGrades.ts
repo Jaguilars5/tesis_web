@@ -1,25 +1,150 @@
-import { academicPeriodService } from "@features/academic/academic-period"; import { useCallback, useEffect, useMemo, useReducer, useState } from "react"; import { useStudentData } from "./useStudentData"; import { studentApiService } from "./student.service";
-interface GradeActivity { evaluativeActivityId: number; title: string; activityTypeName: string; maxScore: number; score: number | null; qualitativeScaleName: string | null; dueDate: string; }
-interface SubjectGrades { subjectName: string; subjectOffering: number; activities: GradeActivity[]; average: number | null; }
-interface Option { label: string; value: string; }
-interface GradesState { subjects: SubjectGrades[]; loading: boolean; error: string | null; }
-type GradesAction = { type: "loading" } | { type: "success"; subjects: SubjectGrades[] } | { type: "error"; error: string };
-function gradesReducer(_s: GradesState, a: GradesAction): GradesState { switch (a.type) { case "loading": return { subjects: [], loading: true, error: null }; case "success": return { subjects: a.subjects, loading: false, error: null }; case "error": return { subjects: [], loading: false, error: a.error }; } }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const useStudentGrades = () => {
-  const { enrollments, loading: loadingStudent } = useStudentData();
-  const [periods, setPeriods] = useState<Option[]>([]); const [selectedPeriodId, setSelectedPeriodId] = useState<number | null>(null);
-  const [selectedSubject, setSelectedSubject] = useState<string>(""); const [selectedActivityType, setSelectedActivityType] = useState<string>(""); const [page, setPage] = useState(1); const pageSize = 5;
-  const [state, dispatch] = useReducer(gradesReducer, { subjects: [], loading: false, error: null });
-  useEffect(() => { academicPeriodService.list({ page: 1, pageSize: 100 }).then(({ items }) => { const opts = items.map((p) => ({ label: p.name, value: String(p.id) })); setPeriods(opts); if (opts.length > 0 && !selectedPeriodId) setSelectedPeriodId(Number(opts[0].value)); }).catch(() => {}); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (!selectedPeriodId || enrollments.length === 0) { dispatch({ type: "success", subjects: [] }); return; } const enrollmentId = enrollments[0].id; let c = false; dispatch({ type: "loading" });     Promise.all([studentApiService.getPeriodGradeSummaries(enrollmentId, selectedPeriodId), studentApiService.getStudentNotes(), studentApiService.getEvaluativeActivities()]).then(([summaries, notes, activities]) => { if (c) return; const notesByAct = new Map<number, typeof notes[0]>(); notes.forEach((n) => notesByAct.set(Number(n.evaluative_activity_title), n)); const subjectMap = new Map<string, { activities: GradeActivity[] }>(); summaries.forEach((_ss) => { const key = _ss.subject_offering_name; if (!subjectMap.has(key)) subjectMap.set(key, { activities: [] }); }); activities.forEach((act) => { const note = notesByAct.get(act.id); const key = act.block_component_name || "Sin materia"; if (!subjectMap.has(key)) subjectMap.set(key, { activities: [] }); subjectMap.get(key)!.activities.push({ evaluativeActivityId: act.id, title: act.title, activityTypeName: act.activity_type ? "Actividad" : "Actividad", maxScore: Number(act.max_score), score: note?.numeric_score ?? null, qualitativeScaleName: null, dueDate: act.due_date }); }); const subjects = Array.from(subjectMap.entries()).map(([name, data]) => { const sm = summaries.find((ss) => ss.subject_offering_name === name); return { subjectName: name, subjectOffering: 0, activities: data.activities, average: sm?.final_avg_truncated ?? null }; }); dispatch({ type: "success", subjects }); }).catch(() => { if (!c) dispatch({ type: "error", error: "Error al cargar calificaciones" }); }); return () => { c = true; }; }, [selectedPeriodId, enrollments]); // eslint-disable-line react-hooks/exhaustive-deps
-  const subjectOptions = useMemo(() => { const unique = new Set(state.subjects.map((s) => s.subjectName)); return [{ label: "Todas las materias", value: "" }, ...Array.from(unique).map((name) => ({ label: name, value: name }))]; }, [state.subjects]);
-  const activityTypeOptions = useMemo(() => { const unique = new Set<string>(); state.subjects.forEach((s) => s.activities.forEach((a) => { if (a.activityTypeName) unique.add(a.activityTypeName); })); return [{ label: "Todos los tipos", value: "" }, ...Array.from(unique).map((name) => ({ label: name, value: name }))]; }, [state.subjects]);
-  const filteredSubjects = useMemo(() => { let list = state.subjects; if (selectedSubject) list = list.filter((s) => s.subjectName === selectedSubject); if (selectedActivityType) list = list.map((s) => ({ ...s, activities: s.activities.filter((a) => a.activityTypeName === selectedActivityType) })).filter((s) => s.activities.length > 0 || s.average !== null); return list; }, [state.subjects, selectedSubject, selectedActivityType]);
-  const paginatedSubjects = useMemo(() => { const start = (page - 1) * pageSize; return filteredSubjects.slice(start, start + pageSize); }, [filteredSubjects, page, pageSize]);
-  const totalPages = useMemo(() => Math.ceil(filteredSubjects.length / pageSize), [filteredSubjects.length, pageSize]);
-  const handlePeriodChange = useCallback((id: number | null) => { setSelectedPeriodId(id); setPage(1); }, []);
-  const handleSubjectChange = useCallback((s: string) => { setSelectedSubject(s); setPage(1); }, []);
-  const handleActivityTypeChange = useCallback((t: string) => { setSelectedActivityType(t); setPage(1); }, []);
-  return { periods, selectedPeriodId, setSelectedPeriodId: handlePeriodChange, subjectOptions, selectedSubject, setSelectedSubject: handleSubjectChange, activityTypeOptions, selectedActivityType, setSelectedActivityType: handleActivityTypeChange, subjects: paginatedSubjects, page, pageSize, totalPages, totalSubjects: filteredSubjects.length, onPageChange: setPage, loading: state.loading || loadingStudent, error: state.error };
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
+
+import { useStudentData } from "./useStudentData";
+import { studentApiService } from "./student.service";
+import { useStudentGradeOptions } from "./useStudentGradeOptions";
+
+export interface GradeActivityRow {
+  id: number;
+  title: string;
+  subjectName: string;
+  subjectOfferingId: number | null;
+  activityTypeName: string;
+  activityTypeId: number | null;
+  academicPeriodId: number | null;
+  maxScore: number;
+  score: number | null;
+}
+
+interface GradesState {
+  rows: GradeActivityRow[];
+  loading: boolean;
+  error: string | null;
+}
+
+type GradesAction =
+  | { type: "loading" }
+  | { type: "success"; rows: GradeActivityRow[] }
+  | { type: "error"; error: string };
+
+function gradesReducer(_s: GradesState, a: GradesAction): GradesState {
+  switch (a.type) {
+    case "loading":
+      return { rows: [], loading: true, error: null };
+    case "success":
+      return { rows: a.rows, loading: false, error: null };
+    case "error":
+      return { rows: [], loading: false, error: a.error };
+  }
+}
+
+export const useStudentGrades = (studentId?: number | null) => {
+  const { enrollments, loading: loadingStudent } = useStudentData(studentId);
+  const sectionId = enrollments[0]?.section ?? null;
+
+  const { periodOptions, activityTypeOptions, subjectOptions } =
+    useStudentGradeOptions(sectionId);
+
+  const [selectedPeriodId, setSelectedPeriodId] = useState<number | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<string>("");
+  const [selectedActivityType, setSelectedActivityType] = useState<string>("");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const [state, dispatch] = useReducer(gradesReducer, {
+    rows: [],
+    loading: false,
+    error: null,
+  });
+
+  useEffect(() => {
+    if (enrollments.length === 0) {
+      dispatch({ type: "success", rows: [] });
+      return;
+    }
+    const enrollmentId = enrollments[0].id;
+    let cancelled = false;
+    dispatch({ type: "loading" });
+
+    studentApiService
+      .getStudentNotes(enrollmentId)
+      .then((notes) => {
+        if (cancelled) return;
+        const rows: GradeActivityRow[] = notes.map((n) => ({
+          id: n.evaluative_activity,
+          title: n.evaluative_activity_title,
+          subjectName: n.subject_offering_name ?? "—",
+          subjectOfferingId: n.subject_offering ?? null,
+          activityTypeName: n.activity_type_name ?? "—",
+          activityTypeId: n.activity_type ?? null,
+          academicPeriodId: n.academic_period ?? null,
+          maxScore: n.max_score !== null ? Number(n.max_score) : 0,
+          score: n.numeric_score !== null ? Number(n.numeric_score) : null,
+        }));
+        dispatch({ type: "success", rows });
+      })
+      .catch(() => {
+        if (!cancelled)
+          dispatch({ type: "error", error: "Error al cargar calificaciones" });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [enrollments]);
+
+  const filteredRows = useMemo(() => {
+    return state.rows.filter((r) => {
+      if (selectedPeriodId && r.academicPeriodId !== selectedPeriodId) return false;
+      if (selectedSubject && String(r.subjectOfferingId) !== selectedSubject) return false;
+      if (selectedActivityType && String(r.activityTypeId) !== selectedActivityType)
+        return false;
+      return true;
+    });
+  }, [state.rows, selectedPeriodId, selectedSubject, selectedActivityType]);
+
+  const totalActivities = filteredRows.length;
+  const totalPages = useMemo(
+    () => Math.ceil(totalActivities / pageSize) || 1,
+    [totalActivities],
+  );
+
+  const paginatedRows = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredRows.slice(start, start + pageSize);
+  }, [filteredRows, page, pageSize]);
+
+  const handlePeriodChange = useCallback((id: number | null) => {
+    setSelectedPeriodId(id);
+    setPage(1);
+  }, []);
+
+  const handleSubjectChange = useCallback((s: string) => {
+    setSelectedSubject(s);
+    setPage(1);
+  }, []);
+
+  const handleActivityTypeChange = useCallback((t: string) => {
+    setSelectedActivityType(t);
+    setPage(1);
+  }, []);
+
+  return {
+    periodOptions,
+    selectedPeriodId,
+    setSelectedPeriodId: handlePeriodChange,
+    subjectOptions,
+    selectedSubject,
+    setSelectedSubject: handleSubjectChange,
+    activityTypeOptions,
+    selectedActivityType,
+    setSelectedActivityType: handleActivityTypeChange,
+    activities: paginatedRows,
+    page,
+    pageSize,
+    totalPages,
+    totalActivities,
+    onPageChange: setPage,
+    loading: state.loading || loadingStudent,
+    error: state.error,
+  };
 };

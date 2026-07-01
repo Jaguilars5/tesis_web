@@ -34,6 +34,7 @@ export type TeacherSubjectSectionFiltersT = {
   subject?: number;
   user?: number;
   is_active?: boolean;
+  school_year_is_active?: boolean;
 };
 
 export interface TeacherSubjectSectionListParamsT {

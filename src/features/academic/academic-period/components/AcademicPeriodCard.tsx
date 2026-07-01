@@ -32,7 +32,6 @@ export const AcademicPeriodCard: React.FC<AcademicPeriodCardProps> = ({
 
   useEffect(() => {
     onChange(formik.values);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     formik.values.code,
     formik.values.name,

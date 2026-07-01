@@ -73,10 +73,11 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 
   const filteredOptions = useMemo(() => {
     if (!searchTerm) return options;
+    if (selectedOption && searchTerm === selectedOption.label) return options;
     return options.filter((option) =>
       normalizeText(option.label).includes(normalizeText(searchTerm)),
     );
-  }, [options, searchTerm]);
+  }, [options, searchTerm, selectedOption]);
 
   // Sincroniza searchTerm cuando value cambia externamente y el usuario no ha interactuado
   useEffect(() => {

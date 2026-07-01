@@ -28,18 +28,26 @@ function reducer(_state: State, action: Action): State {
 }
 
 const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-const START_HOUR = 7;
-const HOURS = Array.from({ length: 10 }, (_, i) => START_HOUR + i);
-
-const toMinutes = (time: string): number => {
-  const [h, m] = time.split(":");
-  return Number(h) * 60 + Number(m ?? 0);
-};
 
 const formatTime = (time: string): string => {
   const [h, m] = time.split(":");
   return `${Number(h)}:${(m ?? "00").padStart(2, "0")}`;
 };
+
+/** Devuelve los start_time únicos ordenados cronológicamente presentes en los datos. */
+const getTimeSlots = (entries: ScheduleEntryT[]): string[] => {
+  const seen = new Set<string>();
+  for (const e of entries) seen.add(e.startTime);
+  return Array.from(seen).sort();
+};
+
+/** Entradas para una celda exacta (día + startTime). */
+const getEntriesForSlot = (
+  entries: ScheduleEntryT[],
+  day: number,
+  startTime: string,
+): ScheduleEntryT[] =>
+  entries.filter((e) => e.dayOfWeek === day && e.startTime === startTime);
 
 export default function TeacherSchedulePage() {
   const [state, dispatch] = useReducer(reducer, {
@@ -67,15 +75,7 @@ export default function TeacherSchedulePage() {
     };
   }, []);
 
-  const getEntries = (day: number, hour: number) => {
-    const slotStart = hour * 60;
-    const slotEnd = slotStart + 60;
-    return state.entries.filter((e) => {
-      if (e.dayOfWeek !== day) return false;
-      const start = toMinutes(e.startTime);
-      return start >= slotStart && start < slotEnd;
-    });
-  };
+  const timeSlots = getTimeSlots(state.entries);
 
   return (
     <div className="space-y-4">
@@ -105,55 +105,65 @@ export default function TeacherSchedulePage() {
 
       {!state.loading && !state.error && (
         <>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead>
-                <tr className="bg-slate-50">
-                  {["Hora", ...DAYS].map((d) => (
-                    <th
-                      key={d}
-                      className="px-3 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
-                    >
-                      {d}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {HOURS.map((hour) => (
-                  <tr key={hour} className="hover:bg-slate-50/50">
-                    <td className="whitespace-nowrap px-3 py-2 align-top text-xs font-medium text-slate-400">
-                      {hour}:00
-                    </td>
-                    {DAYS.map((_, i) => {
-                      const entries = getEntries(i + 1, hour);
-                      return (
-                        <td key={i} className="space-y-1 px-3 py-2 align-top">
-                          {entries.map((e) => (
-                            <div
-                              key={e.id}
-                              className="rounded-lg border border-primary/20 bg-primary/10 p-2 text-xs"
-                            >
-                              <p className="font-semibold text-primary">
-                                {e.subjectOfferingName}
-                              </p>
-                              <p className="mt-0.5 text-slate-600">
-                                {e.sectionName}
-                              </p>
-                              <p className="mt-0.5 text-slate-400">
-                                {formatTime(e.startTime)} -{" "}
-                                {formatTime(e.endTime)}
-                              </p>
-                            </div>
-                          ))}
-                        </td>
-                      );
-                    })}
+          {timeSlots.length === 0 ? (
+            <div className="rounded-xl border border-slate-200 bg-white py-16 text-center text-sm text-slate-400 shadow-sm">
+              No hay clases programadas
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead>
+                  <tr className="bg-slate-50">
+                    {["Hora", ...DAYS].map((d) => (
+                      <th
+                        key={d}
+                        className="px-3 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500"
+                      >
+                        {d}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {timeSlots.map((slot) => (
+                    <tr key={slot} className="hover:bg-slate-50/50">
+                      <td className="whitespace-nowrap px-3 py-2 align-top text-xs font-medium text-slate-400">
+                        {formatTime(slot)}
+                      </td>
+                      {DAYS.map((_, i) => {
+                        const entries = getEntriesForSlot(
+                          state.entries,
+                          i + 1,
+                          slot,
+                        );
+                        return (
+                          <td key={i} className="space-y-1 px-3 py-2 align-top">
+                            {entries.map((e) => (
+                              <div
+                                key={e.id}
+                                className="rounded-lg border border-primary/20 bg-primary/10 p-2 text-xs"
+                              >
+                                <p className="font-semibold text-primary">
+                                  {e.subjectOfferingName}
+                                </p>
+                                <p className="mt-0.5 text-slate-600">
+                                  {e.sectionName}
+                                </p>
+                                <p className="mt-0.5 text-slate-400">
+                                  {formatTime(e.startTime)} –{" "}
+                                  {formatTime(e.endTime)}
+                                </p>
+                              </div>
+                            ))}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </>
       )}
     </div>

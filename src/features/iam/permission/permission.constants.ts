@@ -5,12 +5,10 @@ export const PERMISSION_ENDPOINTS = {
   CREATE: PERMISSION_BASE_URL,
   GET: (id: number) => `${PERMISSION_BASE_URL}${id}/`,
   UPDATE: (id: number) => `${PERMISSION_BASE_URL}${id}/`,
-  SOFT_DELETE: (id: number) => `${PERMISSION_BASE_URL}${id}/soft-delete/`,
 } as const;
 
 export const PERMISSION_PERMISSIONS = {
   GET: "iam.view_permission",
   CREATE: "iam.create_permission",
   UPDATE: "iam.update_permission",
-  DELETE: "iam.delete_permission",
 } as const;

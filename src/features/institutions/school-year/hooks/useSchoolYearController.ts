@@ -13,6 +13,7 @@ import {
   entityCreated,
   entityUpdated,
   entityDeleted,
+  mutationError,
 } from "../school-year.slice";
 import type {
   SchoolYearListParamsT,
@@ -51,7 +52,7 @@ export const useSchoolYearController = () => {
         return newSchoolYear;
       } catch (err) {
         const rv = toRejectValue(err);
-        dispatch(loadError(rv.msg));
+        dispatch(mutationError(rv.msg));
         throw rv;
       }
     },
@@ -66,7 +67,7 @@ export const useSchoolYearController = () => {
         return updateShoolYear;
       } catch (err) {
         const rv = toRejectValue(err);
-        dispatch(loadError(rv.msg));
+        dispatch(mutationError(rv.msg));
         throw rv;
       }
     },
@@ -84,7 +85,7 @@ export const useSchoolYearController = () => {
         return response;
       } catch (err) {
         const rv = toRejectValue(err);
-        dispatch(loadError(rv.msg));
+        dispatch(mutationError(rv.msg));
         throw rv;
       }
     },

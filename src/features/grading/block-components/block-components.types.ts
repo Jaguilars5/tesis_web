@@ -52,6 +52,10 @@ export interface BlockComponentDeleteParamsT {
 
 export interface BlockComponentServiceT {
   list(params?: BlockComponentListParamsT): Promise<PaginatedResult<BlockComponentT>>;
+  listByTeacherSubjectSection(
+    teacherSubjectSectionId: number,
+    academicPeriodId: number,
+  ): Promise<BlockComponentT[]>;
   get(params: BlockComponentGetParamsT): Promise<BlockComponentT>;
   create(params: BlockComponentCreateParamsT): Promise<BlockComponentT>;
   update(params: BlockComponentUpdateParamsT): Promise<BlockComponentT>;

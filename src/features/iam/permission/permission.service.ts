@@ -1,10 +1,8 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import type { PaginatedData, ResponseApi } from "@shared/types/api.response.types";
-import type { SoftDeleteResponseT } from "@shared/types/soft-delete.types";
 import { PERMISSION_ENDPOINTS } from "./permission.constants";
 import type {
   PermissionCreateDataT,
-  PermissionDeleteParamsT,
   PermissionGetParamsT,
   PermissionListParamsT,
   PermissionServiceT,
@@ -68,18 +66,6 @@ class PermissionService implements PermissionServiceT {
     }
   }
 
-  async softDelete(params: PermissionDeleteParamsT): Promise<SoftDeleteResponseT> {
-    try {
-      const body = params.confirm ? { confirm: true } : undefined;
-      const { data } = await apiClient.post<ResponseApi<SoftDeleteResponseT>>(
-        PERMISSION_ENDPOINTS.SOFT_DELETE(params.id),
-        body,
-      );
-      return data.data;
-    } catch (error) {
-      throw new Error(getApiErrorMessage(error), { cause: error });
-    }
-  }
 }
 
 export const permissionService = new PermissionService();

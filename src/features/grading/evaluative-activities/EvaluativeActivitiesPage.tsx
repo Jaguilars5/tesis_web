@@ -53,8 +53,6 @@ export default function EvaluativeActivitiesPage() {
   const { teacherSubjectSectionOptions, activityTypeOptions } =
     useEvaluativeActivityOptions();
 
-  // Un docente solo debe ver/calificar las actividades de sus propias clases.
-  // Reforzamos en el cliente filtrando por las teacher-subject-sections del docente.
   const allowedTssIds = useMemo(
     () => new Set(teacherSubjectSectionOptions.map((o) => Number(o.value))),
     [teacherSubjectSectionOptions],

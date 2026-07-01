@@ -6,6 +6,7 @@ export const BLOCK_COMPONENTS_ENDPOINTS = {
   GET: (id: number) => `${BLOCK_COMPONENTS_BASE_URL}${id}/`,
   UPDATE: (id: number) => `${BLOCK_COMPONENTS_BASE_URL}${id}/`,
   SOFT_DELETE: (id: number) => `${BLOCK_COMPONENTS_BASE_URL}${id}/soft-delete/`,
+  BY_TEACHER_SUBJECT_SECTION: `${BLOCK_COMPONENTS_BASE_URL}by-teacher-subject-section/`,
 } as const;
 
 export const BLOCK_COMPONENTS_PERMISSIONS = {

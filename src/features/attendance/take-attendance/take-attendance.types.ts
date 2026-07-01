@@ -6,8 +6,16 @@ export interface RosterEntryT {
   studentName: string;
   attendanceId: number | null;
   attendanceStatusId: number | null;
+  originalAttendanceStatusId: number | null;
   absenceTypeId: number | null;
+  originalAbsenceTypeId: number | null;
   observation: string;
+}
+
+export interface ScheduleWindowContextT {
+  startTime: string;
+  endTime: string;
+  attendanceDate: string;
 }
 
 export interface TakeAttendanceStateT {
@@ -18,6 +26,7 @@ export interface TakeAttendanceStateT {
   allowedDays: number[];
   /** Bloque horario seleccionado (cuando hay varios el mismo día). */
   selectedScheduleId: number | null;
+  scheduleWindow: ScheduleWindowContextT | null;
   loadingSchedule: boolean;
   roster: RosterEntryT[];
   loadingRoster: boolean;

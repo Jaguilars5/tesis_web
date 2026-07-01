@@ -5,7 +5,6 @@ import { useAppSelector } from "@shared/redux/hooks";
 import { hasPermission } from "@shared/utils/permissions";
 import { usePermissionController } from "./hooks/usePermissionController";
 import { usePermissionForm } from "./hooks/usePermissionForm";
-import { PermissionDeleteModal } from "./components/PermissionDeleteModal";
 import { PermissionFormModal } from "./components/PermissionFormModal";
 import { PermissionTable } from "./components/PermissionTable";
 import { PermissionViewModal } from "./components/PermissionViewModal";
@@ -19,7 +18,6 @@ export default function PermissionPage() {
     loadPermissions,
     createPermission,
     updatePermission,
-    deletePermission,
   } = usePermissionController();
 
   const {
@@ -34,13 +32,9 @@ export default function PermissionPage() {
 
   const [viewingId, setViewingId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
-  const [deletingItem, setDeletingItem] = useState<PermissionT | null>(null);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
   const userPermissions = useAppSelector(selectUserPermissions);
   const canCreate = hasPermission(userPermissions, PERMISSION_PERMISSIONS.CREATE);
   const canEdit = hasPermission(userPermissions, PERMISSION_PERMISSIONS.UPDATE);
-  const canDelete = hasPermission(userPermissions, PERMISSION_PERMISSIONS.DELETE);
 
   const openViewModal = useCallback((entity: PermissionT) => {
     setViewingId(entity.id);
@@ -50,16 +44,6 @@ export default function PermissionPage() {
   const closeViewModal = useCallback(() => {
     setIsViewOpen(false);
     setViewingId(null);
-  }, []);
-
-  const openDeleteModal = useCallback((entity: PermissionT) => {
-    setDeletingItem(entity);
-    setIsDeleteOpen(true);
-  }, []);
-
-  const closeDeleteModal = useCallback(() => {
-    setIsDeleteOpen(false);
-    setDeletingItem(null);
   }, []);
 
   return (
@@ -89,9 +73,7 @@ export default function PermissionPage() {
         loadData={loadPermissions}
         onEdit={openModal}
         onView={openViewModal}
-        onDelete={openDeleteModal}
         canEdit={canEdit}
-        canDelete={canDelete}
       />
 
       <PermissionFormModal
@@ -110,12 +92,6 @@ export default function PermissionPage() {
         onClose={closeViewModal}
       />
 
-      <PermissionDeleteModal
-        isOpen={isDeleteOpen}
-        entity={deletingItem}
-        onClose={closeDeleteModal}
-        onSoftDelete={deletePermission}
-      />
     </div>
   );
 }

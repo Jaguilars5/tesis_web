@@ -62,7 +62,11 @@ export const useStudentNoteFilterOptions = (courseId: number | 0) => {
     dispatch({ type: "coursesLoading" });
     const params: TeacherSubjectSectionListParamsT = { page: 1, pageSize: 100 };
     if (user?.role === UserRoleEnum.TEACHER) {
-      params.filters = { user: user.id, is_active: true };
+      params.filters = {
+        user: user.id,
+        is_active: true,
+        school_year_is_active: true,
+      };
     }
     teacherSubjectSectionService
       .list(params)
@@ -71,12 +75,12 @@ export const useStudentNoteFilterOptions = (courseId: number | 0) => {
         // El backend puede ignorar el filtro, por eso reforzamos en el cliente.
         const visible =
           user?.role === UserRoleEnum.TEACHER
-            ? items.filter((i) => i.user === user.id)
+            ? items.filter((i) => i.user === user.id && i.is_active)
             : items;
         dispatch({
           type: "coursesSuccess",
           courses: visible.map((i) => ({
-            label: `${i.subject_offering_name}${i.subject_offering_section_name ? ` - ${i.subject_offering_section_name}` : ""}`,
+            label: i.subject_offering_name,
             value: String(i.id),
           })),
         });

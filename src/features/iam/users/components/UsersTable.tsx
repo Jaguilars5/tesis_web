@@ -143,7 +143,12 @@ export const UsersTable: React.FC<Props> = ({
       render: (entity) => <span>{entity.names} {entity.last_names}</span>,
     },
     { key: "email", label: "Email", className: tableColumnsClassname },
-    { key: "role_name", label: "Rol", className: tableColumnsClassname },
+    {
+      key: "role",
+      label: "Rol",
+      className: tableColumnsClassname,
+      render: (entity) => entity.role ?? "—",
+    },
     {
       key: "is_active",
       label: "Estado",

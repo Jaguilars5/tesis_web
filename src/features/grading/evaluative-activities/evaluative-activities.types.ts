@@ -6,8 +6,10 @@ export interface EvaluativeActivityT {
   block_component_name: string;
   teacher_subject_section: number;
   teacher_subject_section_name: string;
+  subject_offering_name: string;
   title: string;
   activity_type: number | null;
+  activity_type_name: string | null;
   max_score: string;
   due_date: string;
   internal_weight: string;
@@ -39,11 +41,15 @@ export type EvaluativeActivityCreateParamsT = Omit<
   | "is_active"
   | "block_component_name"
   | "teacher_subject_section_name"
+  | "subject_offering_name"
+  | "activity_type_name"
   | "created_at"
   | "updated_at"
 >;
 export type EvaluativeActivityUpdateDataT =
-  Partial<EvaluativeActivityCreateParamsT>;
+  Partial<EvaluativeActivityCreateParamsT> & {
+    due_date_change_reason?: string;
+  };
 export interface EvaluativeActivityUpdateParamsT {
   id: number;
   data: EvaluativeActivityUpdateDataT;

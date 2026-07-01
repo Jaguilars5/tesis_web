@@ -1,9 +1,16 @@
 import { apiClient, getApiErrorMessage } from "@shared/services/api.client";
 import { AUTH_ENDPOINTS } from "./auth.constants";
 import { tokenManager } from "./auth-token.manager";
-import type { AuthResponseT, AuthResultT, LoginParamsT, RefreshResponseT } from "./auth.types";
+import type {
+  AuthResponseT,
+  AuthResultT,
+  LoginParamsT,
+  RefreshResponseT,
+} from "./auth.types";
 
-const mapLoginResponse = (response: { data: { access: string; refresh: string; user: AuthResultT["user"] } }): AuthResultT => ({
+const mapLoginResponse = (response: {
+  data: { access: string; refresh: string; user: AuthResultT["user"] };
+}): AuthResultT => ({
   token: response.data.access,
   user: response.data.user,
 });
@@ -11,9 +18,11 @@ const mapLoginResponse = (response: { data: { access: string; refresh: string; u
 class AuthService {
   async login(credentials: LoginParamsT): Promise<AuthResultT> {
     try {
-      const { data } = await apiClient.post<{ ok: boolean; data: AuthResponseT; msg: string }>(
-        AUTH_ENDPOINTS.LOGIN, credentials,
-      );
+      const { data } = await apiClient.post<{
+        ok: boolean;
+        data: AuthResponseT;
+        msg: string;
+      }>(AUTH_ENDPOINTS.LOGIN, credentials);
       const result = mapLoginResponse(data);
       tokenManager.setTokens(data.data.access, data.data.refresh);
       return result;
@@ -24,10 +33,16 @@ class AuthService {
 
   async refreshTokens(refreshToken: string): Promise<AuthResultT> {
     try {
-      const { data } = await apiClient.post<{ ok: boolean; data: RefreshResponseT; msg: string }>(
-        AUTH_ENDPOINTS.REFRESH, { refresh: refreshToken },
+      const { data } = await apiClient.post<{
+        ok: boolean;
+        data: RefreshResponseT;
+        msg: string;
+      }>(AUTH_ENDPOINTS.REFRESH, { refresh: refreshToken });
+      const result = mapLoginResponse(
+        data as unknown as {
+          data: { access: string; refresh: string; user: AuthResultT["user"] };
+        },
       );
-      const result = mapLoginResponse(data as unknown as { data: { access: string; refresh: string; user: AuthResultT["user"] } });
       tokenManager.updateAccessToken(data.data.access);
       return result;
     } catch (error) {
@@ -38,6 +53,8 @@ class AuthService {
   async logout(): Promise<void> {
     try {
       await apiClient.post(AUTH_ENDPOINTS.LOGOUT);
+      tokenManager.clearTokens();
+      window.location.href = "/login";
     } finally {
       tokenManager.clearTokens();
     }
