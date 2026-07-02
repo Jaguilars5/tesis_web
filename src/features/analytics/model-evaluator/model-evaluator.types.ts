@@ -4,6 +4,7 @@ export interface SimulateParamsT {
   failing_subjects_count: number;
   severe_incidents_count: number;
   mild_incidents_count: number;
+  moderate_incidents_count?: number;
   consecutive_absences_max?: number;
   tardiness_count?: number;
   justified_absences?: number;
@@ -14,7 +15,6 @@ export interface SimulateParamsT {
   age_grade_gap?: number;
   is_repeat?: boolean;
   has_special_needs?: boolean;
-  try_ml?: boolean;
 }
 
 export interface SemaforoRiesgoT {
@@ -44,7 +44,7 @@ export interface SimulateMlErrorT {
   error: string;
 }
 
-export type SimulateMlResultT = SimulateMlSuccessT | SimulateMlErrorT | null;
+export type SimulateMlResultT = SimulateMlSuccessT | SimulateMlErrorT;
 
 export interface ConfigUsadaT {
   engine: string;

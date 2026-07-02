@@ -1,4 +1,4 @@
-import { AlertTriangle, BarChart3, Calendar, RefreshCcw, RotateCcw } from "lucide-react";
+import { AlertTriangle, BarChart3, RefreshCcw, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -28,40 +28,39 @@ export default function RiskScoreListPage() {
     isLoading,
   } = useRiskScoreController();
 
-  const [selectedPeriodId, setSelectedPeriodId] = useState<number | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const notifiedRef = useRef(false);
   const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const defaultPeriodId = useMemo(() => {
+  const activePeriod = useMemo(() => {
     if (academicPeriods.length === 0) return null;
     return (
-      academicPeriods.find((p) => p.is_active)?.id ?? academicPeriods[0]?.id ?? null
+      academicPeriods.find((p) => p.is_active) ?? academicPeriods[0] ?? null
     );
   }, [academicPeriods]);
 
-  const effectivePeriodId = selectedPeriodId ?? defaultPeriodId;
+  const activePeriodId = activePeriod?.id ?? null;
 
   useEffect(() => {
     loadAcademicPeriods({ page: 1, pageSize: 100 });
   }, [loadAcademicPeriods]);
 
   useEffect(() => {
-    if (effectivePeriodId !== null) {
-      loadScores({ academic_period: effectivePeriodId, page: 1, pageSize: 10 });
+    if (activePeriodId !== null) {
+      loadScores({ academic_period: activePeriodId, page: 1, pageSize: 10 });
     }
-  }, [effectivePeriodId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activePeriodId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (calcStatus === "done" && !notifiedRef.current) {
       notifiedRef.current = true;
       toast("Cálculo completado. Los puntajes se han actualizado.", "success");
       resetCalc();
-      if (effectivePeriodId !== null) {
-        loadScores({ academic_period: effectivePeriodId, page: 1, pageSize: 10 });
+      if (activePeriodId !== null) {
+        loadScores({ academic_period: activePeriodId, page: 1, pageSize: 10 });
       }
     }
-  }, [calcStatus, effectivePeriodId, loadScores, resetCalc]);
+  }, [calcStatus, activePeriodId, loadScores, resetCalc]);
 
   useEffect(() => {
     if (calcStatus === "failed" && !notifiedRef.current) {
@@ -103,39 +102,19 @@ export default function RiskScoreListPage() {
   );
 
   const handleRecalculate = useCallback(() => {
-    if (!effectivePeriodId) return;
+    if (!activePeriodId) return;
     notifiedRef.current = false;
-    recalculate({ academic_period_id: effectivePeriodId });
+    recalculate({ academic_period_id: activePeriodId });
     setShowConfirm(false);
-  }, [effectivePeriodId, recalculate]);
+  }, [activePeriodId, recalculate]);
 
   const retryLoad = useCallback(() => {
-    if (effectivePeriodId !== null) {
-      loadScores({ academic_period: effectivePeriodId, page: 1, pageSize: 10 });
+    if (activePeriodId !== null) {
+      loadScores({ academic_period: activePeriodId, page: 1, pageSize: 10 });
     }
-  }, [effectivePeriodId, loadScores]);
+  }, [activePeriodId, loadScores]);
 
-  const selectedPeriodName =
-    academicPeriods.find((p) => p.id === effectivePeriodId)?.name ?? "";
-
-  if (academicPeriods.length === 0) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-extrabold text-slate-800">Riesgo Académico</h1>
-        </div>
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white px-6 py-16">
-          <Calendar className="mb-4 size-12 text-slate-300" />
-          <h3 className="text-lg font-semibold text-slate-600">Sin períodos académicos</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            No hay períodos académicos registrados. Crea un período para comenzar a analizar riesgos.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!effectivePeriodId) {
+  if (!activePeriod) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -143,9 +122,9 @@ export default function RiskScoreListPage() {
         </div>
         <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white px-6 py-16">
           <BarChart3 className="mb-4 size-12 text-slate-300" />
-          <h3 className="text-lg font-semibold text-slate-600">Selecciona un período</h3>
+          <h3 className="text-lg font-semibold text-slate-600">Sin período activo</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Elige un período académico para ver los puntajes de riesgo.
+            No hay un período académico activo. Activa un período para ver los puntajes de riesgo.
           </p>
         </div>
       </div>
@@ -154,29 +133,14 @@ export default function RiskScoreListPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-800">
             Riesgo Académico
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Visualiza y gestiona los puntajes de riesgo de los estudiantes
+            {activePeriod.name} — Puntaje = probabilidad estimada de reprobar
           </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <select
-            value={effectivePeriodId}
-            onChange={(e) => setSelectedPeriodId(Number(e.target.value) || null)}
-            className="block w-auto rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            aria-label="Seleccionar período"
-          >
-            {academicPeriods.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 
@@ -207,7 +171,7 @@ export default function RiskScoreListPage() {
         totalCount={totalCount}
         isLoading={isLoading}
         loadScores={loadScores}
-        academicPeriodId={effectivePeriodId}
+        academicPeriodId={activePeriodId ?? undefined}
         onViewDetail={handleViewDetail}
         onRecalculate={() => setShowConfirm(true)}
         isCalculating={calcStatus === "running"}
@@ -221,7 +185,7 @@ export default function RiskScoreListPage() {
             </h3>
             <p className="mt-2 text-sm text-slate-600">
               ¿Estás seguro de recalcular los puntajes de riesgo para
-              <strong> {selectedPeriodName}</strong>?
+              <strong> {activePeriod.name}</strong>?
               Esta operación puede tomar unos segundos dependiendo de la cantidad de estudiantes.
             </p>
             <div className="mt-6 flex justify-end gap-3">

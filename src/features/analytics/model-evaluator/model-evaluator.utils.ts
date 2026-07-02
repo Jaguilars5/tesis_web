@@ -21,6 +21,7 @@ export const simulateSchema = Yup.object({
     .min(0, "No puede ser negativo")
     .integer("Debe ser entero")
     .required("Requerido"),
+  moderate_incidents_count: Yup.number().min(0).integer().default(0),
   consecutive_absences_max: Yup.number().min(0).integer().default(0),
   tardiness_count: Yup.number().min(0).integer().default(0),
   justified_absences: Yup.number().min(0).integer().default(0),
@@ -31,5 +32,4 @@ export const simulateSchema = Yup.object({
   age_grade_gap: Yup.number().min(0).integer().default(0),
   is_repeat: Yup.boolean().default(false),
   has_special_needs: Yup.boolean().default(false),
-  try_ml: Yup.boolean().default(false),
 });
